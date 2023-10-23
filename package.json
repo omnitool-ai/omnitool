@@ -1,0 +1,67 @@
+{
+  "name": "omnitool",
+  "version": "0.5.0",
+  "packageManager": "yarn@3.3.1",
+  "private": true,
+  "workspaces": [
+    "packages/omni-sdk",
+    "packages/omni-shared",
+    "packages/omni-sockets",
+    "packages/omni-ui/omni-*",
+    "packages/omni-server"
+  ],
+  "engines": {
+    "node": ">=18.18.0",
+    "pocketbase": "0.16.6"
+  },
+  "scripts": {
+    "build:prod": "run build && yarn workspace omni-server build:prod",
+    "build": "yarn workspaces foreach -t -v run build",
+    "frontend": "yarn workspace omni-web dev",
+    "update": "git pull && yarn install && run clean && run build",
+    "dev": "cross-env NODE_ENV=development node setup/launcher.js -l 127.0.0.1 --viteProxy http://127.0.0.1:5173",
+    "start": "run build:prod && cross-env NODE_ENV=production node setup/launcher.js -l 127.0.0.1 --openBrowser",
+    "clean": "yarn workspaces foreach -A -p -v run clean",
+    "third_parties": "node setup/3rdparties-script.js"
+  },
+  "dependenciesMeta": {
+    "ts-node@10.9.1": {
+      "unplugged": true
+    }
+  },
+  "dependenciesBin": {
+    "updates_base_url": "https://github.com/omnitool-ai/omnitool/releases/download/latest",
+    "root_dir": ".local.bin",
+    "pocketbase": {
+      "admin": "admin@local.host",
+      "base_url": "https://github.com/pocketbase/pocketbase/releases/download/v##version##",
+      "zipfile": {
+        "win32": {
+          "x64": "pocketbase_##version##_windows_amd64.zip",
+          "arm64": "pocketbase_##version##_windows_arm64.zip"
+        },
+        "darwin": {
+          "x64": "pocketbase_##version##_darwin_amd64.zip",
+          "arm64": "pocketbase_##version##_darwin_arm64.zip"
+        },
+        "linux": {
+          "x64": "pocketbase_##version##_linux_amd64.zip",
+          "arm64": "pocketbase_##version##_linux_arm64.zip"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@ungap/structured-clone": "^1.2.0",
+    "adm-zip": "^0.5.10",
+    "check-node-version": "^4.2.1",
+    "cross-env": "^7.0.3",
+    "fs-extra": "^11.1.1",
+    "nsfwjs": "^2.4.2"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.0.3"
+  }
+}

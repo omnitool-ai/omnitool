@@ -1,0 +1,96 @@
+<div class="relative flex"><div
+    x-data="gallery"
+    class="flex w-full justify-center"
+  >
+    <div
+      x-show="value?.length > 0"
+      x-on:keydown.right="next"
+      x-on:keydown.left="prev"
+      tabindex="0"
+      role="region"
+      aria-labelledby="carousel-label"
+      class="flex"
+    >
+      <h2 id="carousel-label" class="sr-only" hidden>Carousel</h2>
+      <div class="flex justify-center items-center">
+        <!-- Prev Button -->
+        <button
+          x-on:click="prev"
+          x-show="value?.length > 1"
+          class="absolute left-0 top-1/2 transform -translate-y-1/2 text-6xl"
+          :aria-disabled="atBeginning"
+          :tabindex="atEnd ? -1 : 0"
+          :class="{ 'opacity-50 cursor-not-allowed': atBeginning }"
+        >
+          <span aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="3"
+            ><path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 19l-7-7 7-7"
+              /></svg>
+          </span>
+          <span class="sr-only">Skip to previous slide page</span>
+        </button>
+        <!-- Next Button -->
+        <button
+          x-on:click="next"
+          x-show="value?.length > 1"
+          class="absolute right-0 top-1/2 transform -translate-y-1/2 text-6xl"
+          :aria-disabled="atEnd"
+          :tabindex="atEnd ? -1 : 0"
+          :class="{ 'opacity-50 cursor-not-allowed': atEnd }"
+        >
+          <span aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 text-gray-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="3"
+            ><path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5l7 7-7 7"
+              /></svg>
+          </span>
+          <span class="sr-only">Skip to next slide page</span>
+        </button>
+
+        <span id="carousel-content-label" class="sr-only" hidden>Carousel</span>
+        <ul
+          x-ref="slider"
+          tabindex="0"
+          role="listbox"
+          aria-labelledby="carousel-content-label"
+          class="flex w-full snap-x snap-mandatory overflow-x-scroll"
+        >
+          <template x-for="(image, index) in value" :key="index">
+            <li
+              x-bind="disableNextAndPreviousButtons"
+              class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
+              role="option"
+              @click="workbench.showExtension('omni-core-filemanager',{focusedObject:image})"
+            >
+
+              <img
+                class="w-full"
+                :src="'/fid/'+(image.fid || image.ticket?.fid) + '?width=256&height=256&fit=contain'"
+                x-show="'/fid/'+(image.fid)"
+                @error="$event.target.dataset.failedOnce ? console.error('missing error.jpg') : ($event.target.dataset.failedOnce = true, $event.target.src = 'error.jpg')"
+              />
+              <button x-bind="focusableWhenVisible" class="text-sm"></button>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

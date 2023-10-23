@@ -1,0 +1,121 @@
+<div
+  x-data="inputUtils" x-intersect="scrollBottom($el)" x-init="$watch('state.messages', value => scrollBottom($el))" x-ref="chatWindow"
+  class="chatWindow"
+  @dragover.prevent="chatDragOver"
+  @dragleave.prevent="chatDragLeave"
+>
+  {{>ChatMessageRenderer}}
+
+  <div x-show="loadCameraModal" class="text-center text-gray-500 text-sm">
+    Loading Camera...
+  </div>
+  <div x-show="openCameraModal" class="modal">
+    <video id="video" width="500" height="400" autoplay x-show="streaming"></video>
+    <canvas id="canvas" width="512" height="512" x-show="!streaming"></canvas>
+    <button @click="takePhoto" class="btn btn-command2">Take&nbsp;Photo</button>
+    <button @click="stopCamera" class="btn btn-delete">Cancel</button>
+  </div>
+
+</div>
+
+<div
+  class="chatWindowInput"
+  @dragover.prevent="chatDragOver"
+  @dragleave.prevent="chatDragLeave"
+  :disabled="!connectionState.isConnected"
+  @paste.stop="chatHandlePaste"
+>
+
+
+  <textarea
+    x-model="state.inputText"
+    :disabled="!connectionState.isConnected"
+    id="chatInput"
+    @compositionstart="handleCompositionStart"
+    @compositionend="handleCompositionEnd"
+    @keydown.enter="chatEnterKeydown($event);"
+    x-data="inputUtils"
+    x-init="textareaAutoResize($el)"
+    @input="textareaAutoResize($el)"
+    @change="state.inputText = state.inputText.trim();"
+    class="flex-auto mr-2 p-1.5 min-h-8 border border-gray-300 rounded text-black text-xs resize-none overflow-y-auto"
+    placeholder="Send a message..."
+    rows="1"
+  ></textarea>
+<div class="relative group select-none" x-show="workbench.nicknames">
+  <button
+    class="btn-icon-dark"
+
+  >
+    <svg viewBox="0 0 24 24" class="w-5 h-5" stroke="currentColor" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 9H15M9 9V15M9 9V6C9 4.34315 7.65685 3 6 3C4.34315 3 3 4.34315 3 6C3 7.65685 4.34315 9 6 9H9ZM15 9V15M15 9H18C19.6569 9 21 7.65685 21 6C21 4.34315 19.6569 3 18 3C16.3431 3 15 4.34315 15 6V9ZM15 15H9M15 15V18C15 19.6569 16.3431 21 18 21C19.6569 21 21 19.6569 21 18C21 16.3431 19.6569 15 18 15H15ZM9 15L6 15C4.34315 15 3 16.3431 3 18C3 19.6569 4.34315 21 6 21C7.65685 21 9 19.6569 9 18V15Z" stroke-width="1.5"></path></svg>
+    </button>
+    <div class="chatCommandMenu">
+      <template x-for="(id, nickname) in workbench.nicknames">
+        <div class="chatCommandItem nickname" @click="state.inputText='@'+nickname " >
+          <span  x-text="'@'+nickname"></span>
+        </div>
+      </template>
+
+    <template x-for="(commandTitle, commandId) in {'help': 'Show Commands', 'clear': 'Clear Chat'}" :key="commandId">
+      <div class="chatCommandItem" @click="window.client.runScript(commandId,[])" >
+        <div x-text="commandTitle"></div>
+      </div>
+    </template>
+  </div>
+</div>
+
+  <button
+    x-show="state.recognitionAvailable"
+    class="btn-icon-dark"
+    @mousedown="startMicrophoneInput"
+    @mouseup="stopMicrophoneInput"
+    @mouseleave="stopMicrophoneInput"
+    :class="{'px-4': state.recognitionRecording }"
+    x-tooltip="Hold down for Speech-to-Text"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      class="w-5 h-5"
+    >
+      <path
+        fill="currentColor"
+        d="M11.999 14.942c2.001 0 3.531-1.53 3.531-3.531V4.35c0-2.001-1.53-3.531-3.531-3.531S8.469 2.35 8.469 4.35v7.061c0 2.001 1.53 3.531 3.53 3.531zm6.238-3.53c0 3.531-2.942 6.002-6.237 6.002s-6.237-2.471-6.237-6.002H3.761c0 4.001 3.178 7.297 7.061 7.885v3.884h2.354v-3.884c3.884-.588 7.061-3.884 7.061-7.885h-2z"
+      >
+      </path>
+    </svg>
+  </button>
+
+  <button @click="startCamera()" class="btn-icon-dark" x-tooltip="Take Photo">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle cx="12" cy="13" r="4"></circle>
+    </svg>
+  </button>
+
+  <label class="btn-icon-dark" x-tooltip="Upload File">
+    <input
+      style="display:none"
+      type="file"
+      accept="image/*,audio/*,application/*,text/*"
+      @change="onUploadFileChange($event)"
+    >
+    <svg
+      class="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+      >
+      </path>
+    </svg>
+  </label>
+</div>
+

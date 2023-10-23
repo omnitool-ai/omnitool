@@ -1,0 +1,45 @@
+{
+  "name": "omni-client-services",
+  "version": "0.0.1",
+  "packageManager": "yarn@3.3.1",
+  "private": true,
+  "type": "module",
+  "module": "./index.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "include": [
+    "./index.ts",
+    "./core/**/*",
+    "./services/**/*"
+  ],
+  "files": [
+    "./lib/"
+  ],
+  "scripts": {
+    "build": "run lint --quiet --cache && echo \"Building omni-client-services...\" && esbuild --log-level=info --bundle src/index.ts --outdir=lib --sourcemap --format=esm --define:process.env.NODE_ENV=\\\"development\\\" --color=true --target=es2020 && run postbuild",
+    "build:prod": "echo \"Building client:prod...\" && esbuild --bundle src/index.ts --outfile=lib/client.min.esm.js --minify --format=esm --define:process.env.NODE_ENV=\"production\"",
+    "postbuild": "echo \"Building omni-client-services typescript declarations...\" && tsc --build --emitDeclarationOnly --pretty --verbose",
+    "start": "ts-node-esm ./src/run.ts",
+    "lint": "eslint ./src --ext .js,.ts, --ignore-path .gitignore",
+    "clean": "tsc --build --clean & rm -rf .eslintcache"
+  },
+  "dependencies": {
+    "@microsoft/fetch-event-source": "^2.0.1",
+    "omni-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.7",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "esbuild": "^0.19.5",
+    "eslint": "^8.51.0",
+    "eslint-config-standard-with-typescript": "^36.1.1",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

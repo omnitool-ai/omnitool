@@ -1,0 +1,11 @@
+*.mjs
+*.cjs
+packages/**/*.js
+*.d.ts
+*.map.ts
+**/dist/**
+**/lib/**
+*.hbs
+*.md
+**/omni-server/public/**
+**/omni-server/extensions/**

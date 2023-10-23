@@ -1,0 +1,80 @@
+<div x-data="data"><div class="my-2 flex justify-start mx-2 space-x-2 items-center">
+  <div class="flex items-center sm:justify-between sm:gap-4">
+    <div class="relative hidden sm:block" x-show="!openBlockModalPending">
+      <label class="sr-only" for="search"> Search </label>
+
+      <input class="h-10 w-full  border-none drop-shadow-xl shadow border-1 border-gray-200 pe-10 ps-4 text-sm  sm:w-60"
+        x-model="search" id="search" type="search" placeholder="Search block..." />
+
+      <button type="button"
+        class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-gray-50 p-2 text-gray-600 transition hover:text-gray-700">
+        <span class="sr-only">Search</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+<div class=" max-w-fit" x-cloak>
+  <template x-if="openBlockModalPending">
+    <div class="flex flex-col items-center justify-center">
+      <p x-text="openBlockModalPending" class="text-gray-400 mt-4">openBlockModalPending</p>
+    </div>
+  </template>
+  <template x-if="!openBlockModalPending">
+      <div class="flex flex-wrap mx-2 my-1 gap-2">
+
+          <template x-for="(component, index) in filteredComponents" :key="index">
+          <div class="flex-row border border-gray-200 items-center justify-center max-w-md rounded-lg bg-white shadow w-60">
+          <div class="group relative block overflow-auto">
+  <button
+    class="absolute end-1 top-1 z-10 rounded-full bg-gray-100 p-1.5 text-gray-900 transition hover:text-gray-900/75"
+  >
+    <span class="sr-only">Wishlist</span>
+
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="transparent"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="red"
+      class="h-4 w-4"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+      />
+    </svg>
+  </button>
+
+  <div class="relative bg-white p-2 overflow-hidden">
+
+
+  <template x-if="['openai', 'textsynth', 'stability', 'elevenlabs'].includes(component.namespace)">
+   <svg class="w-4 h-4 animate-pulse inline-block" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 291.764 291.764" xml:space="preserve" fill="#000000"> <path style="fill:#EFC75E;" d="M145.882,0c80.573,0,145.882,65.319,145.882,145.882s-65.31,145.882-145.882,145.882 S0,226.446,0,145.882S65.31,0,145.882,0z"></path> <path style="fill:#CC9933;" d="M145.882,27.353c-65.465,0-118.529,53.065-118.529,118.529s53.065,118.529,118.529,118.529 s118.529-53.065,118.529-118.529S211.347,27.353,145.882,27.353z M145.882,246.176c-55.39,0-100.294-44.904-100.294-100.294 S90.493,45.588,145.882,45.588s100.294,44.904,100.294,100.294S201.281,246.176,145.882,246.176z M158.009,138.269 c-5.452-2.289-25.493-5.452-25.493-14.214c0-6.464,7.495-8.334,11.99-8.334c4.094,0,8.999,1.295,11.589,3.875 c1.641,1.577,2.316,2.726,2.854,4.313c0.684,1.869,1.094,3.875,3.684,3.875h13.357c3.136,0,3.957-0.574,3.957-4.021 c0-14.789-11.589-23.122-24.809-25.994V86.28c0-2.58-0.821-4.167-3.957-4.167h-10.64c-3.136,0-3.957,1.577-3.957,4.167v11.051 c-14.178,2.726-26.031,11.634-26.031,27.718c0,18.235,12.683,23.979,26.441,28.566c11.589,3.884,23.724,4.021,23.724,12.063 s-5.99,9.765-13.357,9.765c-5.051,0-10.631-1.304-13.366-4.741c-1.769-2.152-2.453-4.021-2.58-5.89 c-0.274-3.592-1.769-4.021-4.914-4.021H113.28c-3.136,0-3.957,0.729-3.957,4.021c0,16.366,13.093,26.286,27.262,29.441v11.206 c0,2.58,0.821,4.167,3.957,4.167h10.64c3.136,0,3.957-1.586,3.957-4.167v-10.905c16.084-2.453,27.125-12.209,27.125-29.441 C182.28,145.591,167.829,141.424,158.009,138.269z"></path> </svg>
+  </template>
+
+  <span class="block-category" :class="(component.patch.category || component.namespace[0]).toLowerCase().replace(/ /g,'-')" x-text="component.patch.category ||  component.tags[0]"></span>
+
+  <div class="mt-2 p-0 font-semibold text-black" x-text="component.patch.title || component.operation.schema?.title || component.componentKey"></div>
+    <p class="mt-1.5 text-sm text-gray-700 h-24" x-text="component.patch.description || component.patch.summary || component.operation.summary"></p>
+
+    <div class="text-xs float-right absolute bottom-0 bg-black w-full text-white"  x-text="component.namespace"></div>
+
+    </div>
+    <div class="absolute left-2 bottom-3 w-10">
+      <button
+        class="btn btn-primary w-full"
+        @click="addComponent(component.name)">
+        Add
+      </button>
+    </div>
+  </div>
+</div>
+
+          </template>
+      </div>

@@ -1,0 +1,304 @@
+server:
+  network:
+    public_url: http://127.0.0.1:1688
+    rateLimit:
+      global: false
+      max: 1000
+      timeWindow: 60000 # 1 minute
+
+  session:
+    cookie:
+      maxAge: 604800000 # 1 week, 7*24*60*60*1000
+      secure: true
+      httpOnly: false
+
+  logger:
+    level: 2
+
+  kvStorage: # Location of the server KV Storage
+    dbPath: './data.local/db'
+
+  settings:
+    kvStorage:
+      dbPath: './data.local/db'
+      dbName: 'settings.db'
+
+  services:
+    messaging:
+      keepaliveInterval: 60000 # 60*1000  ms between sending keepalive packets to the client to prevent proxies from reaping the SSE connection
+
+    credentials:
+      disabled: false
+      type: default # default, local, vaultwarden (default to KV)
+      omniKeys: '../../keystore.local.yaml'  # The default keystore to use if user doesn't have organization or user level credentials in the root folder
+      encryption:
+        keyPath: './data.local/keystore/encryption.key' # The key used to encrypt the credentials in the keystore
+        algorithm: aes-256-cbc
+        signature: 
+          keyPath: './data.local/keystore/signature.key' # The key used to sign the credentials in the keystore
+          algorithm: sha256
+      storeConfig:
+        dbPath: './data.local/db'
+      oauth:
+        google-tts:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
+        google-translate:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
+        google-play:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
+        google-llm:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
+        google-vision:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
+
+    db:
+      pocketbase:
+        local:
+          dbUrl: 'http://127.0.0.1:8090'
+          login: 'admin@local.host'
+        development:
+          dbUrl: 'https://pocket.intern.mercenaries.ai'
+
+    rest_consumer:
+      exchange: { name: 'omni_tasks', type: 'topic', options: { durable: true, autoDelete: false, internal: false, arguments: {} } }
+      retry:
+        disabled: false
+        maxRetries: 3
+        delay: 3000
+      disabled: false
+
+    amqp:
+      exchanges:
+        - name: 'omni_tasks'
+          type: 'topic'
+          options:
+              durable: true
+              autoDelete: false
+              internal: false
+              arguments: {}
+
+        - name: 'omni_announce'
+          type: 'topic'
+          options:
+              durable: true
+              autoDelete: false
+              internal: false
+              arguments: {}
+
+  blockmanager:
+    preload: true
+    kvStorage:
+      dbPath: './data.local/db'
+      dbName: 'blocks.db'
+
+  # Integrations Configuration (Integrations are defined and added to the server in run.ts before it loads)
+  integrations:
+
+    cdn:
+      type: local
+      useLocalRoute: true #whether to use the local route or seaweed returned public url for serving images
+      localRoute: 'http://127.0.0.1:1688/fid'
+      kvStorage:
+        dbPath: './data.local/db'
+
+      local:
+        default_ttl: 7d #default ttl for  temp artifacts
+      # ${{ if navigator.platform.startsWith("Win") }}:
+      #   root: 'c://temp//cdn'
+      #   url: '127.0.0.1:1688'
+      #   insecure: true #whether to use https (e.g. behind reverse proxy) when talking to volume nodes on the backend
+      # ${{ else }}:
+        root: './data.local/files'
+        url: '127.0.0.1:1688'
+        insecure: true #whether to use https (e.g. behind reverse proxy) when talking to volume nodes on the backend
+
+      routes:
+        '/fid/:fid':
+          insecure: true
+          handler: 'fid'
+          clientExport: 'fid'
+        'POST /fid':
+          insecure: false
+          handler: 'fidupload'
+          clientExport: 'fidupload'
+
+    # Our own backend server APIs. These are declared as routes
+    mercenaries:
+      routes:
+        '/api/v1/mercenaries/ping':         # Test route -  defaults to GET
+          handler: 'ping'
+          clientExport: 'ping'
+          insecure: true
+        'POST /api/v1/mercenaries/ping':    # Test route - adds the same handler responding to POST
+          handler: 'ping'
+        '/api/v1/mercenaries/fetch':        # Server side fetch route (formerly /p) - GET
+          handler: 'fetch'
+          config:
+            rateLimit:
+              max: 300
+              timeWindow: 60000 # 1 minute
+        'POST /api/v1/mercenaries/fetch':   # Server side fetch route (formerly /p) - POST
+          handler: 'fetch'
+          clientExport: 'fetch'             # Auto register a client function in the client.api namespace
+        '/api/v1/mercenaries/integrations': # Server export of client routes
+          handler: 'integrations'
+        '/api/v1/mercenaries/components': # Server export of client routes
+          handler: 'components'
+          clientExport: 'components'
+
+        '/api/v1/mercenaries/extensions':  # Get all extensions
+          handler: 'getExtensions'
+
+        '/api/v1/mercenaries/listen':       # Server side listen route (sse)
+          handler: 'listen'
+          ignoreOnDevServer: true           # unfortunately the vite dev server does not support SSE
+                                            # so we can't proxy this route
+
+        'POST /api/v1/mercenaries/runscript/:script' :
+          handler: runscript
+        'GET /api/v1/mercenaries/runscript/:script' :
+          handler: runscript
+
+        'GET /api/v1/mercenaries/user/requiredKeys':
+          handler: 'getRequiredKeys'
+          clientExport: 'getRequiredKeys'
+
+        'POST /api/v1/mercenaries/user/key':
+          handler: 'setUserKey'
+          clientExport: 'setUserKey'
+        'DELETE /api/v1/mercenaries/user/key':
+          handler: 'revokeUserKey'
+          clientExport: 'revokeUserKey'
+        'GET /api/v1/mercenaries/user/keys':
+          handler: 'listUserKeys'
+          clientExport: 'listUserKeys'
+        'POST /api/v1/mercenaries/user/keys/bulkAdd':
+          handler: 'bulkAddUserKeys'
+
+
+    auth: # Authentication and user related routes
+      kvStorage:
+        dbPath: './data.local/db'
+        dbName: 'auth.db'
+      routes:
+        'POST /api/v1/auth/login':  # default username / pwd login
+          handler: login
+          authStrategy: local
+        '/api/v1/auth/autologin':             # auto login : cloudflare , pocketbase single user
+          handler: login
+          authStrategy: ['cloudflare', 'pb_admin']
+        'POST /api/v1/auth/logout':  # destroy session
+          handler: logout
+        '/api/v1/auth/user':         # Get authenticated user info
+          handler: getAuthenticatedUser
+        'POST /api/v1/auth/token':           # Generate token
+          handler: generateToken
+        'POST /api/v1/auth/accepttos':
+          handler: acceptTos
+        'GET /api/v1/auth/oauth2':          # OAuth2.0
+          handler: oauth2
+        'GET /api/v1/auth/oauth2/:ns/callback': # OAuth2.0 callback
+          handler: oauth2Callback
+
+    chat:
+      routes:
+        '/api/v1/chat/:contextId': # Get associated chat history
+          handler: 'chatHistory'
+          clientExport: 'chatHistory'
+
+        'PUT /api/v1/chat/:contextId': # Append to persistent layer
+          handler: 'append'
+          clientExport: 'append'
+
+        'DELETE /api/v1/chat/:contextId': # Delete chat history
+          handler: 'clear'
+          clientExport: 'clear'
+
+    workflow: # Worklow related routes
+      routes:
+        'POST /api/v1/workflow/exec': # Execute a client workflow on the server
+          handler: 'exec'
+          clientExport: 'exec'
+
+        'POST /api/v1/workflow/stop': # Stop all running workflows the user has access to
+          handler: 'stop'
+          clientExport: 'stop'
+
+        '/api/v1/workflow/workflows':  # Get a users workflows
+          handler: 'getWorkflows'
+          clientExport: 'getWorkflows'
+
+        '/api/v1/workflow/workflowResults':  # Get results for a workflow
+          handler: 'getWorkflowResults'
+          clientExport: 'getWorkflowResults'
+
+        '/api/v1/workflow/jobs':  # Get a users running workflows (jobs)
+          handler: 'jobs'
+          clientExport: 'jobs'
+
+        'PUT /api/v1/workflow':     # Update an existing workflow
+          handler: 'update'
+          clientExport: 'update'
+
+        'POST /api/v1/workflow':     # Save/Create a new workflow
+          handler: 'create'
+          clientExport: 'create'
+
+        'POST /api/v1/workflow/clone':     # Clone an existing workflow
+          handler: 'clone'
+          clientExport: 'clone'
+
+        'GET /api/v1/workflow/:workflowId/:version':     # Load workflow from backend
+          handler: 'load'
+          clientExport: 'load'
+
+        'GET /api/v1/workflow/:workflowId': # Load the non-published version of a workflow
+          handler: 'load'
+          clientExport: 'load'
+
+        'DELETE /api/v1/workflow/:workflowId':  # Delete a workflow
+          handler: 'deleteWorkflow'
+          clientExport: 'deleteWorkflow'
+
+
+
+# Vite Configuration
+vite:
+  # Configuration for the build visualizer plugin. Set to true or pass in the visualizer options
+  # https://github.com/btd/rollup-plugin-visualizer
+  visualizer:
+    open: false  #whether or not to open statistics in a browser after build
+    gzipSize: true  #whether to show the gzip size
+    template: 'treemap' # treemap, sunburst, network, list, raw-data
+    title: 'Mercenaries.ai Vite Build Statistics' # title for generated HTML
+    filename: 'stats.html'
+
+  # Additional API proxy routes
+  # Any route or proxy defined under server.integrations is automatically declared
+  # when vite.config.js builds the vite configuration
+  apiProxy:
+    '/t':
+      # not defining target: means use the address provided in the server.network section
+      # (this logic is implemented in vite.config.js)
+      changeOrigin: true
+    '/sets':
+      changeOrigin: true
+
+    '/fid':
+      changeOrigin: true
+
+    '/auth':
+      changeOrigin: true
+
+    '/img':
+      changeOrigin: true

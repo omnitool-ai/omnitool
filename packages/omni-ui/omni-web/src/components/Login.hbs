@@ -1,0 +1,296 @@
+<div class="flex justify-center z-20 w-full h-full">
+  <div
+    x-show="open"
+    role="dialog"
+    aria-modal="true"
+    x-id="['modal-title']"
+    :aria-labelledby="$id('modal-title')"
+    class="fixed inset-0 z-10 overflow-y-auto"
+  >
+    <div
+      class="flex h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+    >
+      <div
+        x-show="open"
+        x-transition.opacity
+        class="fixed inset-0 bg-gray-200 bg-opacity-100 z-30 py-16"
+      >
+        <div
+          class="bg-white w-5/6 md:w-3/4 lg:w-2/3 xl:w-[500px] 2xl:w-[550px] mt-8 mx-auto px-16 py-8 rounded-lg shadow-2xl"
+        >
+          <h2
+            class="text-center text-2xl font-bold tracking-wide text-gray-800"
+            x-text="newUserRegistration ? 'Sign Up' : 'Login'"
+          >Login</h2>
+          <div
+            class="flex justify-center text-center text-sm text-gray-600 mt-4"
+          >
+            <p class="mr-2">
+              Welcome to Omnitool.ai, your open source AI desktop. 
+              Discover, learn, evaluate and build with thousands of generative AI models.</p>
+          </div>
+
+          <form
+            class="my-8 text-sm"
+            @submit.prevent="isSubmitting=true; login()"
+            @keyup.enter="login()"
+          >
+            <div class="flex flex-col my-4">
+              <label for="username" class="text-gray-700">User name</label>
+              <input
+                x-model="input.username"
+                x-bind:class="{'is-invalid': error.username}"
+                autofocus
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                required=""
+                class="mt-2 relative block w-full border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-gray-600 focus:outline-none focus:ring-gray-600 sm:text-sm"
+                placeholder="User name"
+              />
+              <div
+                x-show="error.username"
+                x-text="error.username"
+                class="invalid-feedback"
+              ></div>
+            </div>
+
+            <div class="flex flex-col my-4">
+              <label for="password" class="text-gray-700">Password</label>
+              <div
+                x-data="{ show: false }"
+                class="relative flex items-center mt-2"
+              >
+                <input
+                  x-model="input.password"
+                  x-bind:class="{'is-invalid': error.password}"
+                  id="password"
+                  name="password"
+                  :type=" show ? 'text': 'password'"
+                  autocomplete="current-password"
+                  required=""
+                  class="relative block w-full border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-gray-600 focus:outline-none focus:ring-gray-600 sm:text-sm"
+                  placeholder="Password"
+                />
+                <div
+                  x-show="error.password"
+                  x-text="error.password"
+                  class="invalid-feedback"
+                ></div>
+                <button
+                  @click="show = !show"
+                  type="button"
+                  class="absolute right-2 bg-transparent flex items-center justify-center text-gray-700"
+                >
+                  <svg
+                    x-show="!show"
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    >
+                    </path>
+                  </svg>
+
+                  <svg
+                    x-show="show"
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style="display: none;"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    >
+                    </path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="my-4 flex items-center justify-center space-x-4">
+              <button
+                type="submit"
+                class="inline-flex w-auto cursor-pointer select-none appearance-none items-center py-2 justify-center bg-blue-600 hover:bg-blue-700 rounded-lg text-gray-100 hover:shadow-xl transition duration-150 uppercase disabled:pointer-events-none disabled:opacity-75"
+                :disabled="isSubmitting"
+                :class="{'opacity-75 pointer-events-none px-8 gap-x-2': isSubmitting, 'px-11': !isSubmitting}"
+              >
+                <!-- Show spinner when loading -->
+                <div x-show="isSubmitting">
+                  <!-- Spinner svg, replace with your own -->
+                  <svg class="h-5 w-5 animate-spin" viewBox="3 3 18 18">
+                    <path
+                      class="fill-gray-200"
+                      d="M12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5ZM3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z"></path>
+                    <path
+                      class="fill-gray-800"
+                      d="M16.9497 7.05015C14.2161 4.31648 9.78392 4.31648 7.05025 7.05015C6.65973 7.44067 6.02656 7.44067 5.63604 7.05015C5.24551 6.65962 5.24551 6.02646 5.63604 5.63593C9.15076 2.12121 14.8492 2.12121 18.364 5.63593C18.7545 6.02646 18.7545 6.65962 18.364 7.05015C17.9734 7.44067 17.3403 7.44067 16.9497 7.05015Z"></path>
+                  </svg>
+                </div>
+                <span class="">Sign in</span>
+              </button>
+
+            </div>
+          </form>
+          <div class="flex items-center justify-between hidden">
+            <div class="w-full h-[1px] bg-gray-300"></div>
+            <span class="text-sm uppercase mx-6 text-gray-400">Or</span>
+            <div class="w-full h-[1px] bg-gray-300"></div>
+          </div>
+
+          <div
+            class="text-sm pointer-events-none grayscale hidden"
+            disabled="true"
+          >
+            <a
+              href="#"
+              class="flex items-center justify-center space-x-2 text-gray-600 my-2 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 326667 333333"
+                shape-rendering="geometricPrecision"
+                text-rendering="geometricPrecision"
+                image-rendering="optimizeQuality"
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+              >
+                <path
+                  d="M326667 170370c0-13704-1112-23704-3518-34074H166667v61851h91851c-1851 15371-11851 38519-34074 54074l-311 2071 49476 38329 3428 342c31481-29074 49630-71852 49630-122593m0 0z"
+                  fill="#4285f4"
+                ></path>
+                <path
+                  d="M166667 333333c44999 0 82776-14815 110370-40370l-52593-40742c-14074 9815-32963 16667-57777 16667-44074 0-81481-29073-94816-69258l-1954 166-51447 39815-673 1870c27407 54444 83704 91852 148890 91852z"
+                  fill="#34a853"
+                ></path>
+                <path
+                  d="M71851 199630c-3518-10370-5555-21482-5555-32963 0-11482 2036-22593 5370-32963l-93-2209-52091-40455-1704 811C6482 114444 1 139814 1 166666s6482 52221 17777 74814l54074-41851m0 0z"
+                  fill="#fbbc04"
+                ></path>
+                <path
+                  d="M166667 64444c31296 0 52406 13519 64444 24816l47037-45926C249260 16482 211666 1 166667 1 101481 1 45185 37408 17777 91852l53889 41853c13520-40185 50927-69260 95001-69260m0 0z"
+                  fill="#ea4335"
+                ></path>
+              </svg>
+              <span
+                x-text="newUserRegistration ? 'Sign Up with Google' : 'Login with Google'"
+              >Login with Google</span>
+            </a>
+            <a
+              href="#"
+              class="flex items-center justify-center space-x-2 text-gray-600 my-2 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 124.8 123.36"
+              >
+                <defs>
+                  <style>
+                    .cls-1, .cls-2 { fill: none; } .cls-1 { clip-rule: evenodd;
+                    } .cls-3 { clip-path: url(#clip-path); } .cls-4 { clip-path:
+                    url(#clip-path-2); } .cls-5 { fill: #fff; }
+                  </style>
+                  <clipPath id="clip-path" transform="translate(0.69 0.51)">
+                    <path
+                      class="cls-1"
+                      d="M27.75,0H95.13a27.83,27.83,0,0,1,27.75,27.75V94.57a27.83,27.83,0,0,1-27.75,27.74H27.75A27.83,27.83,0,0,1,0,94.57V27.75A27.83,27.83,0,0,1,27.75,0Z"
+                    >
+                    </path>
+                  </clipPath>
+                  <clipPath id="clip-path-2" transform="translate(0.69 0.51)">
+                    <rect class="cls-2" width="122.88" height="122.31"></rect>
+                  </clipPath>
+                </defs>
+                <g class="cls-3">
+                  <g class="cls-4">
+                    <image
+                      width="260"
+                      height="257"
+                      transform="matrix(0.48, 0, 0, -0.48, 0, 123.36)"
+                      xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQQAAAEBCAYAAACexdu5AAAACXBIWXMAABcRAAAXEQHKJvM/AAAEFUlEQVR4Xu3dwXEdIRBFUb4kZ+HwHJbDcxrSeAG+hctVJgDO2cyG9aumoYfX8zzP68evAdzr+fl9jDHG22EdcJGPMcZ4vV6ndcAFPubn+f8q4Aq2DEBmhWDLAAxbBmCzAkGFAKgQgM3qIRxWAVdwygBkVQhyAdBUBDZKAyCaikBmIDxfh2XADda0o50DUFNRhQBoKgIbgQBEIABx7AhEhQBEIACZW4a398My4AYqBCACAYhZBiCrh6BQAFQIwGZOO55WAVewVwDin4pAVlNRIACaisDG689ANBWBeLkJyOoheP0Z8Bw8sNFUBKJCAKKbCEQgAHHsCGQ99npaBtxAaQDEsSMQ045ANBWBqBCAKA2AeA4eiAoBiEAAIhCA6CEAUSEAWcNNcgEwywBs3FQEYpYBiAoByHr9WYUAqBCAzXqXwSkD4KEWYOPqMhDHjkBsGYCYZQCyjh1VCEAXk3QVAT0EYCMQgDh2BLIqBLMMQBXC+2EZcAPTjkD0EICsm4qnZcANlAZAjD8D0VQEoqkIxNVlIEoDIJqKQOY9hNMq4AoqBCB6CEDWL9RMOwIqBGDjbUcgq6noYhJglgHYaCoCWRXC52EZcIP1xyRNRaAK4bAKuIKry0D8IAWIl5uAqBCA+IUakFUh6CoCph2BzbqHYMsAuIcAbGwZgPhBChAVApA17XhaBtxAhQBEIAARCEAEAhCzDEBMOwKxZQAiEIAYbgJilgGILQOQOctwWgVcQQ8BiC0DkPUcvFwA+smql5sALzcBG8NNQGwZgKx/KtoyAO4hABulARBNRSCaikDcQwCiqQjElgHIqhDeD8uAG6xfqKkQADcVgY2mIhBNRSCaikBWhfB5WAbcwCwDEMcLQNax42kZcAMVAhCBAMTFJCDr5Sb3EAA3FYHNPGVQIQBDUxHYuLoMRFMRiKYiEBUCEBeTgDhlADLvIZxWAVfwgxQgtgxANBWBzED4clMR7vZtjOEeArBxUxGIHgIQ/0MAYvwZGLUTD6uAi8xY0EQAhqYisHEPAYimIjDGmEWB8Wcgxp+BOHYEoqkIRFMRGH82C7YMQAw3AfkYY4zH/xDgcnOzoEIAYpYBiKYiEIEAxJYBiAoBiGlHILYMQPxTEYiXm4Dx103F8aa3CDhlADa2DMCwZQD+oUIAxt/jz/9dCNzCb9iBaB4AEQhAzDIAUSEAEQhAnDIAUSEAcTEJiFMGIAIByBpuOqwCrqBCACIQgNgyAFEhAHExCYhAADJvKtoyAEOFAGwEAhCBAEQgAHEPAYgKAYhAACIQgAgEIAIBiEAAIhCACAQgAgGIQAAiEIAIBCACAYhAACIQgAgEIAIBiEAAIhCACAQgAgGIQAAiEIAIBCACAYhAACIQgAgEIAIBiEAAIhCA/AafC2PbZ0osjAAAAABJRU5ErkJggg=="
+                    >
+                    </image>
+                  </g>
+                </g>
+                <path
+                  class="cls-5"
+                  d="M85.36,78.92l2.72-17.76H71V49.63c0-4.86,2.38-9.59,10-9.59H88.8V24.92a94.45,94.45,0,0,0-13.75-1.2c-14,0-23.21,8.5-23.21,23.9V61.16H36.24V78.92h15.6v43.57H71V78.92Z"
+                  transform="translate(0.69 0.51)"
+                ></path>
+              </svg>
+              <span
+                x-text="newUserRegistration ? 'Sign Up with Facebook' : 'Login with Facebook'"
+              >Login with Facebook</span>
+            </a>
+            <a
+              href="#"
+              class="flex items-center justify-center space-x-2 text-gray-600 my-2 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                />
+              </svg>
+              <span
+                x-text="newUserRegistration ? 'Sign Up with GitHub' : 'Login with GitHub'"
+              >Login with GitHub</span>
+            </a>
+            <a
+              href="/api/v1/auth/discord"
+              class="flex items-center justify-center space-x-2 text-gray-600 my-2 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 -28.5 256 256"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                preserveAspectRatio="xMidYMid"
+              >
+                <g>
+                  <path
+                    d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z"
+                    fill="#5865F2"
+                    fill-rule="nonzero"
+                  >
+                  </path>
+                </g>
+              </svg>
+              <span
+                x-text="newUserRegistration ? 'Sign Up with Discord' : 'Login with Discord'"
+              >Login with Discord</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="input-control-div" x-tooltip:reactive="control.description">
+  <input
+    type="checkbox"
+    :style="opts.readonly ? 'background-color: #ccc; color: white;' : 'color:black;'"
+    :disabled="opts.readonly"
+    x-model="value"
+    @change="change"
+    @dblclick.stop
+    @wheel.stop
+    @pointerdown.stop
+    @pointermove.stop
+  />
+  <label
+    x-show="name"
+    class="input-control-label"
+    x-text="title + ': ' + (value ? 'yes' : 'no')"
+  ></label>
+</div>

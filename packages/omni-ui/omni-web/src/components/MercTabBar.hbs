@@ -1,0 +1,29 @@
+<div class="chatTabBar" x-show="uiSettings.tabBarStyle == 'tabs'">
+  <div class="chatTabContent" x-text="workbench.displayName" :class="{
+      'justify-right': uiSettings.chatSide == 'left' ,
+      'justify-left': uiSettings.chatSide == 'right'
+    }">
+  </div>
+  <div class="chatTabCommand">
+    <div @click="uiSettings.toggleMinimized()" class="cursor-pointer rounded hover:text-gray-700" x-tooltip="Minimize">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="2" viewBox="0 0 14 2" fill="none">
+<path d="M12.6667 1H1.79175" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
+    </div>
+    <div x-show="uiSettings.chatSide === 'right' " @click="uiSettings.toggleSide()"
+      class="cursor-pointer rounded  hover:text-gray-700">
+      <svg class="h-4 fill-white" xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24">
+        <path stroke-width="2" stroke-linecap="round"
+          d="M17.17,24a1,1,0,0,1-.71-.29L8.29,15.54a5,5,0,0,1,0-7.08L16.46.29a1,1,0,1,1,1.42,1.42L9.71,9.88a3,3,0,0,0,0,4.24l8.17,8.17a1,1,0,0,1,0,1.42A1,1,0,0,1,17.17,24Z" />
+      </svg>
+    </div>
+    <div x-show=" uiSettings.chatSide === 'left' " @click="uiSettings.toggleSide()"
+      class="cursor-pointer rounded  hover:text-gray-700">
+      <svg class="h-4 fill-white" xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24">
+        <path stroke-width="2" stroke-linecap="round"
+          d="M7,24a1,1,0,0,1-.71-.29,1,1,0,0,1,0-1.42l8.17-8.17a3,3,0,0,0,0-4.24L6.29,1.71A1,1,0,0,1,7.71.29l8.17,8.17a5,5,0,0,1,0,7.08L7.71,23.71A1,1,0,0,1,7,24Z" />
+      </svg>
+    </div>
+
+  </div>
+</div>

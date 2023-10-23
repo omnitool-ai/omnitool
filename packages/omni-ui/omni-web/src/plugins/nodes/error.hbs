@@ -1,0 +1,16 @@
+<div class="block-header flex flex-row h-8 p-2" >
+  <!-- Copy button -->
+
+  <!-- close button -->
+  <div class="block-title flex-grow" x-text="node.title"></div>
+  <div x-show="workbench.canEdit" class=" hover:animate-pulse" @click.stop.prevent="onClickClose(node);" x-tooltip="Remove">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+      <path stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </div>
+</div>
+
+<div id='block-content' class="relative flex items-center justify-center w-full text-xs content   bg-gray-100 bg-opacity-100 text-center p-4" style="min-height: 200px;">
+  <div x-html="node.summary" class="text-red-500"></div>
+
+</div>

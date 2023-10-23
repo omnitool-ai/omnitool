@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" class="h-screen">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpg" href="/favicon.jpg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <title>omnitool.ai</title>
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body
+    @keydown.window.prevent.stop.ctrl.shift.p="window.client.workbench.showExtension('omni-extension-commandbar', {})"
+    @keydown.window.prevent.stop.ctrl.shift.f="window.client.workbench.activeExtension ? window.client.workbench.hideExtension() :  window.client.workbench.showExtension('omni-core-filemanager', {})"
+    class="h-screen w-full overflow-hidden"
+    x-data="auth"
+    x-init="$watch('currentUser', value => {  if (!isLogin()) window.location.href='/login.html'; })">
+    <div x-data="appState" class="w-screen h-screen" id="appState" x-cloak>
+      <div class="flex h-full w-full items-center justify-center" x-show="isLogin() && !isTOS()" x-cloak>
+         <!-- TOS -->
+        {{>TOS}}
+      </div>
+      <div class="flex grow h-full" x-show="isLogin() && isTOS()" x-cloak>
+        {{Toast}} 
+        {{>DisconnectModal}}
+
+        <!-- Main Content -->
+        {{>Sidebar}}
+        <div
+          id="app"
+          class="flex h-full w-full gap-0.5"
+          x-show="!showAdmin && !showUsers"
+          :class="{'flex-row': uiSettings.chatSide === 'left',
+          'flex-row-reverse': uiSettings.chatSide === 'right',
+
+        }"
+          x-cloak>
+          <div
+            id="chat"
+            class="chatContainer"
+            x-show="!uiSettings.chatMinimized"
+            x-data="chatComponent(workbench)"
+            x-cloak
+            :class="{'chat-right' : uiSettings.chatSide === 'right',
+            'chat-left' : uiSettings.chatSide === 'left'}">
+            <!-- Mercenary selection bar -->
+            {{>MercTabBar}}
+            <!-- Right panel content -->
+            <!--div class="bg-slate-800 text-white font-semibold drop-shadow-sm p-1 text-center">Chat</div -->
+            {{>ChatWindow}}
+          </div>
+          <!--div
+            class="ui-primary-bg h-full overflow-hidden flex -mx-0.5 gap-0 m-0 flex-col w-4 rounded-r-md"
+            x-show="isLogin()"
+          ></div-->
+          <div class="h-full w-full flex-grow-0 gap-0.5" x-show="!hideEditor.isMobile">
+            {{>WorkflowEditor}} 
+            {{>EditorTopMenu}} 
+            {{>EditorSideMenu}}
+          </div>
+        </div>
+        {{>Toast}}
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

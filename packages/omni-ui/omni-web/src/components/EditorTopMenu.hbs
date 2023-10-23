@@ -1,0 +1,229 @@
+<div class="editorTopMenuContainer" @keydown.window.prevent.stop.ctrl.b="workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Blocks'}}) : null"
+    @keydown.window.prevent.stop.ctrl.k="workbench.newRecipe()"
+    @keydown.window.prevent.stop.ctrl.r="workbench.showExtension('omni-core-collectionmanager', {type:'recipe'}, undefined, {winbox: {title: 'Load Recipe'}})">
+    <nav x-data="{
+        navigationMenuOpen: false,
+        navigationMenu: '',
+        navigationMenuCloseDelay: 200,
+        navigationMenuCloseTimeout: null,
+        navigationMenuLeave() {
+            let that = this;
+            this.navigationMenuCloseTimeout = setTimeout(() => {
+                that.navigationMenuClose();
+            }, this.navigationMenuCloseDelay);
+        },
+        navigationMenuReposition(navElement) {
+            this.navigationMenuClearCloseTimeout();
+            this.$refs.navigationDropdown.style.left = navElement.offsetLeft + 'px';
+            this.$refs.navigationDropdown.style.marginLeft = (navElement.offsetWidth/2) + 'px';
+        },
+        navigationMenuClearCloseTimeout(){
+            clearTimeout(this.navigationMenuCloseTimeout);
+        },
+        navigationMenuClose(){
+            this.navigationMenuOpen = false;
+            this.navigationMenu = '';
+        }
+    }" class="relative z-50 w-auto">
+        <div class="editorTopMenu z-50" x-data="{
+            isFavorite: workbench.isFavorite,
+            toggleFavorite() {
+                let key = 'fav-recipe' + workbench.activeRecipeId;
+                window.client.runScript('toggleFavorite', [key])
+                this.isFavorite = !this.isFavorite;
+            }}" x-effect="isFavorite = workbench.isFavorite">
+            <!-- Run Button -->
+            <button x-tooltip="Run Recipe" :disabled="!workbench.canExecute"
+                x-show="workbench.canExecute && !workbench.isRunningActiveWorkflow()"
+                @click="workbench.canExecute ? workbench.execute() : null">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="22" viewBox="0 0 19 22" fill="none">
+                    <path
+                        d="M17.3442 9.22382C18.6904 10.0253 18.6904 11.9747 17.3442 12.7762L3.2973 21.1396C1.91939 21.96 0.172634 20.9671 0.172634 19.3634V2.63657C0.172634 1.03292 1.91939 0.0400064 3.29731 0.860407L17.3442 9.22382Z"
+                        fill="#67BE61" />
+                </svg>
+            </button>
+            <!-- Stop Button -->
+            <button x-show="workbench.isRunningActiveWorkflow()" @click="window.client.runScript('stop')"
+                x-tooltip="Stop">
+                <svg class="fill-red-500" width="20" height="20" viewBox="0 0 20 20" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="20" height="20" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round"></rect>
+                </svg>
+            </button>
+
+            <div class="editorTopMenuItem">
+                <button @mouseover="navigationMenuOpen=true; navigationMenuReposition($el); navigationMenu='assets'"
+                    @mouseleave="navigationMenuLeave()" class="transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+                        <path d="M8.32739 3V13M3.32739 8H13.3274" stroke="white" stroke-width="1.6"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>Assets</span>
+                    <svg :class="{ '-rotate-180' : navigationMenuOpen==true && navigationMenu == 'assets' }"
+                        class="relative top-[1px] ml-1 h-3 w-3 ease-out duration-300" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="editorTopMenuItem">
+                <button @mouseover="navigationMenuOpen=true; navigationMenuReposition($el); navigationMenu='save'"
+                    @mouseleave="navigationMenuLeave()" class="transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+                        <path
+                            d="M11.3373 15.36V10.76H5.81728V15.36M14.0973 15.36H3.05729C2.04108 15.36 1.21729 14.5362 1.21729 13.52V2.48001C1.21729 1.46381 2.04108 0.640015 3.05729 0.640015H10.5752C11.0631 0.640015 11.5311 0.833868 11.8762 1.17894L15.3983 4.70109C15.7434 5.04616 15.9373 5.51417 15.9373 6.00217V13.52C15.9373 14.5362 15.1135 15.36 14.0973 15.36Z"
+                            stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>Save</span>
+                    <svg :class="{ '-rotate-180' : navigationMenuOpen==true && navigationMenu == 'save' }"
+                        class="relative top-[1px] ml-1 h-3 w-3 ease-out duration-300" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Explain Button -->
+            <button x-show="workbench.canExecute" x-tooltip="Explain This Recipe"
+                @click="window.client.runScript('explain')">
+                <svg width="23" height="22" viewBox="0 0 23 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_986_3320)">
+                        <path
+                            d="M11.6546 16.6411V16.6331M11.6546 14.2234C11.6546 10.5972 15.0392 11.4029 15.0392 8.58245C15.0392 6.8022 13.5238 5.35901 11.6546 5.35901C10.1391 5.35901 8.85619 6.30764 8.4249 7.61542M21.8084 11C21.8084 16.6079 17.2624 21.1539 11.6546 21.1539C6.04677 21.1539 1.50073 16.6079 1.50073 11C1.50073 5.39223 6.04677 0.846191 11.6546 0.846191C17.2624 0.846191 21.8084 5.39223 21.8084 11Z"
+                            stroke="white" stroke-width="1.76" stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_986_3320">
+                            <rect width="22" height="22" fill="white" transform="translate(0.654785)" />
+                        </clipPath>
+                    </defs>
+                </svg>
+            </button>
+            <!-- Add to favorite -->
+            <button x-show="workbench.canFavorite" x-tooltip="Favorite This Recipe"
+                @click="toggleFavorite()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="15" viewBox="0 0 17 15" fill="none">
+                            <path :class="{
+                                      'fill-red-600 stroke-white': isFavorite,
+                                      'stroke-white': !isFavorite
+                                    }"
+                              d="M2.1095 7.70617L8.5 14.3333L14.8905 7.70617C15.6009 6.96942 16 5.97024 16 4.92838C16 2.75879 14.304 1 12.2119 1C11.2073 1 10.2437 1.41388 9.53333 2.15059L8.5 3.22222L7.46667 2.15059C6.75624 1.41388 5.79273 1 4.78807 1C2.69597 1 1 2.75879 1 4.92838C1 5.97024 1.3991 6.96942 2.1095 7.70617Z"
+                              stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+            </button>
+
+        </div>
+        <div x-ref="navigationDropdown" x-show="navigationMenuOpen"
+            x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-90"
+            x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90"
+            @mouseover="navigationMenuClearCloseTimeout()" @mouseleave="navigationMenuLeave()"
+            class="absolute top-0 duration-200 ease-out -translate-x-1/2 translate-y-11" x-cloak>
+            <div class="editorTopMenuDropdown" x-show="navigationMenu == 'assets'">
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Blocks'}}) : null">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="18" viewBox="0 0 17 18" fill="none">
+                            <path
+                                d="M13.5683 7.55356L13.5683 3.52977C13.5683 2.13263 12.4429 1.00002 11.0547 1.00001L3.51373 1C2.12547 0.999997 1.00006 2.13261 1.00006 3.52975L1 10.9107C0.999997 12.3078 2.1254 13.4405 3.51366 13.4405H7.71039M10.8033 13.4405H13.5683M13.5683 13.4405H16.3333M13.5683 13.4405V10.6577M13.5683 13.4405V16.7291"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" />
+                        </svg>
+                        <span :class="workbench.canEdit ? '' : 'unavailable text-left'">Add Blocks</span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+B</span>
+                </div>
+                <div class="editorTopMenuDropdownItem" @click="navigationMenuClose();workbench.newRecipe()">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 14 17" fill="none">
+                            <path
+                                d="M7.52368 0.666626H0.666504V16H12.6666V5.77776M7.52368 0.666626H8.38082L12.6666 4.9259V5.77776M7.52368 0.666626V4.07405C7.52368 4.9259 8.38082 5.77776 9.23797 5.77776H12.6666"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span class="text-left">New Recipe</span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+K</span>
+                </div>
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.showExtension('omni-core-collectionmanager', {type:'recipe'},undefined, {winbox: {modal: true, title: 'Load Recipe'}})">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
+                            <path
+                                d="M6.14545 5.61956V9.86502C6.14811 10.0538 6.25713 10.2372 6.42465 10.3236C6.58951 10.4099 6.80223 10.3964 6.95645 10.2885L8.37635 9.27702L9.79626 10.2885C9.94782 10.3964 10.1605 10.4099 10.3281 10.3236C10.4929 10.2372 10.6046 10.0538 10.6072 9.86502V5.61956M12.3728 1.07739H3.05806C1.93863 1.07739 1 2.02952 1 3.16506V14.9866C1 15.9415 1.77377 16.7264 2.71505 16.7264H12.3728C12.6414 16.7264 12.886 16.4782 12.886 16.2058V5.61956H2.9065C2.9065 5.61956 0.936184 5.37141 1.05584 3.11921C1.15688 1.22574 3.05806 1.08009 3.05806 1.08009M11.8251 1.07739C11.8251 1.07739 10.7296 1.99985 10.7296 3.21092C10.7296 4.42198 11.8251 5.34444 11.8251 5.34444"
+                                stroke="white" stroke-width="1.28" stroke-miterlimit="133.333" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <span class="text-left">Load Recipe</span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+R</span>
+                </div>
+                <label class="editorTopMenuDropdownItem">
+                    <input
+                    style="display:none"
+                    type="file"
+                    accept="image/*,audio/*,application/*,text/*"
+                    @change="navigationMenuClose(); workbench.onLoadRecipeFromFileChange($event)"
+                    >
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
+                                <path
+                                    d="M6.14545 5.61956V9.86502C6.14811 10.0538 6.25713 10.2372 6.42465 10.3236C6.58951 10.4099 6.80223 10.3964 6.95645 10.2885L8.37635 9.27702L9.79626 10.2885C9.94782 10.3964 10.1605 10.4099 10.3281 10.3236C10.4929 10.2372 10.6046 10.0538 10.6072 9.86502V5.61956M12.3728 1.07739H3.05806C1.93863 1.07739 1 2.02952 1 3.16506V14.9866C1 15.9415 1.77377 16.7264 2.71505 16.7264H12.3728C12.6414 16.7264 12.886 16.4782 12.886 16.2058V5.61956H2.9065C2.9065 5.61956 0.936184 5.37141 1.05584 3.11921C1.15688 1.22574 3.05806 1.08009 3.05806 1.08009M11.8251 1.07739C11.8251 1.07739 10.7296 1.99985 10.7296 3.21092C10.7296 4.42198 11.8251 5.34444 11.8251 5.34444"
+                                    stroke="white" stroke-width="1.28" stroke-miterlimit="133.333" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span class="text-left">Load Recipe From File</span>
+                        </div>
+                    </input>
+                </label>
+            </div>
+            <div class="editorTopMenuDropdown" x-show="navigationMenu == 'save'">
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.save()">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none"
+                            :class="workbench.canSave ? '' : 'unavailable'">
+                            <path
+                                d="M10.7599 15.36V10.76H5.23989V15.36M13.5199 15.36H2.47989C1.46369 15.36 0.639893 14.5362 0.639893 13.52V2.48001C0.639893 1.46381 1.46369 0.640015 2.47989 0.640015H9.99776C10.4857 0.640015 10.9537 0.833868 11.2988 1.17894L14.821 4.70109C15.166 5.04616 15.3599 5.51417 15.3599 6.00217V13.52C15.3599 14.5362 14.5361 15.36 13.5199 15.36Z"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span :class="'text-left' + (workbench.canSave ? '' : ' unavailable')">
+                            Save
+                        </span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+S</span>
+                </div>
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.saveAs()">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none"
+                            :class="workbench.canSaveAs ? '' : 'unavailable'">
+                            <path
+                                d="M10.1199 15.36C10.1199 15.7135 10.4064 16 10.7599 16C11.1134 16 11.3999 15.7135 11.3999 15.36H10.1199ZM10.7599 10.76H11.3999C11.3999 10.4066 11.1134 10.12 10.7599 10.12V10.76ZM5.23989 10.76V10.12C4.88643 10.12 4.59989 10.4066 4.59989 10.76H5.23989ZM4.59989 15.36C4.59989 15.7135 4.88643 16 5.23989 16C5.59335 16 5.87989 15.7135 5.87989 15.36H4.59989ZM11.2988 1.17894L11.7514 0.726395L11.7514 0.726381L11.2988 1.17894ZM14.821 4.70109L14.3684 5.15363L14.3684 5.15365L14.821 4.70109ZM3.28949 4.41587C2.93603 4.41587 2.64949 4.70241 2.64949 5.05587C2.64949 5.40933 2.93603 5.69587 3.28949 5.69587V4.41587ZM6.82229 5.69587C7.17575 5.69587 7.46229 5.40933 7.46229 5.05587C7.46229 4.70241 7.17575 4.41587 6.82229 4.41587V5.69587ZM5.79403 3.28947C5.79403 2.93601 5.50749 2.64947 5.15403 2.64947C4.80056 2.64947 4.51403 2.93601 4.51403 3.28947H5.79403ZM4.51403 6.82227C4.51403 7.17573 4.80056 7.46227 5.15403 7.46227C5.50749 7.46227 5.79403 7.17573 5.79403 6.82227H4.51403ZM11.3999 15.36V10.76H10.1199V15.36H11.3999ZM10.7599 10.12H5.23989V11.4H10.7599V10.12ZM4.59989 10.76V15.36H5.87989V10.76H4.59989ZM13.5199 14.72H2.47989V16H13.5199V14.72ZM2.47989 14.72C1.81714 14.72 1.27989 14.1828 1.27989 13.52H-0.000107408C-0.000107408 14.8897 1.11023 16 2.47989 16V14.72ZM1.27989 13.52V2.48001H-0.000107408V13.52H1.27989ZM1.27989 2.48001C1.27989 1.81727 1.81715 1.28001 2.47989 1.28001V1.46627e-05C1.11023 1.46627e-05 -0.000107408 1.11035 -0.000107408 2.48001H1.27989ZM2.47989 1.28001H9.99776V1.46627e-05H2.47989V1.28001ZM9.99776 1.28001C10.316 1.28001 10.6212 1.40643 10.8463 1.6315L11.7514 0.726381C11.2863 0.261303 10.6555 1.46627e-05 9.99776 1.46627e-05V1.28001ZM10.8463 1.63149L14.3684 5.15363L15.2735 4.24854L11.7514 0.726395L10.8463 1.63149ZM14.3684 5.15365C14.5935 5.37869 14.7199 5.6839 14.7199 6.00217H15.9999C15.9999 5.34443 15.7386 4.71363 15.2735 4.24853L14.3684 5.15365ZM14.7199 6.00217V13.52H15.9999V6.00217H14.7199ZM14.7199 13.52C14.7199 14.1828 14.1827 14.72 13.5199 14.72V16C14.8896 16 15.9999 14.8897 15.9999 13.52H14.7199ZM3.28949 5.69587H5.15403V4.41587H3.28949V5.69587ZM5.15403 5.69587H6.82229V4.41587H5.15403V5.69587ZM4.51403 3.28947V5.05587H5.79403V3.28947H4.51403ZM4.51403 5.05587V6.82227H5.79403V5.05587H4.51403Z"
+                                fill="white" />
+                        </svg>
+                        <span :class="'text-left' + (workbench.canSaveAs ? '' : ' unavailable')">
+                            Save&nbsp;As
+                        </span>
+                    </div>
+                    <span class="shortcut text-right">Shift+S</span>
+                </div>
+                <div class="editorTopMenuDropdownItem" @click="window.client.runScript('dump'); navigationMenuClose()">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none"
+                            :class="workbench.canExport ? '' : 'unavailable'">
+                            <path
+                                d="M15.3599 8.92001V13.52C15.3599 14.5362 14.5361 15.36 13.5199 15.36H2.47989C1.46369 15.36 0.639893 14.5362 0.639893 13.52V8.92001M11.6799 4.32001L7.99989 0.640015M7.99989 0.640015L4.31989 4.32001M7.99989 0.640015V11.68"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span :class="'text-left' + (workbench.canExport ? '' : ' unavailable')">
+                            Export
+                        </span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+E</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>

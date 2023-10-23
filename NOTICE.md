@@ -1,0 +1,3 @@
+Omnitool.ai utilizes a variety of open-source software components.  
+Presented in the file THIRD_PARTIES.md and, if present, THIRD_PARTIES_ADDITIONAL.md, is a list of these components, along with the complete texts of their corresponding license agreements.  
+Relevant information regarding the third-party vendors mentioned in THIRD_PARTIES.md and, if present, THIRD_PARTIES_ADDITIONAL.md has been gathered through common and reasonable methods.  

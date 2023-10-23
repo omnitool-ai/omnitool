@@ -1,0 +1,28 @@
+<div class="input-control-div">
+  <div
+    class="input-control-label"
+    x-tooltip:reactive="tooltip"
+  >
+    <label
+      :for="controlUid"
+      x-text="title"
+    ></label>
+  </div>
+
+  <input
+    type="number"
+    :id="controlUid"
+    :id="controlUid"
+    :disabled="opts.readonly"
+    :placeholder="opts.placeholder"
+    :value="value"
+    @input="change($event)"
+    @dblclick.stop="$event"
+    @pointerdown.stop="$event"
+    @pointermove.stop="$event"
+    class="w-full text-xs text-right focus:text-center rounded-md border-gray-300 focus:border-primary-400 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+    :class="{
+        'ring-red-300 ring-2': required && !hasValue(),
+        } "
+  />
+</div>

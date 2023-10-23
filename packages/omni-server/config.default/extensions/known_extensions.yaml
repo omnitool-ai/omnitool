@@ -1,0 +1,101 @@
+core_extensions:
+  - title: Blocks Registry
+    id: omni-core-blocks
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-blocks/main/extension.yaml
+  - title: File Manager
+    id: omni-core-filemanager
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-filemanager/master/extension.yaml
+  - title: Core Viewers
+    id: omni-core-viewers
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-viewers/master/extension.yaml
+  - title: Collection Manager
+    id: omni-core-collectionmanager
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-collectionmanager/main/extension.yaml
+  - title: Recipe Hub
+    id: omni-core-recipes
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-recipes/main/extension.yaml
+  - title: LLMs Support
+    id: omni-core-llms
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-llms/main/extension.yaml
+  - title: Replicate.com Support
+    id: omni-core-replicate
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-replicate/master/extension.yaml
+  - title: FormIO Recipe UIs
+    id: omni-core-formio
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-formio/main/extension.yaml
+
+known_extensions:
+  - title: Minipaint
+    id: omni-extension-minipaint
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-minipaint/master/extension.yaml
+  - title: Sharp Image Processing
+    id: omni-extension-sharp
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-sharp/master/extension.yaml
+  - title: Document Processing
+    id: omni-extension-document_processing
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-document_processing/main/extension.yaml
+  - title: OpenPose 3D Editor
+    id: omni-extension-openpose-editor
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-openpose-editor/master/extension.yaml
+  - title: Plyr Audio player
+    id: omni-extension-plyr
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-plyr/master/extension.yaml
+  - title: PDF to Document Conversion
+    id: omni-extension-pdftodoc
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-pdf2doc/main/extension.yaml
+  - title: Wavacity Audio Editor
+    id: omni-extension-wavacity
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-wavacity/master/extension.yaml
+  - title: Web Crawler
+    id: omni-extension-webcrawler
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-webcrawler/main/extension.yaml
+  - title: BabylonJs (Demo)
+    id: omni-extension-babylonjs
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-babylonjs/master/extension.yaml
+  - title: WA-Like Chat UI (WIP)
+    id: omni-extension-wa-chat-ui
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-wa-chat-ui/master/extension.yaml
+
+in_development:
+  - title: Feed Reader
+    id: omni-extension-feed
+    url: https://raw.githubusercontent.com/huntersjq/omni-extension-feed/main/extension.yaml
+  - title: Stability AI Support
+    id: omni-extension-stability
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-stability/master/extension.yaml
+  - title: Doom
+    id: omni-extension-doom
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-doom/master/extension.yaml
+  - title: PII Scrubber
+    id: omni-extension-pii-scrubber
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-pii-scrubber/master/extension.yaml
+  - title: Flipbook
+    id: omni-extension-flipbook
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-flipbook/master/extension.yaml
+  - title: UserDB Extension
+    id: omni-extension-userdb
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-userdb/master/extension.yaml
+  - title: Invoice Generator
+    deprecated: true
+    id: omni-extension-invoice
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-invoice/master/extension.yaml
+  - title: Local LLMs - Oobabooga Support (a.k.a. text-generation-webui)
+    id: omni-extension-oobabooga
+    url: https://raw.githubusercontent.com/manu-sapiens/omni-extension-oobabooga/main/extension.yaml
+  - title: Automatic1111 Support
+    id: omni-extension-automatic1111
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-automatic1111/master/extension.yaml
+  - title: Local LLMs - LM Studio Support
+    id: omni-extension-lm-studio
+    url: https://raw.githubusercontent.com/manu-sapiens/omni-extension-lm-studio/main/extension.yaml
+  - title: ChatGPT UI
+    id: omnitool-extension-chatgpt-ui
+    url: https://raw.githubusercontent.com/georgzoeller/omnitool-chatgpt-ui/main/extension.yaml
+    deprecated: true
+  - title: 3D Texture Playground
+    id: omni-extension-texture-playground
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-texture-playground/master/extension.yaml
+    deprecated: true
+  - title: Common Utilities
+    id: omni-extension-common-utils
+    url: https://raw.githubusercontent.com/georgzoeller/omni-extension-common-utils/master/extension.yaml

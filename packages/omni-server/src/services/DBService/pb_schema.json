@@ -1,0 +1,49 @@
+[
+  {
+    "name": "legacyMonoCollection",
+    "type": "base",
+    "updateRule": "",
+    "deleteRule": "",
+    "createRule": "",
+    "listRule": "",
+    "viewRule": "",
+    "schema": [
+      {
+        "name": "blob",
+        "type": "json",
+        "required": false
+      },
+      {
+        "name": "omni_id",
+        "type": "text",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "logs",
+    "type": "base",
+    "updateRule": "",
+    "deleteRule": "",
+    "createRule": "",
+    "listRule": "",
+    "viewRule": "",
+    "schema": [
+      {
+        "name": "blob",
+        "type": "json",
+        "required": true
+      },
+      {
+        "name": "tag",
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "level",
+        "type": "text",
+        "required": true
+      }
+    ]
+  }
+]

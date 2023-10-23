@@ -1,0 +1,14 @@
+<div class="input-control-div p-2" x-tooltip:reactive="control.description">
+  <button
+    type="button"
+    class="btn btn-primary p-2 w-full"
+    :disabled="opts.readonly"
+    @click="runButtonAction(custom('buttonValue'), custom('buttonArgs'))"
+    @dblclick.stop
+    @wheel.stop
+    @pointerdown.stopbtn
+    @pointermove.stop
+    x-text="title"
+  >
+</button>
+</div>

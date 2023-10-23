@@ -1,0 +1,47 @@
+<div
+  class="flex justify-center z-50"
+  x-data="connectionState"
+>
+  <!-- Modal -->
+
+  <div
+    class="fixed right-1 top-1 h-1 w-1 z-10"
+    :class="{ 'bg-red-500' : !isConnected ,  'bg-green-500' : isConnected  } "
+  >
+  </div>
+  <div
+    x-show="showDisconnectModal"
+    style="display: none"
+    role="dialog"
+    aria-modal="true"
+    x-id="['modal-title']"
+    :aria-labelledby="$id('modal-title')"
+    class="fixed inset-0 z-20 overflow-y-auto"
+  >
+    <!-- Overlay -->
+    <div
+      x-show="showDisconnectModal"
+      x-transition.opacity
+      class="fixed inset-0 bg-black bg-opacity-50"
+    ></div>
+
+    <!-- Panel -->
+    <div class="grid place-items-center h-full">
+      <div
+        x-show="showDisconnectModal"
+        x-transition
+        class="p-4 bg-neutral-100 rounded min-h-fit w-1/4 min-w-250 z-30 "
+      >
+        <h1 class="font-bold text-red-700 drop-shadow-sm bg-neutral-100 border-none text-center"> Your connection to the server was lost</h1>
+        <samp
+          class="text-xs monospace text-gray-500 pt-4 line-clamp-5 px-2"
+          x-text='reason'
+        > </samp>
+        <p class="pt-4 text-md text-xs"> Omnitool currently does not support multiple browser tabs in the same session, please <a
+            class="text-blue-400 hover:text-blue-600 cursor-pointer"
+            href="javascript:window.location.reload()"
+          >click here</a> to reload the page if you want to continue in this tab. </p>
+      </div>
+    </div>
+  </div>
+</div>

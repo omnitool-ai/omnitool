@@ -1,0 +1,8 @@
+version: 3
+
+apiKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+paths:
+  exclude:
+    - ./packages/omni-server/extensions/
+    - ./packages/node_modules/omni-server/extensions/

@@ -1,0 +1,24 @@
+<div class="text-left max-w-sm">
+  <label
+    :for="controlUid"
+    class="relative inline-flex cursor-pointer items-center align-middle"
+  >
+   <span
+      class=" input-control-label"
+      x-text="title"
+      x-tooltip:reactive="tooltip"
+    ></span>
+    <input
+      type="checkbox"
+      :id="controlUid"
+      :checked="value"
+      class="peer sr-only"
+      :disabled="opts.readonly"
+      @change="change"
+    />
+    <div
+      class="relative h-6 w-11 rounded-full bg-gray-300 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all after:content-[''] hover:bg-gray-300 peer-checked:bg-gray-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-1 peer-focus:ring-neutral-200 peer-disabled:cursor-not-allowed peer-disabled:bg-gray-100 peer-disabled:after:bg-gray-50"
+    ></div>
+
+  </label>
+</div>

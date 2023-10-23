@@ -1,0 +1,530 @@
+@import './vars';
+@import 'doodle.css/doodle.css';
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background:$neutral-grey;
+  cursor: pointer;
+}
+
+svg.connection {
+    path.main-path {
+      stroke: black;
+      ;
+    }
+  }
+
+
+svg.connection.socket-input-text,
+svg.connection.socket-output-text,
+svg.connection.socket-output-string,
+svg.connection.socket-input-string
+{
+  path.main-path {
+    stroke:  #514d55;
+
+  }
+}
+
+svg.connection.socket-input-number,
+svg.connection.socket-output-number,
+svg.connection.socket-output-float,
+svg.connection.socket-input-float
+svg.connection.socket-output-integer,
+svg.connection.socket-input-integer
+{
+  path.main-path {
+    stroke:  #2a9d90;
+
+  }
+}
+
+svg.connection.socket-input-image,
+svg.connection.socket-output-image,
+svg.connection.socket-input-imagearray,
+svg.connection.socket-output-imagearray,
+svg.connection.socket-output-imageb64array,
+svg.connection.socket-input-imageb64array
+svg.connection.socket-output-imageB64,
+svg.connection.socket-input-imageB64
+
+{
+  path.main-path {
+    stroke:  rgba(153, 50, 204);
+  }
+}
+
+
+svg.connection.socket-input-object,
+svg.connection.socket-output-object,
+svg.connection.socket-input-objectarray,
+svg.connection.socket-output-objectarray
+{
+  path.main-path {
+    stroke: rgba(2, 2, 252, 0.5)
+  }
+}
+
+svg.connection.socket-input-audio,
+svg.connection.socket-output-audio,
+svg.connection.socket-input-audioarray,
+svg.connection.socket-output-audioarray
+{
+  path.main-path {
+    stroke: $socket-color;
+
+  }
+}
+
+
+
+.progress-bar {
+  -webkit-animation: progress-bar-stripes 4s linear infinite;
+  -o-animation: progress-bar-stripes 4s linear infinite;
+  animation: progress-bar-stripes 4s linear infinite;
+
+  box-shadow: none;
+
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+
+  }
+
+
+  @-webkit-keyframes progress-bar-stripes {
+    from {
+      background-position: 60px 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+  @keyframes progress-bar-stripes {
+    from {
+      background-position: 60px 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+
+
+@supports (background: paint(paint)) {
+  @property --opacity {
+    syntax: '<number>';
+    initial-value: 0.5;
+    inherits: false;
+  }
+
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes changeOpacity {
+    to {
+      --opacity: 1;
+    }
+  }
+
+  @keyframes rotate {
+    to {
+      --angle: 360deg;
+    }
+  }
+
+  .rotateColors {
+    animation: rotate 4s linear infinite, opacityChange 3s infinite alternate;
+  }
+}
+
+
+
+// block
+
+.rete-block {
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.2) 10px 10px 24px 0px;
+
+
+  &.error { // .error only, not .selected
+    box-shadow: rgba(0, 0, 0, 0.2) 10px 10px 24px 0px, rgba(255, 0, 0, 0.7) 0px 5px 40px 4px;
+  }
+
+  &.selected { // .selected only, not .error
+    z-index: 100;
+    box-shadow: $medium-grey 5px 5px 12px 0px;
+  }
+
+  // For elements having both .error and .selected classes
+  &.error.selected {
+    z-index: 100;
+    box-shadow: rgba(255, 0, 0, 0.7) 0px 5px 40px 4px, $medium-grey 5px 5px 12px 0px, rgba(0, 0, 0, 0.2) 10px 10px 24px 0px;
+  }
+}
+
+.block-header {
+  border: none; /* border-0 */
+  width: $node-width;
+  background-color: $node-primary;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 0.3125rem;
+  border-top-right-radius: 0.3125rem;
+  cursor: pointer;
+}
+
+.block-title {
+  color: #ffffff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+
+  font-weight: 600;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.block-footer {
+  width: $node-width;
+  display: inline-flex;
+  height: 1.75rem;
+  padding: 0.25rem 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 0.125rem;
+  background: $node-secondary;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  gap: 0.25rem;
+}
+
+.block-category-color {
+  width: auto;
+  align-items: center;
+  height: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3125rem;
+  background: $grey;
+  color: #000;
+  &.computer-vision {
+    color: #000;
+    background: #fbf8cc;
+  }
+  &.image-generation {
+    color: #000;
+    background: #fde4cf;
+  }
+  &.image-manipulation {
+    color: #000;
+    background: #ffcfd2;
+  }
+  &.communication {
+    color: #000;
+    background: #f1c0e8;
+  }
+  &.audio-generation {
+    color: #000;
+    background: #cfbaf0;
+  }
+  &.document-processing {
+    color: #000;
+    background: #c0e8f1;
+  }
+  &.education {
+    color: #000;
+    background: #bae8cf;
+  }
+  &.translation {
+    color: #000;
+    background: #c4a3bf;
+  }
+  &.text-generation {
+    color: #000;
+    background: rgb(255, 229, 125);
+  }
+  &.security {
+    color: #000;
+    background: #ff7f50;
+  }
+}
+
+.block_content {
+  border: 0px solid gray;
+  cursor: pointer;
+  width: $node-width;
+  height: auto;
+  padding-bottom: 0px;
+  border-style: solid;
+  color: black;
+
+  /*--border-image: url(/border.svg) 10 / 1 / 0 stretch;
+    --mask-image: url(/border.svg);
+    --mask-size: cover;
+    --mask-border: 10px solid black ;*/
+
+    box-sizing: content-box;
+    background-color:  rgba(244, 244, 244);
+    //border-radius: 3px;
+    position: relative;
+    user-select: none;
+    /*ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";*/
+
+  &:hover {
+    --background: rgba(170, 170, 170, 0.8);
+  }
+
+  :focus-visible {
+    outline-width: 1px;
+    outline-color: gray;
+    outline-style: groove;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--control-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: darkgray;
+
+    border: 2px solid darkgray;
+  }
+
+
+
+  .output {
+    text-align: right;
+  }
+
+  .input {
+    text-align: left;
+    margin-top: 6px;
+  }
+
+  .input-title,
+  .output-title {
+    vertical-align: middle;
+    color: black;
+    display: inline-block;
+
+        font-size:  0.8rem;
+
+        line-height: $socket-size;
+    }
+
+  .input-control {
+    z-index: 1;
+    width: calc(100% - #{$socket-size + 2 * $socket-margin});
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+  .control {
+    text-align: left;
+    textarea {
+      padding: 2px 6px;
+      height: 14px;
+      margin: 2px 6px;
+    }
+    select,
+    label {
+      padding: 2px 6px;
+      margin: 4px 6px;
+      width: 100%;
+    }
+  }
+  .input-control-div {
+    display: flex;
+    position: relative;
+    width: 100%;
+    flex-direction: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    align-items: center;
+    textarea {
+      width: 100%;
+      padding: 2px 6px;
+      height: 40px;
+    }
+  }
+  .input-control-label {
+    color: black;
+    font-size: 0.8rem;
+    overflow: ellipsis;
+    width: 9rem;
+  }
+  .input-control-label-div {
+    float: left;
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+    left: 0.2rem;
+    width: 12rem; /* approximately 48 in tailwind */
+    display: flex;
+    opacity: 0.4;
+    border-radius: 0.2rem;
+    padding: 0.125rem;
+    color: #000;
+    font-size: 0.75rem;
+  }
+  textarea {
+    padding: 2px 6px;
+    height: 14px;
+  }
+}
+
+.socket {
+  display: inline-block;
+  cursor: pointer;
+
+  width: $socket-size;
+  height: $socket-size;
+  margin: $socket-margin;
+  // border: 1px solid rgb(255, 255, 255);
+  vertical-align: middle;
+  background: $socket-color;
+  z-index: 2;
+  box-sizing: border-box;
+  border-radius: 5px;
+
+  &:hover {
+    border: 3px solid white;
+  }
+
+  &.multiple {
+    border-color: yellow;
+  }
+
+  &.output {
+    margin-right: calc(-1 * $socket-size / 2);
+    --border-radius: 999px;
+  }
+
+  &.input {
+    margin-left: calc(-1 * $socket-size / 2);
+    --border-radius: 999px;
+  }
+
+  &.string {
+    background: rgb(255, 205, 5);
+  }
+  &.text {
+    background: rgb(255, 205, 5);
+  }
+  &.textArray {
+    background: rgb(255, 205, 5);
+  }
+  &.number {
+    background: rgb(255, 152, 163);
+  }
+  &.integer {
+    background: rgb(255, 152, 163);
+  }
+  &.float {
+    background: rgb(255, 152, 163);
+  }
+  &.boolean {
+    background: rgb(209, 186, 152);
+  }
+  &.object {
+    background: rgb(120, 198, 241);
+  }
+  &.objectArray {
+    background: rgb(120, 198, 241);
+  }
+  &.image {
+    background: rgb(66, 116, 185);
+  }
+ &.image_base64 {
+    background: rgb(66, 116, 185);
+  }
+  &.image_base64-withHeader {
+    background: rgb(66, 116, 185);
+  }
+  &.imageArray {
+    background: rgb(66, 116, 185);
+  }
+  &.imageArray_base64 {
+    background: rgb(66, 116, 185);
+  }
+  &.imageArray_base64-withHeader {
+    background: rgb(66, 116, 185);
+  }
+  &.audio {
+    background: rgb(134, 113, 193);
+  }
+  &.audioArray {
+    background: rgb(134, 113, 193);
+  }
+  &.document {
+    background: rgb(103, 190, 97);
+  }
+  &.documentArray {
+    background: rgb(103, 190, 97);
+  }
+  &.video {
+    background: #60A5FA;
+  }
+  &.error {
+    background: rgb(239, 64, 54);
+  }
+
+  .output &.error {
+    position: absolute;
+    bottom: 20px;
+    right: 0px;
+    margin-top: 6px;
+  }
+}
+
+.menu-btn {
+  float: right;
+  cursor: pointer;
+  color: white;
+  transition: box-shadow 0.3s ease;
+}
+
+.menu-btn:hover {
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.7),
+    0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.menu-btn-active {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.node-editor {
+  text-align: left;
+  height: 100%;
+  min-height: 500px;
+  min-width: 500px;
+  width: 100%;
+}
+
+select,
+input {
+  width: 100%;
+  background-color: white;
+  padding: 2px 6px;
+  border: 1px solid #999;
+  font-size: 1rem;
+  width: 170px;
+}
+
+.connection .main-path {
+  stroke: white !important;
+  stroke-width: 2px !important;
+}

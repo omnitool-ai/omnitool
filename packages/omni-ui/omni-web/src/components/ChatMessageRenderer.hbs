@@ -1,0 +1,164 @@
+<template x-for="(message, index) in state.messages" :key="index">
+  <div
+    x-data="{hover: false, editing: false, fromMe: message.sender === 'me', messageContent: (message.text || message.html || '') }"
+    @mouseenter="hover = true" @mouseleave="hover = false" class="flex flex-wrap select-none justify-end">
+    <div class="chatMessage markdown-body" :class="{'mine': fromMe,}">
+      <!-- header -->
+      <div class="chatMessageHeader">
+        <span x-text="message.sender"></span>
+        <span x-show="hover">
+          <div x-tooltip='Copy' x-show="!editing" x-data="{copyNotification: false}">
+            <button @click="onClickCopy(message);" class="flex items-center justify-center text-xs rounded-md cursor-pointer focus:outline-none hover:animate-pulse group">
+                <svg x-show="!copyNotification" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black" class=""><path stroke="black"  stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>                  
+                <svg x-show="copyNotification" class=" stroke-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" x-cloak><path stroke="black"  stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" /></svg>
+            </button>
+        </div>
+          <svg x-show="!editing && fromMe" x-tooltip='Edit' @click="editing=true" viewBox="0 0 24 24" fill="none"
+            stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          <svg x-show="editing && fromMe" x-tooltip='Accept' @click="alert('not implemented yet')" viewBox="0 0 24 24"
+            fill="none" stroke="darkgreen" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <svg x-show="editing && fromMe" x-tooltip='Cancel' @click="editing=false;" viewBox="0 0 24 24" fill="none"
+            stroke="maroon" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+          </svg>
+          <svg x-show="fromMe" x-tooltip='Resend' @click="resendMessage(message)" viewBox="0 0 24 24" fill="none"
+            stroke="darkgreen" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          </svg>
+        </span>
+      </div>
+      <!-- main text -->
+      <div>
+        <div class=" pr-1  w-10  cursor-pointer  flex grow-0 items-center">
+          <img class="h-10  w-full rounded border-yellow-300 border-1  object-cover object-center"
+            :src='message.sender + ".png"' x-show="(message.flags?.has && message.flags?.has('picture'))" alt=""
+            @load="scrollBottom($refs.chatWindow)" />
+        </div>
+        <div x-html="messageContent" class="select-text break-words" :contenteditable="editing" :class="
+        {
+          'border-2 border-green-700 bg-gray-200': editing,
+
+        }"></div>
+      </div>
+      <!-- attachments -->
+      <div class="chatMessageAttachment" x-show="message.attachments" :class="{
+          'border-t-2': messageContent.length
+      }">
+
+        <template x-if="message.images?.length >= 1">
+          <template x-for="(image, idx) in message.images" :key="idx">
+            <div class="p-0 m-0 " :class="{
+                'justify-left': !fromMe,
+                'justify-right': fromMe,
+            }">
+              <div style="max-width: 128px; max-height:128px" class="shadow-lg">
+                <img class=" cursor-pointer object-contain object-center" :src="image.url + '?width=128px'"
+                  alt="image.url" @load="scrollBottom($refs.chatWindow)" @click="showViewerExtension(image)">
+              </div>
+            </div>
+          </template>
+        </template>
+
+        <template x-if="message.videos?.length >= 1">
+          <div style="max-width: 256px; max-height:256px" class="shadow-lg">
+            <video controls>
+              <template x-for="(video, idx) in message.videos" :key="idx">
+                <source :src="video.url" x-type="video.mimeType" />
+              </template>
+              <p>
+                Your browser doesn't support HTML video. Here is a
+                <a :href="video.url">link to the video</a> instead.
+              </p>
+            </video>
+          </div>
+        </template>
+
+        <template x-if="message.documents">
+          <div class="w-full">
+            <template x-for="(doc,idx) in message.documents" :key="idx">
+              <div>
+
+                <span @click="showViewerExtension(doc)" x-text="doc.fileName"
+                  class="font-mono font-semibold cursor-pointer" x-tooltip="View Document"></span>
+
+                <button @click="showViewerExtension(doc)" class="h-10 w-10 mr-1" x-tooltip="View Document">
+                  <span>
+                    📄
+                  </span>
+                  <a :href="doc.url + '?download=1'" target="_blank" rel="noopener noreferrer" class="px-1"
+                    x-tooltip="Download Document">↓</a>
+                  </a>
+                </button>
+              </div>
+            </template>
+          </div>
+        </template>
+        <template x-if="message.object">
+          <div
+            class="flex-wrap overflow-y-auto  font-mono whitespace-break-spaces select-text text-xs  border-slate-600 bg-neutral-300 p-2 w-full z-1 text-left ">
+            <div x-html="JSON.stringify(message.object||[], null, 2)"></div>
+          </div>
+        </template>
+        <template x-if="message.audio">
+          <div x-data="audioPlayer" x-init="setPlaylist(message.audio); loadTrack();"
+            class="flex-grow 0  w-full justify-left   p-0 m-0 gap-0 bg-neutral-300" style="flex-basis: 100%">
+            <div class="w-full flex gap-1 items-center">
+              <select x-model="currentTrackIndex" @change="loadTrack()">
+                <template x-for="(track, index) in playlist" :key="index">
+                  <option :value="index" x-text="'Audio #' + (index +1)"></option>
+                </template>
+              </select>
+              <button @click="togglePlayPause()" class="h-5 w-5 mr-1">
+                <span x-show="!isPlaying && !isLoading">
+                  <img src="./play.svg" alt="Play" />
+                </span> <!-- Play symbol -->
+                <span x-show="isPlaying && !isLoading">
+                  <img src="./pause.svg" alt="Play" />
+                </span> <!-- Pause symbol -->
+                <span x-show="isLoading">
+                  <img src="./loader.svg" alt="Play" />
+                </span>
+              </button>
+              <input type="range" min="0" :max="duration" x-model="currentTime" @input="seekAudio()"
+                style="width: 100%;">
+              <span x-text="formatTime(currentTime)"></span> / <span x-text="formatTime(duration)"></span><br>
+              <a :href="message.audio[0].url + '?download=1'" target="_blank" rel="noopener noreferrer" class="px-1"
+                x-tooltip="Download Audio">
+                <audio @play="isPlaying = true;" @pause="isPlaying = false" @timeupdate="updateTime()"
+                  @durationchange="updateDuration()" @canplaythrough="isLoading = false" @ended="nextTrack()"
+                  x-ref="audio" preload="metadata"></audio><u>↓</u></a>
+              </a>
+              <!--TODO: remove hardcoding of audio[0] and pass the entire list over to the viewer -->
+              <button @click="showViewerExtension(message.audio[0])" class="h-5 w-5 mr-1">
+                <span>
+                  📁
+                </span>
+              </button>
+            </div>
+          </div>
+        </template>
+        <div class="w-full  text-right mt-0.5 bg-gradient-to-b from-gray-100 to-gray-50">
+          <template x-for="(command, idx) in message.commands || []" :key="idx">
+            <button class="btn btn-command2" style="min-width: 100px;" :class="command.classes"
+              x-show="command.show?.(command.ctx) ?? true"
+              x-on:click="window.client.runScript(command.id, command.args)" x-text="command.title">
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

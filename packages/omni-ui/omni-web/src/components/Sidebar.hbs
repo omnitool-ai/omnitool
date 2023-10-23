@@ -1,0 +1,166 @@
+<div x-data="{
+        menuBarMenu: ''
+    }" class='sidebar' @click.away="menuBarMenu=''" id='sidebar'>
+  <div class='sidebarItem' @click="menuBarMenu=(menuBarMenu==='menu')?'':'menu'">
+    <!-- Burger Menu -->
+    <button x-tooltip='Menu'>
+      <svg xmlns='http://www.w3.org/2000/svg' width='24' height='18' viewBox='0 0 24 18' fill='none' :class="
+        {
+          'active': menuBarMenu==='menu',
+        }">
+        <path d='M1 17H23M1 9H23M1 1H23' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' />
+      </svg>
+    </button>
+  </div>
+  <div x-show="menuBarMenu==='menu'" x-tooltip="About" class="sidebarItem sidebarItem-sub" x-transition
+    @click="window.client.workbench.showExtension('omni-core-viewers', {url: '/README.md'}, 'markdown.html', {singletonHash:'HelpNotice'})">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" :class="{
+          'active': workbench.isSingletonActive('HelpNotice'),
+          'refreshTS': workbench.refreshTS,
+        }">
+      <path
+        d="M12.6667 12.9567C12.6667 11.6969 11.7553 10.0725 10.3333 10.0725H5.66667C4.24467 10.0725 3.33333 11.6969 3.33333 12.9567M1 7.73914C1 3.87314 4.13401 0.739136 8 0.739136C11.866 0.739136 15 3.87314 15 7.73914C15 11.6052 11.866 14.7391 8 14.7391C4.13401 14.7391 1 11.6052 1 7.73914ZM10.3333 5.4058C10.3333 6.6945 9.2887 7.73914 8 7.73914C6.7113 7.73914 5.66667 6.6945 5.66667 5.4058C5.66667 4.11714 6.7113 3.07247 8 3.07247C9.2887 3.07247 10.3333 4.11714 10.3333 5.4058Z"
+        stroke-width="1.5" />
+    </svg>
+    <span>About</span>
+  </div>
+  <div x-show="menuBarMenu==='menu'" x-tooltip="Third Party Notice" class="sidebarItem sidebarItem-sub" x-transition
+    @click="window.client.workbench.showExtension('omni-core-viewers', {url: '/THIRD_PARTY.md'}, 'markdown.html', {singletonHash:'ThirdPartyNotice'})">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" :class="{
+          'active': workbench.isSingletonActive('ThirdPartyNotice'),
+          'refreshTS': workbench.refreshTS,
+        }">
+      <path
+        d="M10.3333 0.739136V13.1836M10.3333 0.739136L5.66667 2.29469M10.3333 0.739136L15 2.29469V14.7391L10.3333 13.1836M10.3333 13.1836L5.66667 14.7391M5.66667 2.29469V14.7391M5.66667 2.29469L1 0.739136V13.1836L5.66667 14.7391"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span class="justify-center align-center">Notice</span>
+  </div>
+  <div @click='window.client.toggleWindow("./db/_/#/login","db-management", {title: "Database Management"})'
+    class="sidebarItem sidebarItem-sub" x-tooltip="PocketBase Admin" x-transition x-show="menuBarMenu==='menu'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" :class="{
+          'active': workbench.isSingletonActive('db-management'),
+          'refreshTS': workbench.refreshTS,
+        }">
+      <path
+        d="M7.22222 1H8.77778C9.20734 1 9.55555 1.34823 9.55555 1.77778V2.22017C9.55555 2.5529 9.77886 2.84197 10.0862 2.96955C10.3936 3.09718 10.7515 3.04854 10.9869 2.81318L11.2998 2.50026C11.6035 2.19652 12.096 2.19652 12.3997 2.50026L13.4997 3.6002C13.8035 3.90395 13.8034 4.39641 13.4997 4.70015L13.1868 5.01302C12.9514 5.2484 12.9028 5.60637 13.0304 5.9138C13.158 6.22112 13.4471 6.44444 13.7799 6.44444H14.2222C14.6518 6.44444 15 6.79266 15 7.22222V8.77778C15 9.20734 14.6518 9.55555 14.2222 9.55555H13.7798C13.4471 9.55555 13.1581 9.77886 13.0304 10.0862C12.9028 10.3936 12.9514 10.7515 13.1868 10.9869L13.4997 11.2998C13.8035 11.6035 13.8035 12.096 13.4997 12.3997L12.3997 13.4997C12.096 13.8035 11.6035 13.8035 11.2998 13.4997L10.9869 13.1868C10.7515 12.9514 10.3936 12.9028 10.0862 13.0304C9.77886 13.1581 9.55555 13.4471 9.55555 13.7798V14.2222C9.55555 14.6518 9.20734 15 8.77778 15H7.22222C6.79266 15 6.44444 14.6518 6.44444 14.2222V13.7799C6.44444 13.4471 6.22112 13.158 5.9138 13.0304C5.60637 12.9028 5.2484 12.9514 5.01302 13.1868L4.70014 13.4997C4.39639 13.8035 3.90393 13.8035 3.6002 13.4997L2.50025 12.3997C2.19651 12.096 2.19651 11.6035 2.50025 11.2998L2.81318 10.9869C3.04854 10.7515 3.09718 10.3936 2.96955 10.0862C2.84197 9.77886 2.5529 9.55555 2.22017 9.55555H1.77778C1.34823 9.55555 1 9.20734 1 8.77778V7.22222C1 6.79266 1.34823 6.44444 1.77778 6.44444H2.22015C2.5529 6.44444 2.84197 6.22113 2.96956 5.91381C3.0972 5.60639 3.04856 5.24845 2.81318 5.01307L2.50026 4.70015C2.19652 4.39641 2.19652 3.90395 2.50026 3.60021L3.6002 2.50026C3.90395 2.19653 4.39641 2.19653 4.70015 2.50026L5.01307 2.81318C5.24844 3.04856 5.60639 3.0972 5.91381 2.96956C6.22113 2.84197 6.44444 2.5529 6.44444 2.22015V1.77778C6.44444 1.34823 6.79266 1 7.22222 1Z"
+        stroke-width="1.5" />
+      <path
+        d="M9.96 8C9.96 9.08251 9.08251 9.96 8 9.96C6.91749 9.96 6.04 9.08251 6.04 8C6.04 6.91749 6.91749 6.04 8 6.04C9.08251 6.04 9.96 6.91749 9.96 8Z"
+        stroke-width="1.5" />
+    </svg>
+    <span>Database Admin</span>
+  </div>
+  <div x-show="menuBarMenu==='menu'" x-tooltip="Quickstart Video" class="sidebarItem sidebarItem-sub" x-transition
+    @click="window.client.workbench.showTutorial(false)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 26 26" fill="none" :class="{
+          'active': workbench.isSingletonActive('Quickstart'),
+          'refreshTS': workbench.refreshTS,
+        }">
+      <path
+        d="M25 13C25 19.628 19.628 25 13 25C6.372 25 1 19.628 1 13C1 6.372 6.372 1 13 1C19.628 1 25 6.372 25 13ZM9.46 19.548V7.052L19.876 13.3L9.46 19.548Z"
+        stroke="#F5F5F5" stroke-width="2" stroke-miterlimit="133.333" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span>Quickstart</span>
+  </div>
+
+  <div x-show="menuBarMenu==='menu'" @click="window.client.runScript('logout')" x-transition
+    class="sidebarItem sidebarItem-sub" x-tooltip="Logout">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="14" viewBox="0 0 15 14" fill="none">
+      <path
+        d="M9.625 0.583374H12.25C13.2165 0.583374 14 1.36688 14 2.33337V11.6667C14 12.6332 13.2165 13.4167 12.25 13.4167H9.625M6.125 3.50004L2.625 7.00004M2.625 7.00004L6.125 10.5M2.625 7.00004H10.5"
+        stroke="#DEDEDF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span>Logout</span>
+  </div>
+
+  <!-- End Burger Menu -->
+
+  <div class='sidebarItem'
+    @click="workbench.showExtension('omni-core-collectionmanager', {type:'api'}, undefined, {winbox: {title: 'API Management', modal: true}, singletonHash: 'omni-core-collectionmanager-api'})"
+    x-tooltip='API Key Management'>
+    <!-- API Management -->
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none" :class="{
+          'active': workbench.isSingletonActive('omni-core-collectionmanager-api'),
+          'refreshTS': workbench.refreshTS,
+        }">
+        <path
+          d="M19.9411 5.05879L22.6469 7.76465L18.5881 11.8234L15.8823 9.11759M11.4061 13.5939L24 1M13.1764 17.9116C13.1764 21.2714 10.4504 23.9998 7.08655 23.9998C3.72596 23.9998 1 21.2714 1 17.9116C1 14.5519 3.72596 11.8234 7.08655 11.8234C10.4504 11.8234 13.1764 14.5519 13.1764 17.9116Z"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <!-- End API Management -->
+  </div>
+
+  <div @click='workbench.showExtension("omni-core-filemanager")' class='sidebarItem'
+    x-tooltip='File Manager (CTRL-SHIFT-F)'>
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="26" viewBox="0 0 28 26" fill="none" :class="
+        {
+          'active': workbench.isSingletonActive('omni-core-filemanager'),
+          'refreshTS': workbench.refreshTS,
+        }">
+        <path
+          d="M14.4907 3.2348H23.9778C25.6395 3.2348 26.9896 4.85769 26.9896 6.85509V11.9797M25.2241 8.09098H15.3371L14.5998 4.60177C14.0026 2.03636 12.694 1.19995 11.3907 1.19995H3.37308C2.0697 1.19995 1.01558 2.46705 1.01558 4.03376V9.7573C1.00519 9.84468 1 10.1321 1 10.2257V22.8652C1 24.0449 1.79449 25 2.77591 25H25.2241C26.2055 25 27 24.0449 27 22.8652V10.2257C27 9.05223 26.2055 8.09098 25.2241 8.09098Z"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+  <div class='sidebarItem'
+    @click="workbench.showExtension('omni-core-collectionmanager', {type:'extension'}, undefined, {winbox: {title: 'Extensions', modal: false}, singletonHash: 'omni-core-collectionmanager-ext'})"
+    x-tooltip='Extensions'>
+    <!-- Extension -->
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none" :class="{
+          'active': workbench.isSingletonActive('omni-core-collectionmanager-ext'),
+          'refreshTS': workbench.refreshTS,
+        }">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M3.00155 6.58026H6.94142C8.04123 6.58026 8.93821 5.68778 8.93821 4.58345V2.99681C8.93821 1.89699 9.83068 1 10.935 1H12.4811C13.5809 1 14.4778 1.89248 14.4778 2.99681V4.58345C14.4778 5.68327 15.3703 6.58026 16.4746 6.58026H22.3877C23.4876 6.58026 24.3845 7.47274 24.3845 8.57708V10.5299C24.3845 11.6298 23.4921 12.5268 22.3877 12.5268H20.8011C19.7013 12.5268 18.8043 13.4192 18.8043 14.5236V16.1102C18.8043 17.21 19.6968 18.107 20.8011 18.107H22.3832C23.483 18.107 24.38 18.9995 24.38 20.1038V22.9034C24.38 23.0032 24.38 25 22.3832 25H16.4701C15.3703 25 14.4733 24.1075 14.4733 23.0032V22.4481C14.4733 21.3483 13.5809 19.4513 12.4765 19.4513H10.9305C9.83068 19.4513 8.9337 21.3438 8.9337 22.4481V22.9942C8.9337 24.094 8.04123 24.991 6.93691 24.991H2.99704C1.89722 24.991 1.00024 24.0985 1.00024 22.9942V8.57708C1.00926 7.47274 1.90173 6.58026 3.00155 6.58026Z"
+          stroke-width="1.5" stroke-miterlimit="133.333" />
+      </svg>
+    </button>
+    <!-- End Extension -->
+
+  </div>
+
+  <!-- End menu Button -->
+  <template x-for="(extension,idx) in window.client.extensions.all().filter(e=>!!e.pinned)" :key="idx">
+
+    <div class="cursor-pointer">
+      <span @click="window.client.workbench.showExtension(extension.id,{})">
+        <img :src="'/extensions/'+extension.id+'/logo.png'" width="32px" height="32px" />
+      </span>
+    </div>
+  </template>
+
+
+
+  <div class='flex-grow'> </div>
+  <div class='sidebarItem' x-tooltip='Toggle Chat' @click='uiSettings.toggleMinimized()'>
+    <button>
+      <!-- Chat  -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 27 27" fill="none" :class="
+        {
+          'active': !uiSettings.chatMinimized,
+        }">
+        <path d="M5.6875 25.1463V17.5H1V1H26V17.5H13.5L5.6875 25.1463Z" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+  <div class='sidebarItem' x-tooltip='Discord Community'>
+    <a href="https://tinyurl.com/omnitool-discord" target="_blank">
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
+        <path fill="white"
+          d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
+      </svg>
+    </a>
+  </div>
+  <div class='-rotate-90 origin-left whitespace-nowrap fixed left-5 bottom-20 items-center'>
+    <span class="text-2xl text-gray-400">OMNITOOL</span>
+    <span class="text-md text-gray-300">&nbsp;0.5.0 (Early Access)</span>
+  </div>
+
+</div>

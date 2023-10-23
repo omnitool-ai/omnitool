@@ -1,0 +1,88 @@
+<div class="flex ">
+  <div class="flex  h-full bg-opacity-0 border-0 flex-row" >
+    <div class="rete-block">
+    <div class='block-header flex flex-row h-8 !bg-slate-500'>
+      <!-- close button -->
+      <div class='block-title flex-grow mx-1 p-1' x-text='getTitle()' x-tooltip='Right-Click to rename' @contextmenu.prevent='if (await rename()){workbench.activeRecipe.setDirty()}'></div>
+      <div x-show='workbench.canEdit ' class='hover:animate-pulse mr-1' @click.stop.prevent='onClickClose(node);' x-tooltip='Remove'>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='h-5 w-5'>
+          <path stroke='#ffffff' stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12' />
+        </svg>
+      </div>
+    </div>
+    <div>
+      <div id='block-content ' class='relative flex items-center justify-center flex-grow  w-full text-xs text-gray-400 content h-full bg-transparent'>
+        <div class='block_content flex-row h-full' :class='classNameString' :title='node.title'>
+          <div>
+            <!-- Inputs -->
+            <template x-for='(input, index) in (inputs(node))'>
+              <div class='input' :key='input.key' x-show='client.workbench.canEdit || input?.connections?.length' x-id="['input-socket']">
+                <div x-socket:input='input' :id="$id('input-socket')" class='socket input relative' type='input' :title='input.socket.name'></div>
+                <div x-show='!input.showControl()' class='input-title' x-text='input.title | input.name' :for="$id('input-socket')"></div>
+                <div x-show='input.showControl()' class='input-control' :for="$id('input-socket')" type='input.control.controlType' :value='value' x-control='input.control' x-data='input.control.component(input.control)' x-html='getInputTemplate()' x-effect="$watch('value', (value) => update())"></div>
+              </div>
+            </template>
+            <!-- Outputs -->
+            <template x-for='(output) in (outputs(node)||[])'>
+              <div class='output' :key='output.key' x-id="['output-socket']">
+                <div class='output-title' x-text='output.name' :for="$id('output-socket')"></div>
+                <div x-socket:output='output' :id="$id('output-socket')" class='socket output' type='output.control.controlType' :title='output.socket.name'></div>
+              </div>
+            </template>
+            <div class="flex flex-grow"> </div>
+            <template x-for='(control, index) in controls(node)'>
+              <div class='control' :key='index' :value='value' x-control='control' x-data='control.component(control)' x-html='getInputTemplate()' x-effect="$watch('value', (value) => update())"></div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+      <div class='bg-slate-500 rounded-b-md p-1 flex flex-row'>
+        <div class="flex-grow"></div>
+
+                <div class='text-lg cursor-pointer text-white ' x-tooltip="Show Help" @click.stop.prevent='toggleInfo(node);' :class="{
+      'stroke-yellow-500 fill-yellow-500': showHelp,
+      'stroke-white fill-white': !showHelp
+    }">
+            <svg class='w-5 h-5 ' stroke="current" fill='current' viewBox='0 0 56 56' xmlns='http://www.w3.org/2000/svg'>
+              <path d='M 27.9999 51.9063 C 41.0546 51.9063 51.9063 41.0781 51.9063 28 C 51.9063 14.9453 41.0312 4.0937 27.9765 4.0937 C 14.8983 4.0937 4.0937 14.9453 4.0937 28 C 4.0937 41.0781 14.9218 51.9063 27.9999 51.9063 Z M 27.9999 47.9219 C 16.9374 47.9219 8.1014 39.0625 8.1014 28 C 8.1014 16.9609 16.9140 8.0781 27.9765 8.0781 C 39.0155 8.0781 47.8983 16.9609 47.9219 28 C 47.9454 39.0625 39.0390 47.9219 27.9999 47.9219 Z M 27.7890 19.6563 C 29.4999 19.6563 30.8358 18.2968 30.8358 16.6094 C 30.8358 14.8984 29.4999 13.5390 27.7890 13.5390 C 26.0780 13.5390 24.7421 14.8984 24.7421 16.6094 C 24.7421 18.2968 26.0780 19.6563 27.7890 19.6563 Z M 23.8749 40.8906 L 33.4374 40.8906 C 34.3983 40.8906 35.1483 40.2109 35.1483 39.25 C 35.1483 38.3359 34.3983 37.6094 33.4374 37.6094 L 30.5312 37.6094 L 30.5312 25.6797 C 30.5312 24.4141 29.8749 23.5703 28.7030 23.5703 L 24.2733 23.5703 C 23.3358 23.5703 22.5858 24.2968 22.5858 25.2109 C 22.5858 26.1719 23.3358 26.8516 24.2733 26.8516 L 26.8046 26.8516 L 26.8046 37.6094 L 23.8749 37.6094 C 22.9374 37.6094 22.1874 38.3359 22.1874 39.25 C 22.1874 40.2109 22.9374 40.8906 23.8749 40.8906 Z'>
+              </path>
+            </svg>
+          </div>
+          </div>
+    </div>
+  </div>
+  </div>
+
+  </div>
+  <div x-show='showHelp' x-data="{editComment: false}" style="min-height: 100px; min-width: 350px"
+    class="mt-3 rounded-md bg-yellow-100 drop-shadow-lg border-gray-400 bg-opacity-50 hover:bg-opacity-95 h-full"  >
+
+      <div class="flex flex-row float-right absolute right-2 top-2 ">
+        <svg x-show="!editComment" class='w-3 h-3 cursor-pointer mt-0.5 border-0' x-tooltip='Edit'
+        @click="editComment=true;await startEditComment($el) " viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          <svg x-show="editComment" class='w-3 h-3 mt-0.5 cursor-pointer ' x-tooltip='Accept'
+          @click="if (await setComment($el)){client.workbench.activeRecipe.setDirty()};editComment=false" viewBox="0 0 24 24" fill="none" stroke="darkgreen" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+      <div @click.stop.prevent="toggleInfo(node);"  class="cursor-pointer "> <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' class='h-4 w-4'>
+          <path stroke='black' stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12' />
+        </svg></div>
+
+      </div>
+      <h3 class="p-2 pr-4 first-letter:h-full w-full font-semibold">
+        <span x-text="node.title"></span>
+      </h3>
+      <div :id="'comment_'+node.id"
+        @paste.stop.prevent="document.execCommand('insertText', false, ($event.originalEvent || $event).clipboardData.getData('text/plain'))"
+      class="p-2 h-full"  x-html="getHelpText(node)" :contenteditable="editComment" :class="{
+        'bg-white border-2': editComment,
+      }"></div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<!-- Workflow Editor -->
+<div
+  class="relative flex h-full w-full"
+  id="editor"
+  x-ref="editor"
+  x-show="isLogin()"
+  x-cloak
+  x-data="workflowEditor"
+  @paste.stop="handlePaste($event)"
+  @dragover.prevent="wfDragOver"
+  @drop.prevent="wfDrop"
+  @dragleave.prevent="wfDragLeave"
+  :class="{
+
+
+    }"
+>
+{{>Tutorial}}
+  <!--
+    Without the empty image which follows, onpaste() never gets called.
+  -->
+  <img style="position:absolute" />
+  <!--    See 6c08c2c4b36033e4c3df2ba2cadf60d48c3f6054 -->
+
+
+</div>

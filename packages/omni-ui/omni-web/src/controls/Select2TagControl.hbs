@@ -1,0 +1,24 @@
+<div class="input-control-div" >
+  <div
+    class="input-control-label"
+  >
+  <label x-tooltip:reactive="description"
+    :for="controlUid"
+    class="text-xs select-none pointer-events-none"
+    x-text="title"
+  ></label>
+  </div>
+  <div class="input-control-div">
+  <input
+    class="w-full rounded-md text-xs bg-white border-gray-300 shadow-sm disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 mr-1"
+    :name="controlUid"
+    :id="controlUid"
+    :disabled="opts.readonly"
+    type="text"
+    :placeholder="opts.placeholder"
+    x-data="{}"
+    x-init="tagify($el)"
+    x-model="value"
+  />
+</div>
+</div>

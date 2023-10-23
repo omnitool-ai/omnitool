@@ -1,0 +1,32 @@
+<div class="input-control-div" 
+>
+  <div class="input-control-label">
+  <label
+    :for="controlUid"
+    x-text="title" x-tooltip:reactive="tooltip"
+  ></label>
+  </div>
+  <div class="flex flex-grow-0 w-full items-center justify-between">
+    <input
+      type="range"
+      :id="controlUid"
+      :disabled="opts.readonly"
+      @blur="change($event)"
+      @pointerdown.stop="change($event)"
+      @pointermove.stop="$event"
+      x-model.number="value"
+      class="h-2 cursor-pointer appearance-none rounded-full bg-gray-100 flex-shrink-0"
+      :min="opts.minimum"
+      :max="opts.maximum"
+      :step="opts.step"
+    />
+  <input
+    :placeholder="opts.placeholder"
+    type="number"
+    @blur="change($event)"
+    :step="opts.step"
+    class="w-16 border text-right text-xs pl-18 rounded-md"
+    x-model.number="value"
+  />
+  </div>
+  </div>

@@ -1,0 +1,10 @@
+The media contained within this folder have been generated using AI techniques.
+
+They are purely synthetic creations and are not based on or derived from real individuals.
+Any resemblance to actual persons, living or deceased, is purely coincidental.
+
+The media in this folder has been created after October 2023 and therefore cannot
+exist in any training dataset or in any model created prior to that date.
+
+These demo images and other media are provided for the purpose of further experimentation.
+

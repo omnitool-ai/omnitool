@@ -1,0 +1,29 @@
+<div class="TOScontainer" x-data="{ acceptEnabled: false, licenseText: '' }" x-init="fetch('TOS.txt')
+             .then(response => { 
+                 if (!response.ok) { 
+                     throw new Error('Network response was not ok' + response.statusText);
+                 }
+                 return response.text();
+             })
+             .then(data => { 
+                 licenseText = data;
+             })
+             .catch((error) => { 
+                 licenseText = 'Failed to load license text.';
+                 console.error('Error:', error);
+             })">
+    <h1 class="TOStitle">Terms of Service</h1>
+    <div x-ref="licenseBox"
+        @scroll="acceptEnabled = ($refs.licenseBox.scrollTop + $refs.licenseBox.clientHeight >= $refs.licenseBox.scrollHeight * 0.9);"
+        class="TOSlicenseBox">
+        <p x-text="licenseText">
+        <!-- License text will be injected here -->
+        </p>
+    </div>
+
+    <div class="TOSbuttonContainer">
+        <button class="btn-large" :disabled="!acceptEnabled"
+            @click="onAcceptTOS()">Accept</button>
+        <button class="btn-large" @click="window.location.href = 'https://www.omnitool.ai'">Decline</button>
+    </div>
+</div>

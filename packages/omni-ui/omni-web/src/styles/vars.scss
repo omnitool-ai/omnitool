@@ -1,0 +1,41 @@
+// Define color Pallate
+$primary: #2c3444;
+$secondary: #364155;
+$success: #00019d;
+$info: #489dd4;
+$warning: #f9a620;
+$error: #EF4036;
+$light: #d4d4d4;
+$dark: #797979;
+
+// Grey Colors
+$dark-grey: #303030;
+$medium-grey: #505050;
+$neutral-grey: #808080;
+$grey: #c6c6c6;
+$light-grey-100: #F7F7F8;
+$light-grey-200: #e8e9eb;
+$light-grey-300: #DEDEDF;
+$white: #ffffff;
+
+// Block Colors
+$node-color: $light-grey-200;
+$node-color-selected: #2c3444;
+$group-color: rgba(15,80,255,0.2);
+$group-handler-size: 40px;
+$group-handler-offset: -10px;
+$socket-size: 20px;
+$socket-margin: 5px;
+$socket-color: #96b38a;
+$node-width: 420px;
+$border-width: 3px;
+
+$control-primary: rgb(17 24 39);
+$control-secondary: rgb(219 221 225);
+
+$chat-primary: $medium-grey;
+$node-primary: $neutral-grey;
+$node-secondary: rgba(244, 244, 244);
+$editor-background: $grey;
+
+$accent-color: #F19100;

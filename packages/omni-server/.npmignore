@@ -1,0 +1,16 @@
+public/*
+etc/keystore/*
+etc/db/*
+etc/registry/.cache/*
+etc/*/recipes/*
+etc/wasm/*
+etc/models/nsfwjs/inception-v3
+extensions/*
+tenants/*
+dist/*
+var/**/*
+usr/**/*
+data.local/
+config.local/
+!data.local/README.md
+!config.local/README.md

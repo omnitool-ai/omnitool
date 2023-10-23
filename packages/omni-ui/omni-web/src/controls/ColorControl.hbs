@@ -1,0 +1,42 @@
+<div class="input-control-div">
+  <label
+    :for="controlUid"
+    class="sr-only text-xs text-gray-400"
+    x-text="title"
+  ></label>
+  <div class="flex flex-grow flex-nowrap h-5">
+  <div
+    class="w-10 h-5 cursor-default rounded-l-md"
+    x-tooltip="Color Preview"
+    :style="{
+      'background-color': value,
+    }"
+    >
+    </div>
+
+  <textarea
+    x-data="inputUtils"
+    x-init="textareaAutoResize($el)"
+    @input="textareaAutoResize($el)"
+    :id="controlUid"
+    :disabled="opts.readonly"
+    :value="value"
+    :placeholder="opts.placeholder || title"
+    maxlength="20"
+    aria-multiline="false"
+    cols="1"
+    rows="1"
+    res
+    @blur="change($event)"
+    @dblclick.stop="$event"
+    @pointerdown.stop="$event"
+    @pointermove.stop="$event"
+    class="h-6 min-h-7 resize-none w-full text-xs rounded-md rounded-l-none border-gray-300 shadow-sm focus:border-primary-400 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+    :class="{
+         'ring-red-300 ring-2': required && !hasValue(),
+        } "
+
+  />
+  </div>
+
+</div>

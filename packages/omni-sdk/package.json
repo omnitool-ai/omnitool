@@ -1,0 +1,36 @@
+{
+  "name": "omni-sdk",
+  "packageManager": "yarn@3.3.0",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "include": [
+    "./src/**/*"
+  ],
+  "files": [
+    "./lib/"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "esbuild": "^0.19.5",
+    "eslint": "^8.51.0",
+    "eslint-config-standard-with-typescript": "^36.1.1",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "node build.js && yarn build:types",
+    "build:types": "echo \"Building omni_sdk typescript declarations...\" && tsc --build --pretty  --emitDeclarationOnly"
+  },
+  "dependencies": {
+    "emittery": "^1.0.1",
+    "handlebars": "^4.7.8",
+    "marked": "^9.1.2"
+  }
+}

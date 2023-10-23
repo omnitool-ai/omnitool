@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>omnitool.ai</title>
+    <style>
+        [x-cloak] {
+          display: none !important;
+        }
+      </style>
+</head>
+<body class="h-screen w-full overflow-hidden ">
+    <div x-data="login" x-show="!isLogin()" class="w-screen h-screen" x-cloak>
+      <div 
+        @login.window="tryLogin($event.detail)"
+        x-data="loginComponent()"
+        x-init="$watch('currentUser', value => {  if (isLogin()) window.location.href='/'; })"
+      >
+        <!--https://alpinejs.dev/directives/cloak -->
+        {{>Login}}
+      </div>
+    </div>
+    {{>Toast}}
+    <script type="module" src="/src/auth.js"></script>
+</body>
+</html>

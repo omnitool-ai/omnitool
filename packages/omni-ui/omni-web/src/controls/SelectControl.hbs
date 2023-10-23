@@ -1,0 +1,42 @@
+<div
+  class="input-control-div"
+  x-tooltip:reactive="tooltip"
+>
+  <div
+    class="input-control-label"
+  >
+    <label
+      :for="controlUid"
+      x-text="title"
+    ></label>
+  </div>
+  <select
+    :id="controlUid"
+    :disabled="opts.readonly"
+    x-model="value"
+    :placeholder="opts.placeholder"
+    @input="change($event)"
+    @dblclick.stop="$event"
+    @pointerdown.stop="$event"
+    @pointermove.stop="$event"
+    class="peer flex w-full text-xs text-right rounded-md border-gray-300 shadow-sm disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+  >
+    <template x-for="option, index in (opts.choices)" :key="index">
+      <option
+        class="text-black"
+        :value="option.value"
+        x-title="option.title"
+        x-text="option.title + (opts.default === option.value ? ' (Default)' : '')"
+        :selected="value === option.value.toString()"
+      ></option>
+    </template>
+  </select>
+  <div
+    class="visible z-50 has-tt wrap cursor-help"
+    x-show="selectedChoice()?.description"
+  >&nbsp;ⓘ<div
+      class="float-right absolute inline-block w-32 text-xs bg-yellow-100 p-1 tt drop-shadow-md"
+      text="selectedChoice()?.title + ': ' + selectedChoice()?.description"
+    />
+  </div>
+</div>

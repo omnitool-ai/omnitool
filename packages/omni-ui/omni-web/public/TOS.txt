@@ -1,0 +1,47 @@
+Terms of Service Agreement for Omnitool.ai
+
+1. Introduction
+Welcome to Omnitool.ai! These Terms of Service ("Terms") govern your access to and use of the services, software, and websites (collectively, "Services") provided by MERCENARIES.AI PTE. LTD. ("mercenaries.ai", "we", "our", or "us").
+
+By accessing, downloading, or using our Services, you signify your agreement to these Terms. If you do not agree to these Terms, you may not access or use the Services.
+
+Please note: Omnitool.ai is currently in its early alpha stage, and the product will be updated regularly. By using our Services, you acknowledge and accept that there might be frequent changes, potential bugs, and disruptions in service.
+
+2. Use of the Services
+Eligibility: You must be at least 18 years old to use the Services.
+
+Account Creation: Certain aspects of the Services may require you to register for an account. You must provide accurate and up-to-date information. You are responsible for safeguarding your account and password.
+
+Acceptable Use: You will not use the Services for any illegal activities or in ways that violate these Terms.
+
+3. Contributions to Omnitool.ai
+If you make contributions to Omnitool.ai, the terms specified in the Contributor Assignment and License Grant will apply.
+
+4. Intellectual Property
+All content, designs, graphics, and other materials in the Services belong to mercenaries.ai. Unauthorized use, copying, or distribution is strictly prohibited.
+
+5. Third-Party Links
+Our Services may contain links to third-party websites or services. We are not responsible for the content or practices of these third-party services.
+
+6. Disclaimers
+Our Services are provided "as is" without any warranties, either express or implied.
+
+7. Limitation of Liability
+To the fullest extent permitted by applicable law, mercenaries.ai shall not be liable for any indirect, incidental, or consequential damages arising out of or in connection with the Services.
+
+8. Termination
+We reserve the right to suspend or terminate your access to the Services if you violate these Terms or at our discretion.
+
+9. Changes to the Terms
+We may modify these Terms at any time. Your continued use of the Services after changes signifies your acceptance of the updated Terms.
+
+10. Governing Law and Jurisdiction
+This Agreement is governed by the laws of Singapore. Any disputes arising will be settled in accordance with the procedures outlined in the Contributor Assignment and License Grant, unless otherwise stipulated.
+
+11. Feedback
+We welcome and appreciate feedback, comments, and suggestions. By submitting feedback, you grant us the right to use it without any compensation or obligation to you.
+
+12. Contact
+For any questions or concerns regarding these Terms, please contact us at contact@omnitool.ai.
+
+By accessing or using our Services, you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service.
