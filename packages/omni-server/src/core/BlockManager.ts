@@ -770,7 +770,6 @@ class BlockManager extends Manager {
     keyword: string,
     opts?: { contentMatch: string; tags: string }
   ): Array<[number, IBlockOrPatchSummary]> {
-    const t0 = performance.now();
     const maxLimit = 9999;
     const filter = keyword.replace(/ /g, '').toLowerCase() ?? '';
     const blockAndPatches = this.blocksAndPatches.search(
@@ -790,10 +789,6 @@ class BlockManager extends Manager {
       }
     }
     all.sort((a, b) => this.orderByTitle(a[1], b[1]));
-    const t1 = performance.now();
-    if (t1 - t0 > 100) {
-      console.log(`!! BlockManager.getFilteredBlocksAndPatches took ${t1 - t0}ms !!`);
-    }
     return all.slice(cursor, cursor + limit);
   }
 

@@ -59,12 +59,11 @@ export enum PERMITTED_EXTENSIONS_EVENTS {
   'jobs.job_finished' = 'job_finished',
   'registry.package_installed' = 'package_installed',
   'jobs.pre_workflow_start' = 'job_pre_start', // (workflow, ctx, actions)
-  'session_created' = 'session_created', // (session_id, user)
+  'session_created' = 'session_created' // (session_id, user)
 }
 
-export enum KNOWN_EXTENSION_METHODS
-{
-  "resolveMissingBlock" = "resolveMissingBlock" // install a missing bloc
+export enum KNOWN_EXTENSION_METHODS {
+  'resolveMissingBlock' = 'resolveMissingBlock' // install a missing bloc
 }
 
 class ServerExtensionManager extends ExtensionManager {
@@ -241,7 +240,7 @@ class ServerExtensionManager extends ExtensionManager {
         }
 
         let hooks = null;
-        let methods = null
+        let methods = null;
         // eslint-disable-next-line @typescript-eslint/ban-types
         let initExt: Function;
         // eslint-disable-next-line @typescript-eslint/ban-types
@@ -289,8 +288,7 @@ class ServerExtensionManager extends ExtensionManager {
               hooks = loadedScript.extensionHooks;
               this.verbose('Loaded event hooks for', extension, Object.keys(loadedScript.extensionHooks || []));
 
-              if (loadedScript.extensionMethods != null  && typeof loadedScript.extensionMethods === 'object') {
-
+              if (loadedScript.extensionMethods != null && typeof loadedScript.extensionMethods === 'object') {
                 methods = loadedScript.extensionMethods;
                 this.verbose('Loaded methods hooks for', extension, Object.keys(loadedScript.extensionMethods || []));
               }
@@ -521,6 +519,34 @@ class ServerExtensionManager extends ExtensionManager {
     return this.app as MercsServer;
   }
 
+  static async validateLocalChanges(extensionBaseDir: string, extension: string): Promise<boolean> {
+    // ensure critical paths can be reached on submit
+    const extensionDir = path.join(extensionBaseDir, extension);
+    const manifestFile = path.join(extensionDir, 'extension.yaml');
+    if (!(await validateFileExists(manifestFile))) {
+      omnilog.error(
+        `Validation error: Unable to find manifest file for extension ${extension} at ${manifestFile}. Please check your changes.`
+      );
+      return false;
+    }
+    // ensure url is valid
+    const extensionYaml: any = await yaml.load(await fs.readFile(manifestFile, 'utf-8'));
+    if (!extensionYaml?.origin?.endsWith('.git')) {
+      omnilog.error(
+        `Validation error: Manifest does not have a valid origin repository for extension ${extension}. Please check your changes.`
+      );
+      return false;
+    }
+    const remoteManifestFile = await fetch(extensionYaml.origin);
+    if (!remoteManifestFile.ok) {
+      omnilog.error(
+        `Validation error: Checking ${manifestFile}.\nUnable to connect to repo for origin ${extensionYaml.origin}.\nPlease check your changes.`
+      );
+      return false;
+    }
+    return true;
+  }
+
   // Ensure core extensions exist and are on the latest version
   static async ensureCoreExtensions(extensionDir: string) {
     try {
@@ -543,17 +569,20 @@ class ServerExtensionManager extends ExtensionManager {
             try {
               const diffResult = await git.diffSummary();
               if (diffResult.changed > 0) {
-                throw new Error(
+                omnilog.warn(
                   `Local changes detected in the ${extensionId} repo.\nPlease reconcile manually or reset by deleting the folder.`
                 );
+                if (await this.validateLocalChanges(extensionDir, extensionId)) {
+                  omnilog.status_success(`Local changes validated on ${extensionId}`);
+                }
+              } else {
+                const result = await git.pull();
+                const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
+                omnilog.info('☑️  Extension', extensionId, '... ok, ', statusString);
               }
-              const result = await git.pull();
-              const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
-              omnilog.info('☑️  Extension', extensionId, '... ok, ', statusString);
             } catch (ex) {
               omnilog.warn(` Unable to update core extension ${extensionId}: ${ex}. This may cause problems.`);
             }
-
             return;
           }
 
@@ -671,13 +700,18 @@ class ServerExtensionManager extends ExtensionManager {
         try {
           const diffResult = await git.diffSummary();
           if (diffResult.changed > 0) {
-            throw new Error(
+            omnilog.warn(
               `Local changes detected in the ${extension} repo.\nPlease reconcile manually or reset by deleting the folder.`
             );
+            if (await this.validateLocalChanges(extensionDir, extension)) {
+              omnilog.status_success(`Local changes validated on ${extension}`);
+            }
           }
-          const result = await git.pull();
-          const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
-          omnilog.info(extension, '...', statusString);
+          else {
+            const result = await git.pull();
+            const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
+            omnilog.info(extension, '...', statusString);  
+          }
         } catch (ex) {
           omnilog.warn(`Unable to update extension ${extension}: ${ex}`);
         }

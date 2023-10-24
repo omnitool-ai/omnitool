@@ -14,32 +14,31 @@ Omnitool.ai is an open-source, downloadable "AI Lab in a box" built for learners
 
 ## Why Omnitool?
 
-With thousands of preprints and countless "AI tools" released each week, it is incredibly challenging to stay on top of the rapidly evolving AI ecosystem, to separate hype and facts and to extract durable long term skills and learning. PapersWithCode and Github repositories attached to ArxIV papers provide ability to hands on validate and apply the latest discoveries, the fragile nature of the Python ecosystem and often steep hardware requirments dramatically limits accessibility, while testing cloud based models requires delving deep into API documentation and wrestling with connecting code.
+With thousands of preprints and countless "AI tools" released each week, it is incredibly challenging to stay on top of the rapidly evolving AI ecosystem, to separate hype and facts and to extract durable long term skills and learning. PapersWithCode and Github repositories attached to ArxIV papers provide ability to hands-on validate and apply the latest discoveries, but the fragile nature of the Python ecosystem and often steep hardware requirments dramatically limits accessibility. Likewise implementing and testing cloud based models requires delving deep into API documentation and wrestling with connecting code.
 
-We believe that is a serious problem. AI may represent the first large scale technological disruption unbounded by logistical challenges, scaling along existing wires, API infastructure and app delivery platforms with aggressive adoption plans in many businesses already. Without educated decision makers and technical expoerts in businesses and public organisations alike are at high risk of falling for hype and magical narratives and expensive misadventures.      
+We believe that is a serious problem. AI may represent the first large scale technological disruption unbounded by logistical challenges, scaling along existing wires, API infastructure and app delivery platforms. Meanwhile, market pressure to adopt AI is felt by many   businesses and teams. 
+
+Without educated decision makers and technical experts,  businesses and public organisations alike are at high risk of falling for hype and magical narratives and expensive misadventures.      
 
 Omnitool is our attempt to improve this situation: A **single, unified interface** capable of connecting with as many AI models as possible and to **reduce the "time to hands on AI" to an absolute minimum**. 
 
-Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based services can be connected and turned into "blocks" without writing code and it's extension framework enables deeper integrations of anything from custom UIs (Like Stability Dream Studio) to Game Engines (like BabyonJS or Phaser) to [Image manipulation libraries](https://github.com/georgzoeller/omni-extension-sharp/blob/master/README.md).
+Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based services can be connected and turned into "blocks" without writing code. It's extension framework enables deeper integrations of anything from custom UIs (Like Stability Dream Studio) to Game Engines (like BabyonJS or Phaser) to [Image manipulation libraries](https://github.com/georgzoeller/omni-extension-sharp/blob/master/README.md).
 
 
 ## What Omnitool is NOT
 
 - Omnitool is **not a multi-user cloud SaaS product**. It's a downloadable, locally installed product. 
 - Omnitool is **NOT a no-code solution** meant to replace coding or enable non engineers to code. It's focused on interacting with AI use cases, not writing general purpose software.
-- Omnitool is (at this point)  **not not production/enterprise** software. It's a lab optimizing for access to the latest technologies over stability and, as with any lab, things may blow up from time to time.  
+- Omnitool is **not production/enterprise software**. (Yet.) It's a lab optimizing for access to the latest technologies over stability and, as with any lab, things may blow up from time to time.  
    
 
 ## Table of Contents
 
 - [Key Features](#key-features)
-- [Quickstart (Mac)](#quickstart-using-install-scripts-mac)
-- [Quickstart (Windows)](#quickstart-using-install-scripts-windows)
-- [Manual Quickstart](#manual-quickstart)
+- [Quickstart](#quickstart)
 - [PocketBase DB Admin (ADVANCED)](#pocketbase-db-admin-advanced)
 - [Next Steps](#next-steps)
 - [Changelist](#changelist)
-
 
 ## Key Features
 
@@ -200,7 +199,7 @@ As an open-source platform, we welcome contributions from users like you. Whethe
 
 3. Feedback and Suggestions
 
-Your feedback helps shape the future of Omnitool.ai. Send your feedback and suggestions to [support@omnitool.ai](mailto:support@omnitool.ai)
+Your feedback helps shape the future of Omnitool.ai. Send your feedback and suggestions to [support@omnitool.ai](mailto:support@omnitool.ai), or share them directly in our [Discord #feedback channel](https://tinyurl.com/omnitool-feedback). 
 
 ## Changelist
 
