@@ -15,6 +15,7 @@ export enum OmniSDKClientMessages {
   SHOW_TOAST = 'client_show_toast',
   SHOW_EXTENSION = 'client_show_extension',
   LOAD_RECIPE = 'client_load_recipe',
+  SHOW_TOP_BANNER = 'client_show_top_banner',
 }
 
 export enum OmniSDKStorageKeys {
@@ -97,6 +98,13 @@ export interface IOmniClientShowToastMessage extends IOmniMessage {
   type: OmniSDKClientMessages.SHOW_TOAST;
   message: string;
   options?: { description?: string; type?: string; position?: string; html?: string };
+}
+
+export interface IOmniClientShowTopBannerMessage extends IOmniMessage {
+  type: OmniSDKClientMessages.SHOW_TOP_BANNER;
+  bannerTitle: string;
+  bannerDescription: string;
+  options?: { link?: string; };
 }
 
 export interface IOmniClientChatMessage extends IOmniMessage {

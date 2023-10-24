@@ -57,7 +57,9 @@
             class="ui-primary-bg h-full overflow-hidden flex -mx-0.5 gap-0 m-0 flex-col w-4 rounded-r-md"
             x-show="isLogin()"
           ></div-->
+          
           <div class="h-full w-full flex-grow-0 gap-0.5" x-show="!hideEditor.isMobile">
+            {{>Banner}}
             {{>WorkflowEditor}} 
             {{>EditorTopMenu}} 
             {{>EditorSideMenu}}

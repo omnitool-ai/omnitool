@@ -20,10 +20,11 @@ import {
   type IOmniHostCustomEventMessage,
   type IOmniHostChatMessageReceived,
   type IOmniClientShowExtensionMessage,
-  type IOmniClientLoadRecipeMessage
+  type IOmniClientLoadRecipeMessage,
+  type IOmniClientShowTopBannerMessage
 } from './types';
 
-import { OmniBaseResource } from './Resources/OmniBaseResource';
+import { type OmniBaseResource } from './Resources/OmniBaseResource';
 
 interface IFrameInfo {
   contentWindow: Window;
@@ -54,6 +55,7 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
     this.addMessageHandler(OmniSDKClientMessages.SHOW_TOAST, this._handleShowToast);
     this.addMessageHandler(OmniSDKClientMessages.SHOW_EXTENSION, this._handleShowExtension);
     this.addMessageHandler(OmniSDKClientMessages.LOAD_RECIPE, this._handleLoadRecipe)
+    this.addMessageHandler(OmniSDKClientMessages.SHOW_TOP_BANNER, this._handleShowTopBanner);
 
     return this;
   }
@@ -149,9 +151,9 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
     const args = scriptMessage.args;
 
     //@ts-ignore
-    let result = await this.app.runScript(script, args);
+    const result = await this.app.runScript(script, args);
 
-    let response: IOmniCScriptResult = {
+    const response: IOmniCScriptResult = {
       type: OmniSDKHostMessages.CLIENT_SCRIPT_RESPONSE,
       invokeId: scriptMessage.invokeId,
       result: result
@@ -268,6 +270,16 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
     const loadRecipeMessage = message as IOmniClientLoadRecipeMessage; // narrowing the type
     //@ts-ignore
     this.app.workbench.loadRecipe(loadRecipeMessage.recipeId, loadRecipeMessage.recipeVersion);
+  }
+
+  private _handleShowTopBanner(message: IOmniMessage): void {
+    if (message.type !== OmniSDKClientMessages.SHOW_TOP_BANNER) return; // type guard
+
+    const showTopBannerMessage = message as IOmniClientShowTopBannerMessage; // narrowing the type
+    const { bannerTitle, bannerDescription, options } = showTopBannerMessage;
+
+    // @ts-expect-error
+    this.app.showTopBanner(bannerTitle, bannerDescription, options);
   }
 
   protected override send(message: any, token: string | '*' = '*') {

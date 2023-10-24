@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import { IOmniMessage, OmniSDKClientMessages, OmniSDKHostMessages } from './types';
+import { type IOmniMessage, type OmniSDKClientMessages, type OmniSDKHostMessages } from './types';
 
 import { OmniResource } from './Resources/OmniResource';
 import { OmniBaseResource } from './Resources/OmniBaseResource';
@@ -201,7 +201,7 @@ export default class OmniSDKShared {
   }
 
   public async downloadFile(fileObject: OmniBaseResource, fileName?: string): Promise<void> {
-    let fid = fileObject.fid;
+    const fid = fileObject.fid;
     const filename = fileName || fileObject.fileName;
 
     fetch('/fid/' + fid + '?download=true')

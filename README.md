@@ -1,10 +1,34 @@
 # Omnitool.ai - Your Open Source AI Desktop
-Discover, Learn, Evaluate and Build with thousands of Generative AI Models.
 
-Omnitool.ai is an open-source, state-of-the-art orchestration AI engine built for efficiently managing and optimizing complex recipes across a multitude of AI providers.
-Whether you're leveraging services from OpenAI, replicate.com, Stable Diffusion, Google, or other leading providers, Omnitool.ai ensures seamless integration and streamlined operation.
+*Discover, Learn, Evaluate and Build with thousands of Generative AI Models.*
 
-![screenshot](assets/screenshot.jpg)
+Omnitool.ai is an open-source, downloadable "AI Lab in a box" built for learners, enthusiasts and anyone with interest in the current wave of AI innovation. It provides an extensible browser based desktop environment for streamlined, hands-on interacting with the latest AI models from OpenAI, replicate.com, Stable Diffusion, Google, or other leading providers through a single, unified interface.
+
+<p align="center">
+  <img src="assets/screenshot_collection.png" height="200" style="max-width: none;" />
+  <img src="assets/screenshot_desktop.png" height="200" style="max-width: none;" />
+  <img src="assets/screenshot_filemanager.png" height="200" style="max-width: none;" />
+  <img src="assets/screenshot_viewer.png" height="200" style="max-width: none;" />
+  <img src="assets/screenshot_omnillusion.png" height="200" style="max-width: none;" />
+</p>
+
+## Why Omnitool?
+
+With thousands of preprints and countless "AI tools" released each week, it is incredibly challenging to stay on top of the rapidly evolving AI ecosystem, to separate hype and facts and to extract durable long term skills and learning. PapersWithCode and Github repositories attached to ArxIV papers provide ability to hands on validate and apply the latest discoveries, the fragile nature of the Python ecosystem and often steep hardware requirments dramatically limits accessibility, while testing cloud based models requires delving deep into API documentation and wrestling with connecting code.
+
+We believe that is a serious problem. AI may represent the first large scale technological disruption unbounded by logistical challenges, scaling along existing wires, API infastructure and app delivery platforms with aggressive adoption plans in many businesses already. Without educated decision makers and technical expoerts in businesses and public organisations alike are at high risk of falling for hype and magical narratives and expensive misadventures.      
+
+Omnitool is our attempt to improve this situation: A **single, unified interface** capable of connecting with as many AI models as possible and to **reduce the "time to hands on AI" to an absolute minimum**. 
+
+Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based services can be connected and turned into "blocks" without writing code and it's extension framework enables deeper integrations of anything from custom UIs (Like Stability Dream Studio) to Game Engines (like BabyonJS or Phaser) to [Image manipulation libraries](https://github.com/georgzoeller/omni-extension-sharp/blob/master/README.md).
+
+
+## What Omnitool is NOT
+
+- Omnitool is **not a multi-user cloud SaaS product**. It's a downloadable, locally installed product. 
+- Omnitool is **NOT a no-code solution** meant to replace coding or enable non engineers to code. It's focused on interacting with AI use cases, not writing general purpose software.
+- Omnitool is (at this point)  **not not production/enterprise** software. It's a lab optimizing for access to the latest technologies over stability and, as with any lab, things may blow up from time to time.  
+   
 
 ## Table of Contents
 
@@ -26,10 +50,7 @@ Whether you're leveraging services from OpenAI, replicate.com, Stable Diffusion,
 * Easily integrate with local AI infrastructure, including servers on your local network or even large language models running on your machine.
 
 ## Extensible Architecture
-* A robust extensions mechanism allows for vertical integrations with specific AI providers, specialized focus on certain media types like image flipbooks, or additional workflow support such as integrated image editing (via minipaint) or audio editing (via wavacity).
-
-## Enterprise Readiness
-* For our enterprise customers, extensions can deliver granular control over aspects like billing, copyright, usage limits, privacy, as well as NSFW detection and monitoring. For more information, please contact us to discuss how we can best serve your specific needs.
+* A robust extensions mechanism allows for vertical integrations with specific AI providers, specialized focus on certain media types like image flipbooks, or additional recipe support such as integrated image editing (via minipaint) or audio editing (via wavacity).
 
 ## Open Source Commitment
 * Omnitool.ai is fully committed to the ethos of open-source development. You have complete access to the source code for educational, research, and further development purposes.
@@ -98,6 +119,9 @@ For Windows:
   yarn start
   ```
 
+- **Warning**:
+  - **ALL YOUR LOCAL RECIPES, GENERATED IMAGES, DOCUMENTS, AUDIO ETC, WILL BE PERMANENTLY ERASED**
+
 ## Generating a JWT Token
 
 Our service allows you to generate a JWT by running a specific script designed for this purpose. The script's signature is as follows:
@@ -108,13 +132,13 @@ Our service allows you to generate a JWT by running a specific script designed f
 
 **Parameters**
 
-- `<action>`: This is a string parameter identifying the intended action to be performed. In the context of running workflows, this should be set to exec.
-- `<subject>`: This is a string parameter that specifies the subject of the JWT. This could be the workflow that you intend to execute.
+- `<action>`: This is a string parameter identifying the intended action to be performed. In the context of running recipes, this should be set to exec.
+- `<subject>`: This is a string parameter that specifies the subject of the JWT. This could be the recipe that you intend to execute.
 - `<expires_in>`: This is an integer parameter that determines the token's validity period in milliseconds.
 
 **Example**
 
-To generate a JWT for executing a workflow with a validity of 30,000 milliseconds (or 30 seconds), you would run the following script:
+To generate a JWT for executing a recipe with a validity of 30,000 milliseconds (or 30 seconds), you would run the following script:
 
 ```
 /generateJwtToken exec Workflow 30000
@@ -124,9 +148,9 @@ To generate a JWT for executing a workflow with a validity of 30,000 millisecond
 
 The script will output a JWT, which is a token string to be used in the authorization header for your API requests.
 
-### Executing a Workflow with JWT Authentication
+### Executing a recipe with JWT Authentication
 
-Once you have your JWT, you can execute a workflow by making a POST request to the workflow execution API. This request must include the JWT in the Authorization header.
+Once you have your JWT, you can execute a recipe by making a POST request to the recipe execution API. This request must include the JWT in the Authorization header.
 
 **Endpoint**
 
@@ -152,21 +176,17 @@ curl -X POST http://127.0.0.1:1688/api/v1/workflow/exec -H "Authorization: Beare
 
 **Response**
 
-Upon success, the API will initiate the specified workflow. You will receive a JSON response containing details about the workflow's execution status, including any outputs or errors.
+Upon success, the API will initiate the specified recipe. You will receive a JSON response containing details about the recipe's execution status, including any outputs or errors.
 
 **Security Considerations**
 
-- Keep your JWT secure to prevent unauthorized access to your workflows.
+- Keep your JWT secure to prevent unauthorized access to your recipes.
 - Always use a secure connection to interact with the APIs.
 - Regularly rotate your tokens and use a short expiration time to minimize the impact of potential leaks.
 
 **Troubleshooting**
 
 If you encounter authorization errors, ensure the JWT has not expired, is correctly set in the header, and was generated with the proper parameters.
-
-- **Warning**:
-  - **ALL YOUR LOCAL RECIPES, GENERATED IMAGES, DOCUMENTS, AUDIO ETC, WILL BE PERMANENTLY ERASED**
-
 
 ## Next Steps
 

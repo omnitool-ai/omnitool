@@ -21,7 +21,8 @@ import {
   type IOmniHostCustomEventMessage,
   type IOmniHostChatMessageReceived,
   type IOmniClientShowExtensionMessage,
-  type IOmniClientLoadRecipeMessage
+  type IOmniClientLoadRecipeMessage,
+  type IOmniClientShowTopBannerMessage
 } from './types';
 
 export default class OmniSDKClient extends OmniSDKShared {
@@ -90,7 +91,7 @@ export default class OmniSDKClient extends OmniSDKShared {
     attachments?: { [key: string]: any },
     flags?: string[]
   ): void {
-    let message: IOmniClientChatMessage = {
+    const message: IOmniClientChatMessage = {
       type: OmniSDKClientMessages.SEND_CHAT_MESSAGE,
       message: {
         content,
@@ -128,14 +129,14 @@ export default class OmniSDKClient extends OmniSDKShared {
 
   private async _handleSyncData(message: IOmniMessage): Promise<void> {
     if (message.type !== OmniSDKHostMessages.SYNC_DATA) return; // type guard
-    let msg = message as IOmniHostSyncData;
+    const msg = message as IOmniHostSyncData;
     this.intentMap = new Map(msg.frame);
     await this.events.emit(OmniSDKClientEvents.DATA_UPDATED, [{ property: 'intentMap' }]);
   }
 
   private async _handleChatMessageReceived(message: IOmniMessage): Promise<void> {
     if (message.type !== OmniSDKHostMessages.CHAT_MESSAGE_RECEIVED) return; // type guard
-    let msg = message as IOmniHostChatMessageReceived;
+    const msg = message as IOmniHostChatMessageReceived;
 
     await this.events.emit(OmniSDKClientEvents.CHAT_MESSAGE_RECEIVED, [msg.message]);
   }
@@ -143,7 +144,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   private async _handleClientScriptResponse(message: IOmniMessage): Promise<void> {
     if (message.type !== OmniSDKHostMessages.CLIENT_SCRIPT_RESPONSE) return; // type guard
 
-    let msg = message as IOmniCScriptResult;
+    const msg = message as IOmniCScriptResult;
 
     await this.events.emit(OmniSDKHostMessages.CLIENT_SCRIPT_RESPONSE + ':' + msg.invokeId, msg.result);
   }
@@ -155,7 +156,7 @@ export default class OmniSDKClient extends OmniSDKShared {
     opts: any = {},
     action: 'open' | 'close' = 'open'
   ) {
-    let msg: IOmniClientShowExtensionMessage = {
+    const msg: IOmniClientShowExtensionMessage = {
       type: OmniSDKClientMessages.SHOW_EXTENSION,
       extensionId,
       action,
@@ -167,7 +168,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   }
 
   public hide() {
-    let msg: IOmniClientWindowMessage = {
+    const msg: IOmniClientWindowMessage = {
       type: OmniSDKClientMessages.WINDOW_MESSAGE,
       action: 'hide',
       args: {}
@@ -176,7 +177,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   }
 
   public show() {
-    let msg: IOmniClientWindowMessage = {
+    const msg: IOmniClientWindowMessage = {
       type: OmniSDKClientMessages.WINDOW_MESSAGE,
       action: 'show',
       args: {}
@@ -185,7 +186,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   }
 
   public close() {
-    let msg: IOmniClientWindowMessage = {
+    const msg: IOmniClientWindowMessage = {
       type: OmniSDKClientMessages.WINDOW_MESSAGE,
       action: 'close',
       args: {}
@@ -194,7 +195,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   }
 
   public signalIntent(intent: 'show' | 'edit', target: string, payload: any, opts = {}): void {
-    let message: IOmniClientSignalIntentMessage = {
+    const message: IOmniClientSignalIntentMessage = {
       type: OmniSDKClientMessages.SIGNAL_INTENT,
       intent,
       target,
@@ -214,7 +215,7 @@ export default class OmniSDKClient extends OmniSDKShared {
       html?: string;
     }
   ): void {
-    let msg: IOmniClientShowToastMessage = {
+    const msg: IOmniClientShowToastMessage = {
       type: OmniSDKClientMessages.SHOW_TOAST,
       message,
       options
@@ -222,8 +223,24 @@ export default class OmniSDKClient extends OmniSDKShared {
     this.send(msg);
   }
 
+  public showTopBanner(
+    bannerTitle: string,
+    bannerDescription: string,
+    options: {
+      link?: string;
+    }
+  ): void {
+    const msg: IOmniClientShowTopBannerMessage = {
+      type: OmniSDKClientMessages.SHOW_TOP_BANNER,
+      bannerTitle,
+      bannerDescription,
+      options
+    };
+    this.send(msg);
+  }
+
   public openRecipeInEditor(recipeId: string, recipeVersion: string): void {
-    let msg: IOmniClientLoadRecipeMessage = {
+    const msg: IOmniClientLoadRecipeMessage = {
       type: OmniSDKClientMessages.LOAD_RECIPE,
       recipeId,
       recipeVersion

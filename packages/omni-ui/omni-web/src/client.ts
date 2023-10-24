@@ -209,6 +209,17 @@ class OmnitoolClient extends Client {
     window.dispatchEvent(new CustomEvent('toast-show', { detail: { type, message, description, position, html } }));
   }
 
+  showTopBanner(
+    bannerTitle: string,
+    bannerDescription: string,
+    options: {
+      link?: string;
+    }
+  ) {
+    const link = options.link ?? '';
+    window.dispatchEvent(new CustomEvent('top-banner-show', { detail: { bannerTitle, bannerDescription, link } }));
+  }
+
   closeWindow(singletonHash?: string): boolean {
     const win = this.getWindow(singletonHash);
     if (win) {
