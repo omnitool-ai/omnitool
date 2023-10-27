@@ -4,13 +4,9 @@
 
 Omnitool.ai is an open-source, downloadable "AI Lab in a box" built for learners, enthusiasts and anyone with interest in the current wave of AI innovation. It provides an extensible browser based desktop environment for streamlined, hands-on interacting with the latest AI models from OpenAI, replicate.com, Stable Diffusion, Google, or other leading providers through a single, unified interface.
 
-<p align="center">
-  <img src="assets/screenshot_collection.png" height="200" style="max-width: none;" />
-  <img src="assets/screenshot_desktop.png" height="200" style="max-width: none;" />
-  <img src="assets/screenshot_filemanager.png" height="200" style="max-width: none;" />
-  <img src="assets/screenshot_viewer.png" height="200" style="max-width: none;" />
-  <img src="assets/screenshot_omnillusion.png" height="200" style="max-width: none;" />
-</p>
+![Alt text](assets/screenshot_desktop_03.png)
+
+Watch the [demo](https://tinyurl.com/omnitool-demo)!
 
 ## Why Omnitool?
 
