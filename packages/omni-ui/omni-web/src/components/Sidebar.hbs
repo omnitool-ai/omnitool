@@ -64,14 +64,16 @@
     <span>Quickstart</span>
   </div>
 
-  <div x-show="menuBarMenu==='menu'" @click="window.client.runScript('logout')" x-transition
-    class="sidebarItem sidebarItem-sub" x-tooltip="Logout">
-    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="14" viewBox="0 0 15 14" fill="none">
-      <path
-        d="M9.625 0.583374H12.25C13.2165 0.583374 14 1.36688 14 2.33337V11.6667C14 12.6332 13.2165 13.4167 12.25 13.4167H9.625M6.125 3.50004L2.625 7.00004M2.625 7.00004L6.125 10.5M2.625 7.00004H10.5"
-        stroke="#DEDEDF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-    <span>Logout</span>
+  <div class="hidden">
+    <div x-show="menuBarMenu==='menu'" @click="window.client.runScript('logout')" x-transition
+      class="sidebarItem sidebarItem-sub" x-tooltip="Logout">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="14" viewBox="0 0 15 14" fill="none">
+        <path
+          d="M9.625 0.583374H12.25C13.2165 0.583374 14 1.36688 14 2.33337V11.6667C14 12.6332 13.2165 13.4167 12.25 13.4167H9.625M6.125 3.50004L2.625 7.00004M2.625 7.00004L6.125 10.5M2.625 7.00004H10.5"
+          stroke="#DEDEDF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span>Logout</span>
+    </div>
   </div>
 
   <!-- End Burger Menu -->

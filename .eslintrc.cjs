@@ -41,6 +41,7 @@ module.exports = {
     'prettier/prettier': 'off',
     'no-prototype-builtins': 'off',
     'eslint-disable-next-line': 'off',
+    "no-lone-blocks" : 'off',
     'no-trailing-spaces': 'off',
     'no-multi-spaces': 'off',
     'padded-blocks': 'off',

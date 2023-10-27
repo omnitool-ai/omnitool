@@ -41,10 +41,11 @@ const workflowEditorComponent = function (refName = 'editor', workbench) {
       if (workbench.isBlank) {
         await workbench.loadFromCache();
       }
-      
+
       const hasKey = await window.client?.runScript('hasKey', {});
       if (!hasKey) {
-        workbench.showExtension('omni-core-collectionmanager', {type:'api'}, undefined, {winbox: {title: 'API Management', modal: true}, singletonHash: 'omni-core-collectionmanager-api'})
+        client.showTopBanner("Attention", "Your Omnitool environment is missing external API keys. Use the API Key Management menu to add your keys and enable more capabilities.", {link: ''})
+        workbench.showApiManagement()
       }
       
       if (!this.reviewedNUX()) {

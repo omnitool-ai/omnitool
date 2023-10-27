@@ -618,6 +618,13 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
     await this.getClient().sendSystemMessage(message);
   }
 
+  async forceSave() {
+    if (this.activeRecipe) {
+      this.activeRecipe.setDirty();
+    }
+    await this.save();
+  }
+
   getRecipeIdFromNickname(nickname: string): { nickname: string; id: string } | undefined {
     const key = this.getKeyFromNickname(nickname);
     return key ? this.getWorkbenchSetting(key) : undefined;
@@ -875,6 +882,10 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
       singletonHash,
       winbox: { title: 'Quickstart Video', minwidth: 960, minheight: 575, modal }
     });
+  }
+
+  showApiManagement() {
+    this.showExtension('omni-core-collectionmanager', {type:'api'}, undefined, {winbox: {title: 'API Management', modal: true}, singletonHash: 'omni-core-collectionmanager-api'})
   }
 
   showRecipeHelp() {

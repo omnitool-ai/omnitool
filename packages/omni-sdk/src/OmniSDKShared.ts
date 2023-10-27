@@ -10,6 +10,7 @@ import { OmniBaseResource } from './Resources/OmniBaseResource';
 import { HTTPClient } from './Utils/HttpClient';
 
 import EventEmitter from 'emittery';
+import type OmniSDKClient from './OmniSDKClient';
 
 export default class OmniSDKShared {
   protected messageHandlers: {
@@ -68,6 +69,91 @@ export default class OmniSDKShared {
       console.error('Error processing the message:', error);
     }
   };
+
+
+  public getLocalValue(key: string, value: any): any
+  {
+
+    let finalKey = key
+    // In an extensions    
+    if (this._isClient)
+    {
+      finalKey = "omni/"+(this as  unknown as OmniSDKClient)._extensionId + "/" + key
+    }
+    else
+    {
+      finalKey = "omni/host/" + key
+    }
+
+    let stored = globalThis.localStorage.getItem(finalKey)
+    
+    if (stored !== null)
+    {
+      let record = JSON.parse(stored)
+      let value = record.value
+
+      switch (record.type)
+      {        
+        case 'boolean': value = value === 'true' ? true : false; break;
+        case 'object':
+        case 'number': 
+        case 'string': break; 
+        default: 
+          console.warn("Unsupported value type", record.type, "on", key) 
+          return null
+        }
+      return value;
+    }
+
+    return null
+
+  }
+
+  public setLocalValue(key: string, value: any)
+  {
+    if (key == null || key.length == 0)
+    {
+      throw new Error("Invalid null Key passed into setLocalValue")
+    }
+
+    let finalKey = key
+    // In an extensions    
+    if (this._isClient)
+    {
+      finalKey = "omni/"+(this as  unknown as OmniSDKClient)._extensionId + "/" + key
+    }
+    else
+    {
+      finalKey = "omni/host/" + key
+    }
+
+    if (value === null || value === undefined)
+    {
+      globalThis.localStorage.removeItem(finalKey)
+      return
+    }
+
+
+    const valueType = typeof(value)
+    let finalValue = value
+    switch(valueType)
+    {
+      case 'number':
+      case 'string': 
+      case 'object': break;
+      case 'boolean': finalValue = value ? "true" : "false"; break;
+
+      default: 
+        console.warn("Unsupported value type", valueType, "on", key)
+        return;
+      } 
+
+    globalThis.localStorage.setItem(finalKey, JSON.stringify({
+      type: valueType,
+      value
+    }))
+
+  }
 
   protected send(message: IOmniMessage, token?: string) {
     if (this._isClient) {

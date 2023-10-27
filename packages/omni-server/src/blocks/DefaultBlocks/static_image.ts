@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import { OAIBaseComponent, type WorkerContext, OmniComponentMacroTypes, BlockCategory as Category } from 'omni-sockets';
+import { OAIBaseComponent, type WorkerContext, OmniComponentMacroTypes, BlockCategory as Category, type OAIComponent31 } from 'omni-sockets';
 
 const NS_OMNI = 'omnitool';
 
@@ -37,7 +37,7 @@ component
     component
       .createControl('preview')
       .setControlType('AlpineImageGalleryComponent')
-      .set('displays', 'output:img')
+
       .toOmniControl()
   )
   .addOutput(component.createOutput('width', 'number').set('description', 'The width of the image').toOmniIO())
@@ -60,39 +60,46 @@ component
     component.createOutput('url', 'string').set('description', 'The url of the image').setHidden(true).toOmniIO()
   )
 
-  .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
+  .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext, component: OAIComponent31) => {
     try {
       if (!payload.img && !payload.imgUrl) {
-        return {}; // do not trigger error when no image is provided
+ 
+        await component.setControlValue('preview', null, ctx);
+        return null; // do not trigger error when no image is provided
       }
       // If 'img' is not provided but 'url' is provided, save the image to the CDN
-      if (!payload.img && payload.imgUrl) {
+      if (payload.imgUrl?.trim?.()?.length > 0) {
         const savedImage = await ctx.app.cdn.putTemp(payload.imgUrl, { userId: ctx.userId, jobId: ctx.jobId });
         if (!savedImage) {
           throw new Error('Failed to save the image from the url to the CDN');
         }
         payload.img = savedImage; // Set the savedImage as the img input
+
       }
       if (!payload.img) {
         return null; // do not throw error when no image is provided
       }
-      const imageInfo = await ctx.app.blocks.runBlock(ctx, 'omnitool.image_info', { image: payload.img });
-      if (imageInfo && imageInfo.image) {
-        const { meta, size, mimeType, fid, url } = imageInfo.image;
-        return {
-          img: imageInfo.image,
-          width: meta.width,
-          height: meta.height,
-          size,
-          mimeType,
-          ext: meta.type,
-          fid,
-          url
-        };
-      }
 
-      throw new Error('Image info is not available');
-    } catch (error) {
+
+      // clear previous preview
+      ctx.node.data.preview = {
+        fid: payload.img.fid,
+        url: payload.img.url }
+
+      await component.setControlValue('preview', [ctx.node.data.preview], ctx);
+        return {
+          img: payload.img,
+          width: payload.img.meta.width,
+          height: payload.img.meta.height,
+          size: payload.size,
+          mimeType: payload.mimeType,
+          ext: payload.img.meta.type,
+          fid: payload.fid,
+          url:payload.url
+        };
+      
+
+     } catch (error) {
       console.error(error);
       throw error;
     }

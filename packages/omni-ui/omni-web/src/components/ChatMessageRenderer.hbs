@@ -112,7 +112,7 @@
             <div x-html="JSON.stringify(message.object||[], null, 2)"></div>
           </div>
         </template>
-        <template x-if="message.audio">
+        <template x-if="message.audio && message.audio.length > 0">
           <div x-data="audioPlayer" x-init="setPlaylist(message.audio); loadTrack();"
             class="flex-grow 0  w-full justify-left   p-0 m-0 gap-0 bg-neutral-300" style="flex-basis: 100%">
             <div class="w-full flex gap-1 items-center">

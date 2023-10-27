@@ -55,7 +55,7 @@ class FileObjectSocket extends CustomSocket {
   async persistObjects(ctx: WorkerContext, value: any, opts?: any): Promise<ICdnResource[]> {
     return await Promise.all(
       value.map(async (v: any) => {
-        return await this.persistObject(ctx, v);
+        return await this.persistObject(ctx, v, opts);
       })
     );
   }
@@ -82,50 +82,71 @@ class FileObjectSocket extends CustomSocket {
     if (!value) {
       return null;
     }
+ 
+    let cdnResource = null
+    const format = this.format?.includes('base64') ? 'base64' : undefined
+    const addHeader = format && this.format?.includes('withHeader')
 
-    // if we need to convert to base64, do it by pulling the data.
-    else if (value.fid && !value.data && getValue && this.format?.startsWith('base64')) {
-      value = await ctx.app.cdn.get({ fid: value.fid }, null, this.format);
-    }
-    // input socket that doesn't need to be base64 actually doesn't need to do anything if it already has a fid
-    else if (this.isValidUrl(value)) {
-      value = await this.persistObject(ctx, value.trim());
-    } else if (value?.startsWith?.('fid://') && !this.format?.startsWith('base64')) {
-      const {fid, extension} = value.split('://')[1].split('.');
-      value = await ctx.app.cdn.get({ fid }, null, this.format);
-    }
-    // If input is anything else, try to persist it
-    else if (value && !value.url) {
-      value = await this.persistObject(ctx, value);
-    }
-
-    // Handle base64 headers
-    if (value && this.format?.startsWith('base64')) {
-      const addHeader = this.format?.includes('withHeader');
-      if (value.asBase64) {
-        value = value.asBase64(addHeader); // Use `asBase64` method supplied
-      } else if (value.data instanceof Buffer) {
-        if (addHeader) {
-          value = `data:${value.mimeType};base64,${value.data.toString('base64')}`;
-        } else {
-          value = value.data.toString('base64');
-        }
-      } else if (typeof value.data === 'string') {
-        value = value.data;
+    // Case 1: We have an object with a fid:
+    if (value.fid)
+    {
+      // If it's base64, we always have to pull data to convert it
+      if (!getValue  && format !== 'base64')
+      {
+        cdnResource = await ctx.app.cdn.find(value.fid)
+      }
+      else
+      {
+        cdnResource = await ctx.app.cdn.get(value, null, format)        
       }
     }
+    else if (value instanceof Buffer)
+    {
+      cdnResource = await this.persistObject(ctx, value)      
+    }
+    else if (typeof value === 'string')
+    {
+      if ( this.isValidUrl(value))
+      {
+        cdnResource = await this.persistObject(ctx, value.trim());
+      }
+      else if (value?.startsWith?.('fid://'))
+      {
+        const [fid, extension] = value.split('://')[1].split('.');
+        cdnResource = await ctx.app.cdn.get({ fid }, null, format);
+      }
+      else (value.length>0)
+      {     
+        cdnResource = await this.persistObject(ctx, value);      
+      }
+    }
+
+    let socketValue = null
+    
+    if (cdnResource && cdnResource.fid)
+    {
+      if (format === "base64")
+      {
+        
+        socketValue = cdnResource.asBase64(addHeader)       
+      }
+      else
+      {
+        socketValue = cdnResource
+      }
+    }
+    else
+    {
+      console.error("File socket: Failure to process value", value)
+    }
+    
 
     // wipe data if needed
-    if (this.customSettings?.do_no_return_data) {
-      delete value.data;
-    } else {
-      // If we need to get the data, do it
-      if (getValue && typeof value === 'object' && !value.data) {
-        value = await ctx.app.cdn.get({ fid: value.fid }, null, this.format);
-      }
-    }
+    if (socketValue !== null && this.customSettings?.do_no_return_data  && format !== 'base64') {
+      delete socketValue.data;
+    } 
 
-    return value as ICdnResource | string;
+    return socketValue 
   }
 
   private async _handleObjectArray(

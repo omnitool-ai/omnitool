@@ -3,7 +3,7 @@
         bannerVisibleAfter: 300,
         bannerTitle: '',
         bannerDescription: '',
-        linkTitle: 'Learn More',
+        linkTitle: ' here',
         link: ''
     }" @top-banner-show.window="
         bannerTitle = event.detail.bannerTitle
@@ -18,19 +18,21 @@
     x-transition:leave="transition ease-in duration-300"
     x-transition:leave-start="translate-y-0"
     x-transition:leave-end="-translate-y-10"
-    class="fixed top-0 left-11 w-full h-auto py-2 duration-300 ease-out bg-white shadow-sm sm:py-0 sm:h-10" x-cloak>
+    class="fixed top-0 left-0 w-full h-auto py-2 duration-300 ease-out bg-yellow-200 shadow-sm sm:py-0 sm:h-10 z-50" x-cloak>
     <div class="flex items-center justify-between w-full h-full px-3 mx-auto ">
-        <a href="#" class="flex flex-col w-full h-full text-xs leading-6 text-black duration-150 ease-out sm:flex-row sm:items-center opacity-80 hover:opacity-100">
+        <div class="flex flex-col w-full h-full text-xs leading-6 text-black duration-150 ease-out sm:flex-row sm:items-center opacity-80 hover:opacity-100">
             <span class="flex items-center">
-                <svg class="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-<path d="M2.36816 17.3712C2.94302 17.1211 3.5991 17.3087 3.96151 17.7901L5.21745 17.2461C4.68008 16.058 4.38016 14.7386 4.38016 13.3504C4.38016 8.13532 8.6041 3.91446 13.809 3.91446C16.1335 3.91446 18.2642 4.75863 19.9138 6.15933V5.10255C19.2639 5.00875 18.7641 4.45223 18.7641 3.77689C18.7641 3.0953 19.2702 2.53877 19.9263 2.45123C17.8518 0.912956 15.2774 0 12.4969 0C5.59235 0 0 5.59655 0 12.5063C0 14.7074 0.568608 16.7771 1.56836 18.5718C1.57461 18.059 1.87453 17.5838 2.36816 17.3712Z" fill="black"/>
-<path d="M21.4384 3.76438C21.4384 4.39595 21.0072 4.92121 20.4261 5.06503V6.61581C22.1632 8.32917 23.2442 10.7116 23.2442 13.3442C23.2442 18.5593 19.0202 22.7801 13.8153 22.7801C10.1787 22.7801 7.01699 20.7166 5.44864 17.6964L4.1927 18.2404C4.36766 18.8719 4.05524 19.5535 3.43664 19.8224C3.08048 19.9725 2.69932 19.96 2.37441 19.8224C4.64259 22.9615 8.33541 25 12.5031 25C19.4076 25 25 19.4035 25 12.4937C24.9875 9.0983 23.6316 6.01551 21.4384 3.76438Z" fill="black"/>
-</svg>
+                <svg class="w-[18px] h-[18px] mr-1.5 -ml-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 9C12.5523 9 13 8.55228 13 8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8C11 8.55228 11.4477 9 12 9ZM13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12V16C11 16.5523 11.4477 17 12 17C12.5523 17 13 16.5523 13 16V12Z" fill="currentColor"></path>
+              </svg>
                 
                 <span class="font-semibold text-black" x-text="bannerTitle"></span><span class="hidden w-px h-4 mx-3 rounded-full sm:block bg-neutral-200"></span>
             </span>
             <span class="block pt-1 pb-2 leading-none sm:inline sm:pt-0 sm:pb-0 text-black" x-text="bannerDescription"></span>
-            <!--<a :href="link" target="_blank"><span class="block pt-1 pb-2 leading-none sm:inline sm:pt-0 sm:pb-0 text-black" x-text="linkTitle"></span></a>-->
-        </a>
+            <button @click="bannerVisible=false" class="flex items-center flex-shrink-0 translate-x-1 ease-out duration-150 justify-center w-6 h-6 p-1.5 text-black rounded-full hover:bg-neutral-100">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+            <!--<a :href="link" target="_blank"><span class="block pt-1 pb-2 leading-none sm:inline sm:pt-0 sm:pb-0 text-red"></span></a>-->
+        </div>
     </div>
 </div>

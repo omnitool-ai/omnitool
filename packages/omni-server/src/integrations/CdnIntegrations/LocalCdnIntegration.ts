@@ -556,16 +556,32 @@ class LocalCdnIntegration extends CdnIntegration {
   }
 
   // returns the volume server for a specific fid
-  async find(fid: string, userId?: string): Promise<ICdnResource | null> {
+  async find(fid: string, userId?: string): Promise<CdnResource | null> {
     // Currently the CDN will happily serve any file to anyone as long as they know a valid fid
     // In the future we may want to gate access by user session, which could be done here by
     // validating the userId against the tags of the raw entry
     // TODO: Slice userId to perform access check
+    if (fid == null || fid.length == 0)
+    {
+      throw new Error("Null file identifier passed to cdn.find")
+    }
+    // Allow 
+    if (fid.startsWith('sample-import:'))
+    {
+      const actualFid = this.kvStorage.get(fid.replace('sample-import:', 'sample-import.'))
+      console.warn("looking for static file",fid, actualFid)
+      if (actualFid != null)
+      {
+        fid = actualFid
+      }
+    }
+
     const ret = await Promise.resolve(this.kvStorage.get(`file.${fid}`));
     if (ret) {
       ret.fid ??= fid;
     }
-    return ret;
+    const resource = new CdnResource(ret)
+    return resource;
   }
 
   async getByFid(fid: string, opts?: any, format?: 'asBase64' | 'stream' | 'file'): Promise<CdnResource> {
@@ -582,19 +598,21 @@ class LocalCdnIntegration extends CdnIntegration {
       // @ts-expect-error
       ticket = ticket.ticket;
     }
-    const fid = ticket.fid;
+    let fid = ticket.fid;
     if (!fid) {
       const error = new CdnObjectNotFoundError(`cdn.get(): no record found for ${ticket.fid}`);
       throw error;
     }
 
     // First retrieve metadata from kv storage
-    const record = await this.find(fid);
-    if (record === null) {
+    const cdnRecord = await this.find(fid);
+    if (cdnRecord === null) {
       const error = new CdnObjectNotFoundError(`cdn.get(): no record found for ${ticket.fid}`);
       throw error;
     }
-    const cdnRecord = new CdnResource(record);
+
+    // Fid may have been translated, so we have to update here
+    fid = cdnRecord.fid
 
     // If we're asked for a stream, get it
     if (format === 'stream') {
@@ -632,8 +650,8 @@ class LocalCdnIntegration extends CdnIntegration {
   }
 
   async checkFileExists(fid: string): Promise<boolean> {
-    const record = await this.kvStorage.get(`file.${fid}`);
-    return record !== null;
+    const record = await this.find(fid) 
+    return record != null;
   }
 
   async serveFile(fid: string, opts: ICDNFidServeOpts, reply: any): Promise<any> {

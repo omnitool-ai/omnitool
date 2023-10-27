@@ -53,6 +53,14 @@ class HttpClientService extends Service {
       }
       return response
     } catch (err: any) {
+      if (err.code === 'ENOTFOUND' && err.syscall === 'getaddrinfo') {
+        err.message = `Failed to resolve host "${err.hostname}". Please check your network settings.`
+      }
+
+      if (err.message === 'Request failed with status code 401' && err.code === 'ERR_BAD_REQUEST') {
+        err.message = 'Authentication failed. Please check your credentials.'
+      }
+
       if (err.response && RETRYABLE_CODE.includes(err.response.status)) {
         throw new HTTPClientError(err.message, true, err)
       } else {

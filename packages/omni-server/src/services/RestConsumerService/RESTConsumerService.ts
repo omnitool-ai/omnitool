@@ -845,17 +845,11 @@ class RESTConsumerService extends Service {
         if (error.retryable) {
           // Retryable error: bubble it up to the consumer
           throw error
+        } else {
+          originalError = error.originalError
         }
       } else {
         originalError = error
-      }
-
-      if (originalError.code === 'ENOTFOUND' && originalError.syscall === 'getaddrinfo') {
-        originalError.message = `Failed to resolve host "${originalError.hostname}". Please check your network settings.`
-      }
-
-      if (originalError.message === 'Request failed with status code 401' && originalError.code === 'ERR_BAD_REQUEST') {
-        originalError.message = 'Authentication failed. Please check your credentials.'
       }
 
       const sanitizedError = {

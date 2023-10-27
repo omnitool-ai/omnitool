@@ -20,7 +20,7 @@
     "frontend": "yarn workspace omni-web dev",
     "update": "git pull && yarn install && run clean && run build",
     "dev": "cross-env NODE_ENV=development node setup/launcher.js -l 127.0.0.1 --viteProxy http://127.0.0.1:5173",
-    "start": "run build:prod && cross-env NODE_ENV=production node setup/launcher.js -l 127.0.0.1 --openBrowser",
+    "start": "run build:prod && cross-env NODE_ENV=production node setup/launcher.js -l 127.0.0.1",
     "clean": "yarn workspaces foreach -A -p -v run clean",
     "third_parties": "node setup/3rdparties-script.js"
   },

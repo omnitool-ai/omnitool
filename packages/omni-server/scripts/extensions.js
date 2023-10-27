@@ -12,7 +12,7 @@ import path from 'path'
 import { simpleGit } from 'simple-git'
 import { exec } from 'child_process'
 
-const TEMPLATE_EXTENSION_REPO = 'git@github.com:mercenaries-ai/omni-extension-template.git'
+const TEMPLATE_EXTENSION_REPO = 'git@github.com:omnitool-ai/omni-extension-template.git'
 
 // Function to validate directory existence
 async function validateDirectoryExists (path) {

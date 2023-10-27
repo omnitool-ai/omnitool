@@ -180,7 +180,7 @@
             </div>
             <div class="editorTopMenuDropdown" x-show="navigationMenu == 'save'">
                 <div class="editorTopMenuDropdownItem"
-                    @click="navigationMenuClose(); workbench.save()">
+                    @click="navigationMenuClose(); workbench.forceSave()">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none"
                             :class="workbench.canSave ? '' : 'unavailable'">

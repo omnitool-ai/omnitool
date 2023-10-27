@@ -35,7 +35,8 @@ Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based service
 ## Table of Contents
 
 - [Key Features](#key-features)
-- [Quickstart](#quickstart)
+- [Quickstart](#quickstart-guide)
+- [Manual Install](#manual-install)
 - [PocketBase DB Admin (ADVANCED)](#pocketbase-db-admin-advanced)
 - [Next Steps](#next-steps)
 - [Changelist](#changelist)
@@ -54,41 +55,78 @@ Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based service
 ## Open Source Commitment
 * Omnitool.ai is fully committed to the ethos of open-source development. You have complete access to the source code for educational, research, and further development purposes.
 
-## Quickstart
-Ensure you have the latest [Node.js](https://nodejs.org/en) and [Yarn](https://yarnpkg.com/) installed. You can launch Omnitool.ai by following these steps after cloning the repository:
+## Quickstart Guide
 
-1. **Install Dependencies**
+We are currently testing installers for Windows and macOS. Until those are publicly available, please follow the manual installation steps.
+
+## Manual Install
+
+This guide will help you download the Omnitool software, and then build and start the Omnitool server in a directory running from your local machine.
+
+You can then access the Omnitool software from a web browser on your local machine.
+
+1. **Prerequisites**
+
+  Ensure you have the latest versions of the following sofware installed:
+
+ * [Node.js](https://nodejs.org/en)
+ * [Yarn](https://yarnpkg.com)
+ * [Git](https://en.wikipedia.org/wiki/Git)
+
+
+2. **Get the Source Code**
+ - Open a terminal
+ - Navigate to where you want Omnitool to be installed 
+ - Use the following command:
+  ```
+    git clone https://github.com/omnitool-ai/omnitool
+  ```
+
+  This will create the `omnitool` folder.  
+
+  - Now navigate inside Omnitool's folder. By default:
+  ```
+    cd omnitool
+  ```
+
+3. **Install Source Dependencies**
 
   Run the following command in the root of the repository to install the necessary dependencies:
   ```
     yarn install
   ```
 
-2. **Start the Server in Local Mode**
+4. **Build and Start the Server**
 
-  Execute the following command to start the Omnitool.ai. Your browser will open automatically once the setup is complete:
+  Now we will use `yarn` and `Node.js` to build the server software locally on your machine and then start it running.
 
   ```
     yarn start
   ```
 
-3. **Open Web Interface**
+  When successful, you will see the following message:
 
-  You can always reopen the tool in another browser by navigating to the specified local address to access the Omnitool.ai.
+  ```
+◐ Booting Server
+✔ Server has started and is ready to accept connections on http://127.0.0.1:1688.
+✔ Ctrl-C to quit.
+```
 
-  Omnitool.ai can now be accessed from [127.0.0.1:1688](http://127.0.0.1:1688)
+5. **Open Omnitool in a Web Browser**
 
-4. **Explore the sample recipes**
+  Omnitool.ai can now be accessed from:
+  [127.0.0.1:1688](http://127.0.0.1:1688)  
 
+---
+6. **Explore the Sample Recipes**
   Use the "Load Recipe" button in the menu to explore different functionality of the platform.
 
-5. **Explore the Code**
-
+---
+7. **Explore the Code**
   For a list of scripts we use internally, try running:
   ```
     yarn run
   ```
-
 
 ## PocketBase DB Admin (ADVANCED)
 Recipes and various cache data are stored in a [PocketBase](https://pocketbase.io) database.

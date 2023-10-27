@@ -30,6 +30,13 @@ const galleryComponent = function () {
     },
     disableNextAndPreviousButtons: {
       'x-intersect:enter.threshold.05'() {
+
+        if (!this.$el?.parentElement?.children)
+        {
+          this.atBeginning = true;
+          this.atEnd = true;
+          return
+        }
         const slideEls = this.$el.parentElement.children;
 
         // If this is the first slide.
@@ -41,6 +48,12 @@ const galleryComponent = function () {
         }
       },
       'x-intersect:leave.threshold.05'() {
+        if (!this.$el?.parentElement?.children)
+        {
+          this.atBeginning = true;
+          this.atEnd = true;
+          return
+        }
         const slideEls = this.$el.parentElement.children;
 
         // If this is the first slide.

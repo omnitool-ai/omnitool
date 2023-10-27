@@ -121,6 +121,7 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
     this.send(message);
   }
 
+
   public signalChatMessageReceived(message: any) {
     if (!message.workflowId) {
       message.workflowId = 'System';
@@ -130,7 +131,6 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
       type: OmniSDKHostMessages.CHAT_MESSAGE_RECEIVED,
       message
     };
-    console.log('Signaling Chat Message Received', packet);
     this.send(packet, '*');
   }
 
@@ -176,6 +176,25 @@ export default class OmniSDKHost<T> extends OmniSDKShared {
     }
   }
 
+  public sendChatMessage(
+    content: string,
+    type: string = 'text/markdown',
+    attachments?: { [key: string]: any },
+    flags?: string[]
+  ): void {
+    const message: IOmniClientChatMessage = {
+      type: OmniSDKClientMessages.SEND_CHAT_MESSAGE,
+      message: {
+        content,
+        type,
+        attachments,
+        flags
+      }
+    };
+    this._handleSendChatMessage(message)
+  }
+
+  
   private _handleSendChatMessage(message: IOmniMessage): void {
     if (message.type !== OmniSDKClientMessages.SEND_CHAT_MESSAGE) return; // type guard
 

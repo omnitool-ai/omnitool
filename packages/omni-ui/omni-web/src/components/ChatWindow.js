@@ -8,6 +8,7 @@ import { marked } from 'marked';
 import { ChatMessageStorageTypes, ChatUtils } from 'omni-client-services';
 import '../styles/markdown.scss';
 import DOMPurify from 'dompurify';
+import {EOmniFileTypes} from 'omni-sdk'
 
 const chatComponent = function (workbench) {
   const client = window.client;
@@ -451,11 +452,11 @@ const chatComponent = function (workbench) {
         client.clipboard.images ??= [];
         client.clipboard.images = client.clipboard.images.concat(uploadedImages);
 
-        await onChatMessage({
-          message: 'Files uploaded: ' + uploadedImages.length,
-          sender: 'me',
-          embeds: { images: uploadedImages }
-        });
+        client.sdkHost.sendChatMessage(
+          'Files uploaded: ' + uploadedImages.length,
+          'text/plain',
+          { images: uploadedImages }
+        );
 
         this.stopCamera();
       }, 'image/jpeg');
@@ -518,23 +519,33 @@ const chatComponent = function (workbench) {
     async genericFileUpload(files, event) {
       await onChatMessage({ message: 'Uploading files...', sender: 'omni' });
       const uploaded = await this.uploadFiles(files);
-      const audio = uploaded.filter((f) => f.mimeType.startsWith('audio') || f.mimeType === 'application/ogg');
-      const images = uploaded.filter((f) => f.mimeType.startsWith('image'));
-      const documents = uploaded.filter((f) => f.mimeType.startsWith('text/plain') || f.mimeType === 'application/pdf');
+      // TODO: Moveto 
+      const audio = uploaded.filter((f) => f.fileType === EOmniFileTypes.audio)
+      const images = uploaded.filter((f) => f.fileType === EOmniFileTypes.image)      
+      const videos = uploaded.filter((f) => f.fileType === EOmniFileTypes.video)
+      const documents = uploaded.filter((f) => f.fileType === EOmniFileTypes.document);
       client.clipboard ??= {};
       client.clipboard.images ??= [];
       client.clipboard.audio ??= [];
+      client.clipboard.video ??=[]
       client.clipboard.documents ??= [];
       client.clipboard.audio = client.clipboard.audio.concat(audio);
       client.clipboard.images = client.clipboard.images.concat(images);
       client.clipboard.documents = client.clipboard.documents.concat(documents);
+      client.clipboard.videos = client.clipboard.video.concat(videos)
       let message = 'Files uploaded: ' + uploaded.length;
       if (uploaded.length > 0) {
         for (let i = 0; i < uploaded.length; i++) {
           message += '\n' + uploaded[i].url;
         }
       }
-      await onChatMessage({ message, sender: 'me', embeds: { audio, images, documents } });
+
+    const cmdFiles = [...client.clipboard.images,...client.clipboard.videos,...client.clipboard.documents, ...client.clipboard.audio].filter(e=>e)
+      
+    client.sdkHost.sendChatMessage(message, 'text/markdown', 
+      { audio, images, documents, commands: [
+        { 'id': 'run', title: '🞂 Run', args: [null, cmdFiles] }]}, ['no-picture'])
+      
       if (event.target) {
         event.target.value = ''; // Allow same file to be uploaded multiple times.
       }

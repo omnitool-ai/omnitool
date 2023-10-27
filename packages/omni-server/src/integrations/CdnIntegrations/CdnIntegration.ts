@@ -82,7 +82,11 @@ class CdnResource extends OmniBaseResource {
         return this.data.toString('base64');
       }
     } else if (typeof this.data === 'string') {
-      return this.data;
+      if (addHeader) {
+        return `data:${this.mimeType};base64,${this.data}`;
+      } else {
+        return this.data;
+      }
     }
   }
 
@@ -132,7 +136,7 @@ abstract class CdnIntegration extends APIIntegration {
     },
     meta?: any
   ): Promise<CdnResource>;
-  abstract find(fid: string): Promise<ICdnResource | null>;
+  abstract find(fid: string): Promise<CdnResource | null>;
   abstract get(ticket: ICdnTicket, opts?: any, format?: 'asBase64' | 'stream' | 'file'): Promise<CdnResource>;
   abstract serveFile(fid: string, opts: { download?: boolean }, reply: any): Promise<any>;
   abstract checkFileExists(fid: string): Promise<boolean>;
