@@ -160,9 +160,13 @@
       </svg>
     </a>
   </div>
-  <div class='-rotate-90 origin-left whitespace-nowrap fixed left-5 bottom-20 items-center'>
-    <span class="text-2xl text-gray-400">OMNITOOL</span>
-    <span class="text-md text-gray-300">&nbsp;0.5.0 (Early Access)</span>
+  <div class='-rotate-90 origin-left whitespace-nowrap fixed left-5 bottom-20 items-center' 
+    x-data="{version: ''}"
+    x-init="version = await (await fetch('/version')).text()"
+  >
+    <span class="text-2xl text-gray-400">OMNITOOL&nbsp;</span>
+    <span class="text-md text-gray-300" x-text="version"></span>
+    <span class="text-md text-gray-300">&nbsp;(EARLY ACCESS)</span>
   </div>
 
 </div>

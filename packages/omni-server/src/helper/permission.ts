@@ -13,8 +13,8 @@ async function getGroupByMemberId(db: DBService, userId: string): Promise<Group[
   const start = performance.now();
   const query = {
     _id: {
-      $gte: `${Group.name}:`, // i.e. _id.startswith(userId + ':')
-      $lt: `${Group.name}:\u10FFFF`
+      $gte: `${Group.modelName}:`, // i.e. _id.startswith(userId + ':')
+      $lt: `${Group.modelName}:\u10FFFF`
     },
     members: {
       $elemMatch: {

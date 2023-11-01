@@ -23,6 +23,9 @@ core_extensions:
   - title: FormIO Recipe UIs
     id: omni-core-formio
     url: https://raw.githubusercontent.com/omnitool-ai/omni-core-formio/main/extension.yaml
+  - title: Web UI
+    id: omni-core-web
+    url: https://raw.githubusercontent.com/omnitool-ai/omni-core-web/main/extension.yaml
 
 known_extensions:
   - title: Minipaint
@@ -55,6 +58,9 @@ known_extensions:
   - title: WA-Like Chat UI (WIP)
     id: omni-extension-wa-chat-ui
     url: https://raw.githubusercontent.com/omnitool-community/omni-extension-wa-chat-ui/master/extension.yaml
+  - title: Omni Debugger
+    id: omni-extension-logging
+    url: https://raw.githubusercontent.com/shinta-liem/omni-extension-logging/main/extension.yaml
 
 in_development:
   - title: Feed Reader

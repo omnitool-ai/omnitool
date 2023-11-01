@@ -16,9 +16,9 @@
     "./lib/"
   ],
   "scripts": {
-    "build": "run lint --quiet --cache && echo \"Building omni-client-services...\" && esbuild --log-level=info --bundle src/index.ts --outdir=lib --sourcemap --format=esm --define:process.env.NODE_ENV=\\\"development\\\" --color=true --target=es2020 && run postbuild",
-    "build:prod": "echo \"Building client:prod...\" && esbuild --bundle src/index.ts --outfile=lib/client.min.esm.js --minify --format=esm --define:process.env.NODE_ENV=\"production\"",
-    "postbuild": "echo \"Building omni-client-services typescript declarations...\" && tsc --build --emitDeclarationOnly --pretty --verbose",
+    "build": "run lint --quiet --cache && node build.js development && run postbuild",
+    "build:prod": "node build.js production && run postbuild",
+    "postbuild": "echo \"Building omni-client-services typescript declarations...\" && tsc --build --emitDeclarationOnly --pretty",
     "start": "ts-node-esm ./src/run.ts",
     "lint": "eslint ./src --ext .js,.ts, --ignore-path .gitignore",
     "clean": "tsc --build --clean & rm -rf .eslintcache"

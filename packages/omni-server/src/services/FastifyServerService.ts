@@ -33,6 +33,7 @@ import { CustomMemoryStore } from './Session/CustomMemoryStore.js';
 import { KVSessionStore } from './Session/KVSessionStore.js';
 import { type DBService } from './DBService.js';
 import { type AuthIntegration } from 'integrations/Authentication/AuthIntegration';
+import fs from 'node:fs';
 
 interface FastifyServerServiceConfig extends IServiceConfig {
   opts?: any;
@@ -224,6 +225,14 @@ class FastifyServerService extends Service {
     }
   }
 
+  resolveOmniWebPath() {
+    const maybeWebExtensionPath = path.join(process.cwd(), 'extensions', 'omni-core-web', 'public');
+    if (fs.existsSync(maybeWebExtensionPath)) {
+      return maybeWebExtensionPath;
+    }
+    return path.join(process.cwd(), 'public/');
+  }
+
   registerStaticHandler() {
     const config = this.config as FastifyServerServiceConfig;
     if (config.proxy.enabled) {
@@ -246,12 +255,17 @@ class FastifyServerService extends Service {
         }
       });
     } else {
-      this.info(`${this.id} static path ${path.join(process.cwd(), 'public/')}`);
+      const omniWebPath = this.resolveOmniWebPath();
+      this.info(`${this.id} static path ${omniWebPath}`);
       this.fastifyInstance.register(fastifyStatic, {
-        root: path.join(process.cwd(), 'public/'),
+        root: omniWebPath,
         prefix: '/' // optional: default '/'
       });
     }
+    // SYSTEM ROUTES
+    this.fastifyInstance.get('/version', async (request: any, reply: any) => {
+      reply.send(this.app.version);
+    });
   }
 
   async load() {

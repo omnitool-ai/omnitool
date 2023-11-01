@@ -22,7 +22,7 @@ interface IServerConfig {
     kvStorage?: {
       dbPath: string;
     };
-
+    version: string;
     integrations?: any;
     network: {
       interface: string;

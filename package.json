@@ -1,6 +1,6 @@
 {
   "name": "omnitool",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "packageManager": "yarn@3.3.1",
   "private": true,
   "workspaces": [
@@ -15,14 +15,13 @@
     "pocketbase": "0.16.6"
   },
   "scripts": {
-    "build:prod": "run build && yarn workspace omni-server build:prod",
+    "build:prod": "yarn workspaces foreach -t -v run build:prod",
     "build": "yarn workspaces foreach -t -v run build",
     "frontend": "yarn workspace omni-web dev",
     "update": "git pull && yarn install && run clean && run build",
     "dev": "cross-env NODE_ENV=development node setup/launcher.js -l 127.0.0.1 --viteProxy http://127.0.0.1:5173",
     "start": "run build:prod && cross-env NODE_ENV=production node setup/launcher.js -l 127.0.0.1",
-    "clean": "yarn workspaces foreach -A -p -v run clean",
-    "third_parties": "node setup/3rdparties-script.js"
+    "clean": "yarn workspaces foreach -A -p -v run clean"
   },
   "dependenciesMeta": {
     "ts-node@10.9.1": {
@@ -55,11 +54,12 @@
     "@ungap/structured-clone": "^1.2.0",
     "adm-zip": "^0.5.10",
     "check-node-version": "^4.2.1",
+    "compare-versions": "^6.1.0",
     "cross-env": "^7.0.3",
-    "fs-extra": "^11.1.1",
-    "nsfwjs": "^2.4.2"
+    "fs-extra": "^11.1.1"
   },
   "devDependencies": {
+    "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.0.3"

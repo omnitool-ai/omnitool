@@ -8,7 +8,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { assert } = require('console');
 const { ensure } = require('./pocketdbutils.js');
-const { sleep, checkInternet, omniCwd } = require('./utils.js');
+const { sleep, checkGitForUpdates, omniCwd } = require('./utils.js');
 const { ensureDirSync } = require('fs-extra');
 const { update_build } = require('./updater.js');
 const readline = require('node:readline');
@@ -19,8 +19,7 @@ let args = process.argv.slice(2);
 
 let server_entry = null;
 
-const packagejson = JSON.parse(
-  fs.readFileSync(path.join(omniCwd(), 'package.json'), { encoding: 'utf-8' }));
+const packagejson = JSON.parse(fs.readFileSync(path.join(omniCwd(), 'package.json'), { encoding: 'utf-8' }));
 const { argv0 } = require('node:process');
 const depjson = packagejson.dependenciesBin;
 const platform = os.platform();
@@ -144,6 +143,36 @@ function setup_listeners(proc, name) {
   });
 }
 
+async function check_for_updates() {
+  console.log('Checking for updates...');
+  const result = await checkGitForUpdates();
+  if (result.hasUpdates) {
+    const input = await user_confirmation(
+      `You are currently on ${result.local}.\nThere's a new version ${result.remote} available. Would you like to pull and update with git? [y/n]:`
+    );
+    if (input === 'y') {
+      try {
+        console.log('\nCalling git pull...');
+        execSync('git pull', { cwd: omniCwd(), stdio: 'inherit' });
+        console.log('Calling yarn install...');
+        execSync('yarn', { cwd: omniCwd(), stdio: 'inherit' });
+        console.log('\nUpdate complete. Please re-run the application with: yarn start');
+        process.exit(0);  
+      }
+      catch(e) {
+        console.error(e);
+        console.warn(`Update failed. Please try running [yarn start] again.`);
+        process.exit(1);
+      }
+    } else {
+      console.log(`Continuing with current build ${result.local}...`);
+    }
+  }
+  else{
+    console.log(`You are currently on the latest version available ${result.local}.`);
+  }
+}
+
 async function run_development(server_args) {
   const pocketready = await ensure(pocketbaseInstallPath);
   if (!pocketready) {
@@ -189,14 +218,6 @@ function log_processes() {
   pretty_process_pid.forEach((e) => console.log(e));
 }
 
-async function ensure_online() {
-  if (!(await checkInternet())) {
-    console.error('DNS resolution failed. Please check your internet connection.');
-    process.exit(1);
-  }
-  console.log('Connectivity OK!');
-}
-
 async function ensure_wasm() {
   const { NodeProcessEnv } = await import('omni-shared');
   // --- Copy wasm models
@@ -221,14 +242,7 @@ async function ensure_wasm() {
   if (!existsSync(path.join(wasmDir, 'tfjs-backend-wasm-simd.wasm'))) {
     console.log('Installing WASM modules... nsfwjs/threaded/simd ');
     copyFileSync(
-      path.join(
-        omniCwd(),
-        'node_modules',
-        '@tensorflow',
-        'tfjs-backend-wasm',
-        'dist',
-        'tfjs-backend-wasm-simd.wasm'
-      ),
+      path.join(omniCwd(), 'node_modules', '@tensorflow', 'tfjs-backend-wasm', 'dist', 'tfjs-backend-wasm-simd.wasm'),
       path.join(wasmDir, 'tfjs-backend-wasm-simd.wasm')
     );
   }
@@ -251,8 +265,6 @@ process.on('uncaughtException', (err) => {
 });
 
 pretty_process_pid.push(`OMNITOOL - Launcher PID ${process.pid}`);
-
-ensure_online();
 
 // launched from omnitool executable - always production + updates
 async function run() {
@@ -279,6 +291,7 @@ async function run() {
         break;
       case NodeProcessEnv.production:
         server_entry = 'dist/server.cjs';
+        await check_for_updates();
         ensure_wasm();
         run_production([]);
         break;

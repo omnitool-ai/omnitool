@@ -174,10 +174,8 @@ class AuthIntegration extends APIIntegration {
   async generateJwtToken(scopes: any, issuer: User, expiresIn: number = 3600) {
     this.debug('Generating token with scopes: ', scopes);
     try {
-      // @ts-ignore
-      const config = this.config as IAuthIntegrationConfig;
-
-      if (config.jwt.secret) {
+      const jwtSecret = this.app.settings.get<string>('omni:auth.jwt.secret')?.value;
+      if (jwtSecret) {
         // Generate JWT token
         const token = jwt.sign(
           {
@@ -185,7 +183,7 @@ class AuthIntegration extends APIIntegration {
             issuerId: issuer?.id || '',
             tokenId: generateId()
           },
-          config.jwt.secret,
+          jwtSecret,
           { expiresIn }
         );
 

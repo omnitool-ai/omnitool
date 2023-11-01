@@ -11,7 +11,7 @@ const os = require('os');
 const { omniCwd } = require('./utils.js');
 const packagejson = JSON.parse(
   fs.readFileSync(path.join(omniCwd(), 'package.json'), { encoding: 'utf-8' }));
-const { unzip, sleep } = require('./utils');
+const { unzip, sleep, checkInternet } = require('./utils');
 const depjson = packagejson.dependenciesBin;
 
 const VERSION_MARKER = '##version##';
@@ -127,12 +127,21 @@ async function installPocketBase(installpath) {
   await createDefaultAdmin(installpath);
 }
 
+async function ensure_online() {
+  if (!(await checkInternet())) {
+    console.error('DNS resolution failed. Please check your internet connection.');
+    process.exit(1);
+  }
+  console.log('Connectivity OK!');
+}
+
 async function ensure(installpath) {
   // check if installed
   if (verifyInstall(path.join(installpath, getExecutable()))) {
     console.info(`Found installation for PocketBase`);
     return true;
   } else {
+    ensure_online();
     console.info(`Missing PocketBase DB - Installing...`);
     try {
       await installPocketBase(installpath);

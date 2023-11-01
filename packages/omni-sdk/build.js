@@ -3,22 +3,28 @@
  * All rights reserved.
  */
 
+import esbuild from 'esbuild';
+import assert from 'node:assert';
 
-import esbuild from "esbuild"
+const environment = process.argv[2];
+assert(environment === 'production' || environment === 'development', 'Invalid environment ' + environment);
 
-console.log("Building omni_sdk...")
-esbuild.build({
-  entryPoints: ['src/index.ts'],
-  outdir: 'lib',
-  format: 'esm',
-  bundle: true,
-  platform: 'node',
-  tsconfig: 'tsconfig.json',
-  logLevel: 'info',
-  target: 'es2020',
-  minify: true,
-  sourcemap: true,
-  //external: ['markdown', 'handlebars']
-}).then(() => console.log("Building omni_sdk done"))
-.catch(() => process.exit(1));
-
+console.log(`Building omni-sdk (${environment})...`);
+esbuild
+  .build({
+    entryPoints: ['src/index.ts'],
+    outdir: 'lib',
+    format: 'esm',
+    bundle: true,
+    platform: 'node',
+    tsconfig: 'tsconfig.json',
+    logLevel: 'warning',
+    target: 'es2020',
+    minify: true,
+    sourcemap: true,
+    define: {
+      'process.env.NODE_ENV': `"${environment}"`
+    }
+  })
+  .then(() => console.log('Building omni-sdk done'))
+  .catch(() => process.exit(1));

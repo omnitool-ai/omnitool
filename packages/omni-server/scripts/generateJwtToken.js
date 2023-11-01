@@ -25,11 +25,14 @@ const script = {
         //     throw new Error('Action not permitted')
         //   }
         // }
-      const [action, subject, expiresIn] = payload
+      const [action, subject, workflowId, expiresIn] = payload
       const scopes = [
         {
             action,
             subject,
+            conditions: {
+              id: workflowId
+            }
         }
       ]
 

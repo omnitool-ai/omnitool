@@ -32,7 +32,8 @@
     "typescript": "^5.2.2"
   },
   "scripts": {
-    "build": "run lint --quiet --cache && node ./build.js && run build:types",
+    "build": "run lint --quiet --cache && node ./build.js development && run build:types",
+    "build:prod": "node ./build.js production && run build:types",
     "build:types": "echo \"Building omni-sockets typescript declarations...\" && tsc --build --pretty  --emitDeclarationOnly",
     "lint": "eslint ./src --ext .js,.ts, --ignore-path .gitignore",
     "clean": "tsc --build --clean"

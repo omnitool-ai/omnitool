@@ -94,7 +94,8 @@ class Authenticator {
       },
       jwt: async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-          await this.authenticateJwt(request);
+          const user = await this.authenticateJwt(request);
+          return user;
         } catch (err) {
           omnilog.warn('authenticateJwt failed', err);
         }
@@ -152,28 +153,25 @@ class Authenticator {
         }
       }
 
-      //@ts-ignore
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      if (!(request.user || request.session.get('permission'))) {
+      if (!request.user) {
         // All handler failed
         return await reply.status(401).send('Authentication failed');
       }
 
-      if (request.user) {
-        request.user.settings.bindStorage(
-          new StorageAdapter<ISetting<any>>(
-            `settings:${request.user.id}`,
-            this._kvStorage ?? new Map<string, ISetting<any>>()
-          )
-        );
-      }
+      request.user.settings.bindStorage(
+        new StorageAdapter<ISetting<any>>(
+          `settings:${request.user.id}`,
+          this._kvStorage ?? new Map<string, ISetting<any>>()
+        )
+      );
+      
       if (done) {
         await done(request.session.sessionId, request.user);
       }
     };
   }
 
-  private async authenticateJwt(request: FastifyRequest) {
+  private async authenticateJwt(request: FastifyRequest): Promise<User|null> {
     const token = request.headers.authorization?.split(' ')[1];
     if (!token) {
       throw new Error('Unauthorized access');
@@ -187,8 +185,14 @@ class Authenticator {
 
       omnilog.debug('scopes', scopes);
 
+      const user = await this.getUserById(issuerId);
+      if (!user) {
+        throw new Error("Invalid issuer")
+      }
+
       // @ts-ignore
       request.session.set('permission', scopes);
+      return user;
     } catch (err) {
       omnilog.error(err);
       throw new Error('Unauthorized access');

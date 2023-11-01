@@ -456,6 +456,8 @@ p {
     color: #ffffff;
     transition: background-color 0.5s ease-in-out;
     flex-shrink: 0;
+    -webkit-user-select: none;
+    user-select: none;
 
     svg {
       fill: transparent;

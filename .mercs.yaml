@@ -229,6 +229,7 @@ server:
         'POST /api/v1/workflow/exec': # Execute a client workflow on the server
           handler: 'exec'
           clientExport: 'exec'
+          authStrategy: 'jwt'
 
         'POST /api/v1/workflow/stop': # Stop all running workflows the user has access to
           handler: 'stop'

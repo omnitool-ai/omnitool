@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "run lint --quiet --cache && vite build",
+    "build:pub": "run lint --quiet --cache && vite build",
     "clean": "tsc --build --clean & rm -rf .eslintcache",
     "preview": "vite preview",
     "test": "npx vitest",

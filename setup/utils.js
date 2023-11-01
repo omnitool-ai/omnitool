@@ -7,6 +7,7 @@ const fs = require('fs');
 const crypto = require('node:crypto');
 const admzip = require('adm-zip');
 const path = require('node:path');
+const { compare } = require('compare-versions');
 
 async function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -57,6 +58,23 @@ async function checkInternet() {
   }
 }
 
+async function checkGitForUpdates() {
+  const local_package = require('../package.json');
+  try {
+    const result = await fetch('https://raw.githubusercontent.com/omnitool-ai/omnitool/main/package.json');
+    const remote_package = await result.json();
+    if (compare(remote_package.version, local_package.version, '>')) {
+      return { hasUpdates: true, remote: remote_package.version, local: local_package.version };
+    } else {
+      return { hasUpdates: false, remote: remote_package.version, local: local_package.version }
+    }  
+  }
+  catch(e) {
+    console.warn('Unable to fetch updates. Continuing...');
+    return { hasUpdates: false, remote: undefined, local: local_package.version }
+  }
+}
+
 function omniCwd() {
   return path.resolve(__dirname) + '/../';
 }
@@ -67,5 +85,6 @@ module.exports = {
   sleep,
   statuslogger,
   checkInternet,
-  omniCwd
+  omniCwd,
+  checkGitForUpdates
 };

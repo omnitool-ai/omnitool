@@ -33,6 +33,7 @@ interface ILog {
 
 interface IApp extends ILog, IBroadcast {
   id: string;
+  version: string;
   logger: ILogger;
   services: ServiceManager;
   integrations: IntegrationsManager;
@@ -65,6 +66,7 @@ enum STATE {
 
 abstract class App implements IApp {
   static STATES = STATE;
+  version: string;
   config: any;
   id: string;
   logger: any;
@@ -87,7 +89,7 @@ abstract class App implements IApp {
       integrationsManagerType: IntegrationsManager
     };
     this.config = config;
-
+    this.version = config.version;
     this.logger = omnilog;
     this.services = new ServiceManager(this);
     this.integrations = new (opts.integrationsManagerType || IntegrationsManager)(this);

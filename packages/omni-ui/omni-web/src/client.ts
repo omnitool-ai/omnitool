@@ -18,6 +18,7 @@ import {
   Manager,
   type IOmniSSEMessageCustomExtensionEvent,
   type IOmniSSEMessageClientToast,
+  type IOmniSSEMessageShowExtensionEvent,
   insane
 } from 'omni-shared';
 import CodeRenderer from './renderers/chat/CodeRenderer';
@@ -329,6 +330,14 @@ class OmnitoolClient extends Client {
       }
     });
     this.io.registerMessageHandler({ type: 'chat:system', handler: this.chat.onChatMessage.bind(this.chat) });
+
+    // Extension messages
+    this.io.registerMessageHandler({
+      type: OmniSSEMessages.SHOW_EXTENSION,
+      handler: (message: IOmniSSEMessageShowExtensionEvent): any => {
+        this.workbench.showExtension(message.body.extensionId, message.body.args, message.body.page, message.body.opts);
+      }
+    })
     this.io.registerMessageHandler({
       type: OmniSSEMessages.CUSTOM_EXTENSION_EVENT,
       handler: (message: IOmniSSEMessageCustomExtensionEvent) => {

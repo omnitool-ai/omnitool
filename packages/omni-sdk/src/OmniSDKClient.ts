@@ -124,7 +124,7 @@ export default class OmniSDKClient extends OmniSDKShared {
     const msg = message as IOmniHostCustomEventMessage;
 
     if (msg.extensionId !== this.extensionId) return;
-    this.events.emit(OmniSDKClientEvents.CUSTOM_EVENT, { eventId: msg.eventId, eventArgs: msg.eventArgs });
+    await this.events.emit(OmniSDKClientEvents.CUSTOM_EVENT, { eventId: msg.eventId, eventArgs: msg.eventArgs });
   }
 
   private async _handleSyncData(message: IOmniMessage): Promise<void> {

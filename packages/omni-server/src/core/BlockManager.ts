@@ -234,6 +234,10 @@ class BlockManager extends Manager {
       },
       ctx?: any
     ) => {
+      if (!ctx.userId || !ctx.sessionId) {
+        this.warn('execute() called without ctx.userId or ctx.sessionId');
+      }
+
       const oid = api.split('.');
       const integrationId = oid.shift();
       const opKey = oid.join('.');

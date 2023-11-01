@@ -27,9 +27,9 @@
     "typescript": "^5.2.2"
   },
   "scripts": {
-    "build": "run lint --quiet --cache && echo \"Building omni-shared...\" && esbuild --log-level=info --bundle src/index.ts --outdir=lib --sourcemap --format=esm --define:process.env.NODE_ENV=\\\"development\\\" --color=true --external:axios --external:consola --target=es2020 --external:insane && run build:types",
-    "build:prod": "echo \"Building omni-shared:prod...\" && esbuild --bundle src/index.ts --outfile=lib/omni-shared.min.esm.js --minify --analyze --format=esm --define:process.env.NODE_ENV=\"production\" --external:insane",
-    "build:types": "echo \"Building omni-shared typescript declarations...\" && tsc --build --pretty --emitDeclarationOnly --verbose",
+    "build": "run lint --quiet --cache && node build.js development && run build:types",
+    "build:prod": "node build.js production && run build:types",
+    "build:types": "echo \"Building omni-shared typescript declarations...\" && tsc --build --pretty --emitDeclarationOnly",
     "lint": "eslint ./src --ext .js,.ts, --ignore-path .gitignore",
     "clean": "tsc --build --clean & rm -rf .eslintcache"
   },

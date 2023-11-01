@@ -14,6 +14,7 @@ import Server from './core/Server.js';
 import { loadServerConfig, type IServerConfig } from './loadConfig.js';
 import { exec } from 'child_process';
 import os from 'os';
+import fs from 'node:fs';
 
 // Services
 import { APIServerService, type IAPIServerServiceConfig } from './services/APIService.js';
@@ -60,8 +61,12 @@ registerOmnilogGlobal();
 omnilog.wrapConsoleLogger();
 // ----------------------------------------- Server -----------------------------------------
 const config: IServerConfig = loadServerConfig('../../.mercs.yaml') as IServerConfig;
+const packagejson = JSON.parse(
+  fs.readFileSync('package.json', { encoding: 'utf-8' }));
+
 const serverConfig = config.server;
-const server_config = serverConfig; //TODO: Clean up after merge
+serverConfig.version = packagejson.version;
+const server_config = serverConfig;
 
 process.on('unhandledRejection', (reason, promise) => {
   omnilog.trace();

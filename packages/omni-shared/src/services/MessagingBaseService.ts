@@ -28,7 +28,8 @@ interface IMessageHeader {
 
 export enum OmniSSEMessages {
   CLIENT_TOAST = 'client:toast',
-  CUSTOM_EXTENSION_EVENT = 'custom_extension_event'
+  CUSTOM_EXTENSION_EVENT = 'custom_extension_event',
+  SHOW_EXTENSION = 'extension:show'
 }
 
 export interface IOmniSSEMessageCustomExtensionEvent extends IMessage {
@@ -38,6 +39,16 @@ export interface IOmniSSEMessageCustomExtensionEvent extends IMessage {
     eventId: any;
     eventArgs: any;
   };
+}
+
+export interface IOmniSSEMessageShowExtensionEvent extends IMessage {
+  type: OmniSSEMessages.SHOW_EXTENSION;
+  body: {
+    extensionId: string,
+    args?: any,
+    page?: string,
+    opts?: any
+  }
 }
 
 export interface IOmniSSEMessageClientToast extends IMessage {
