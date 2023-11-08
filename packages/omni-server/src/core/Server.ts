@@ -237,6 +237,18 @@ class MercsServer extends App implements IAppEvents {
     });
 
     this.settings.add({
+      key: 'omni:api.oauth.google-gmail.client.id',
+      defaultValue: '',
+      value: ''
+    });
+
+    this.settings.add({
+      key: 'omni:api.oauth.google-gmail.client.secret',
+      defaultValue: '',
+      value: ''
+    });
+
+    this.settings.add({
       key: 'omni:api.fetch.policy.url.type',
       defaultValue: 'deny_all_except',
       value: 'deny_all_except'

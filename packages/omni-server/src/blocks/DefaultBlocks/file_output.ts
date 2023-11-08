@@ -75,6 +75,14 @@ component
       .set('description', 'One or more audio files')
       .toOmniIO()
   )
+
+  .addInput(
+    component
+      .createInput('videos', 'array', 'video', {array: true})
+      .set('title', 'Video')
+      .set('description', 'One or more video files')
+      .toOmniIO()
+  )
   .addInput(
     component
       .createInput('documents', 'array', 'documentArray')
@@ -112,7 +120,7 @@ component
         payload.images.forEach((image: any) => {
           ctx.app.cdn[type](
             image,
-            { mimeType: image.mimeType, fileName: fileName || image.fileName, userId: ctx.userId },
+            { mimeType: image.mimeType, fileName: fileName || image.fileName, userId: ctx.userId, jobId: ctx.jobId },
             image.meta
           );
         })
@@ -124,7 +132,7 @@ component
         payload.documents.forEach((doc: any) => {
           ctx.app.cdn[type](
             doc,
-            { mimeType: doc.mimeType, fileName: fileName || doc.fileName, userId: ctx.userId },
+            { mimeType: doc.mimeType, fileName: fileName || doc.fileName, userId: ctx.userId, jobId: ctx.jobId },
             doc.meta
           );
         })
@@ -136,12 +144,25 @@ component
         payload.audio.forEach((audio: any) => {
           ctx.app.cdn[type](
             audio,
-            { mimeType: audio.mimeType, fileName: fileName || audio.fileName, userId: ctx.userId },
+            { mimeType: audio.mimeType, fileName: fileName || audio.fileName, userId: ctx.userId, jobId: ctx.jobId },
             audio.meta
           );
         })
       );
     }
+
+    if (payload.videos) {
+      await Promise.all(
+        payload.videos.forEach((video: any) => {
+          ctx.app.cdn[type](
+            video,
+            { mimeType: video.mimeType, fileName: fileName || video.fileName, userId: ctx.userId, jobId: ctx.jobId },
+            video.meta
+          );
+        })
+      );
+    }
+
 
     return {};
   });

@@ -449,6 +449,8 @@ p {
   border-right: 2px solid $grey;
 
   .sidebarItem {
+    display: block;
+    margin: auto;
     align-items: center;
     justify-items: center;
     justify-content: center;
@@ -460,6 +462,7 @@ p {
     user-select: none;
 
     svg {
+      
       fill: transparent;
       stroke: white;
     }
@@ -479,6 +482,7 @@ p {
 
     &-sub {
       display: flex;
+      margin: auto;
       align-items: flex-start;
       justify-items: center;
       justify-content: flex-start;

@@ -58,7 +58,7 @@
           'border-t-2': messageContent.length
       }">
 
-        <template x-if="message.images?.length >= 1">
+        <template x-if="message.images?.length >= 1" >
           <template x-for="(image, idx) in message.images" :key="idx">
             <div class="p-0 m-0 " :class="{
                 'justify-left': !fromMe,
@@ -113,41 +113,37 @@
           </div>
         </template>
         <template x-if="message.audio && message.audio.length > 0">
-          <div x-data="audioPlayer" x-init="setPlaylist(message.audio); loadTrack();"
-            class="flex-grow 0  w-full justify-left   p-0 m-0 gap-0 bg-neutral-300" style="flex-basis: 100%">
-            <div class="w-full flex gap-1 items-center">
-              <select x-model="currentTrackIndex" @change="loadTrack()">
-                <template x-for="(track, index) in playlist" :key="index">
-                  <option :value="index" x-text="'Audio #' + (index +1)"></option>
-                </template>
-              </select>
-              <button @click="togglePlayPause()" class="h-5 w-5 mr-1">
-                <span x-show="!isPlaying && !isLoading">
-                  <img src="./play.svg" alt="Play" />
-                </span> <!-- Play symbol -->
-                <span x-show="isPlaying && !isLoading">
-                  <img src="./pause.svg" alt="Play" />
-                </span> <!-- Pause symbol -->
-                <span x-show="isLoading">
-                  <img src="./loader.svg" alt="Play" />
-                </span>
-              </button>
-              <input type="range" min="0" :max="duration" x-model="currentTime" @input="seekAudio()"
-                style="width: 100%;">
-              <span x-text="formatTime(currentTime)"></span> / <span x-text="formatTime(duration)"></span><br>
-              <a :href="message.audio[0].url + '?download=1'" target="_blank" rel="noopener noreferrer" class="px-1"
-                x-tooltip="Download Audio">
-                <audio @play="isPlaying = true;" @pause="isPlaying = false" @timeupdate="updateTime()"
-                  @durationchange="updateDuration()" @canplaythrough="isLoading = false" @ended="nextTrack()"
-                  x-ref="audio" preload="metadata"></audio><u>↓</u></a>
-              </a>
-              <!--TODO: remove hardcoding of audio[0] and pass the entire list over to the viewer -->
-              <button @click="showViewerExtension(message.audio[0])" class="h-5 w-5 mr-1">
+          <div x-data="audioPlayer" x-init="setPlaylist(message.audio)"
+            class="flex w-full flex-col">
+            <template x-for="(track, index) in playlist" :key="index">
+              <div class="flex w-full mt-1 items-center justify-center gap-1">
+              <audio controls name="media" preload="auto" class="w-full rounded-lg " >
+                <source :src="track.url + '?download=1'" type="audio/mpeg">
+              </audio>
+              <button @click="showViewerExtension(track)" class="h-5 w-5" x-tooltip="Open in File Manager">
                 <span>
                   📁
                 </span>
               </button>
-            </div>
+              </div>
+            </template>
+          </div>
+        </template>
+        <template x-if="message.files && message.files.length > 0">
+          <div class="w-full">
+            <template x-for="(file,idx) in message.files" :key="idx">
+              <div>
+
+                <span @click="showViewerExtension(file)" x-text="file.fileName"
+                  class="font-mono font-semibold cursor-pointer" x-tooltip="View File"></span>
+
+                <button @click="showViewerExtension(file)" class="h-10 w-10 mr-1">
+                  <a :href="file.url + '?download=1'" target="_blank" rel="noopener noreferrer" class="px-1"
+                    x-tooltip="Download File">↓</a>
+                  </a>
+                </button>
+              </div>
+            </template>
           </div>
         </template>
         <div class="w-full  text-right mt-0.5 bg-gradient-to-b from-gray-100 to-gray-50">

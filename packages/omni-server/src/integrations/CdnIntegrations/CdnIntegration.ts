@@ -246,7 +246,7 @@ abstract class CdnIntegration extends APIIntegration {
       return this.getByFid(url.replace('/fid/', ''), integration);
     }
 
-    console.warn('Fetching from external URL', url);
+    console.info('Fetching from external URL', url);
 
     const result = await axios.get(url, {
       // @ts-ignore

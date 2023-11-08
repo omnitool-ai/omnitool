@@ -115,21 +115,25 @@ component
     if(payload.persistData !== "Expiring") {
       if (payload.images && payload.images.length > 0) {
           await Promise.all(payload.images.map(async (image: any) => {
+          delete image.data;
           return ctx.app.cdn.setExpiry(image, ctx.userId, null)
         }))
       }
       if (payload.audio && payload.audio.length > 0) {
         await Promise.all(payload.audio.map(async (audio: any) => {
+          delete audio.data;
           return ctx.app.cdn.setExpiry(audio, ctx.userId, null)
         }))
       }
       if (payload.documents && payload.documents.length > 0) {
         await Promise.all(payload.documents.map(async (doc: any) => {
+          delete doc.data;
           return ctx.app.cdn.setExpiry(doc, ctx.userId, null)
         }))
       }
       if (payload.videos && payload.videos.length > 0) {
         await Promise.all(payload.videos.map(async (vid: any) => {
+          delete vid.data;
           return ctx.app.cdn.setExpiry(vid, ctx.userId, null)
         }))
       }

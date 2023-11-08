@@ -452,10 +452,9 @@ class LocalCdnIntegration extends CdnIntegration {
     }
 
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    if (opts.userId || opts.jobId) {
+    if ( opts.jobId) {
       tags ??= [];
-      //if (opts.userId) tags = tags.concat([`user.${opts.userId}`])
-      if (opts.jobId) tags = tags.concat([`job.${opts.jobId}`]);
+      tags = tags.concat([`job.${opts.jobId}`]);
     }
 
     this.kvStorage.set(
@@ -565,7 +564,7 @@ class LocalCdnIntegration extends CdnIntegration {
     {
       throw new Error("Null file identifier passed to cdn.find")
     }
-    // Allow 
+    // Allow
     if (fid.startsWith('sample-import:'))
     {
       const actualFid = this.kvStorage.get(fid.replace('sample-import:', 'sample-import.'))
@@ -576,11 +575,13 @@ class LocalCdnIntegration extends CdnIntegration {
       }
     }
 
-    const ret = await Promise.resolve(this.kvStorage.get(`file.${fid}`));
-    if (ret) {
-      ret.fid ??= fid;
+    const ret = await Promise.resolve(this.kvStorage.get(`file.${fid}`, true));
+    const res = this.kvStorage._getRowValue(ret)
+    if (res) {
+      res.fid ??= fid;
+      res.expires = res.expiry
     }
-    const resource = new CdnResource(ret)
+    const resource = new CdnResource(res)
     return resource;
   }
 
@@ -650,7 +651,7 @@ class LocalCdnIntegration extends CdnIntegration {
   }
 
   async checkFileExists(fid: string): Promise<boolean> {
-    const record = await this.find(fid) 
+    const record = await this.find(fid)
     return record != null;
   }
 

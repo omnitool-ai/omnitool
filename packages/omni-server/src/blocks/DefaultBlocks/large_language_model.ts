@@ -123,6 +123,66 @@ const run_replicate_llm = async (
   return text || 'Replicate.com problem';
 };
 
+const context_size_for_model = (model: string) => {
+  // https://platform.openai.com/docs/models/continuous-model-upgrades
+  if (model.includes('-16k')) {
+    return 16384; // === 16 * 1024
+  }
+  if (model.includes('-32k')) {
+    return 32768; // === 32 * 1024
+  }
+  if (model === 'gpt-4-1106-preview') {
+    return 128000; // Note: 128 * 1000, not 128 * 1024.
+  }
+  if (model === 'gpt-4-vision-preview') {
+    return 128000; // Note: 128 * 1000, not 128 * 1024.
+  }
+  if (model.includes('gpt-4')) {
+    return 8192;
+  }
+
+  if (model === 'gpt-3.5-turbo-1106') {
+    return 16384;
+  }
+
+  if (model === 'gpt-3.5-turbo') {
+    //Will update to gpt-3.5-turbo-1106 starting Dec 11, 2023.
+    if (Date.now() > 1670764800000) { // 2023-12-11T00:00:00.000Z
+      return 16384;
+    }
+  }
+
+  return 4096; // Most likely an older GPT-3 model.
+}
+
+const price_for_model = (model: string): number => {
+  // #https://openai.com/pricing/
+  // Correct at 2023-11-07
+
+  // GPT-4 series
+  if (model.includes('gpt-4-1106')) { // e.g. preview and vision models.
+    return 0.0200; // Average of $0.01 for input and $0.03 for output per 1K tokens
+  }
+  if (model.includes('gpt-4-32k')) {
+    return 0.0900; // Average of $0.06 for input and $0.12 for output per 1K tokens
+  }
+  if (model.includes('gpt-4')) {
+    return 0.0450; // Average of $0.03 for input and $0.06 for output per 1K tokens
+  }
+
+  // GPT-3.5 series
+  if (model.includes('instruct')) {
+    return 0.0018; // Average of $0.0015 for input and $0.0020 for output per 1K tokens
+  }
+  if (model.startsWith('gpt-3.5-turbo')) {
+    return 0.0015; // Average of $0.0010 for input and $0.0020 for output per 1K tokens
+  }
+
+  // Default price if the model is not recognized
+  console.log("OpenAILLM: Unknown model", model)
+  return 0.1000;
+};
+
 const run_open_ai = async (prompt: string, instruction: string, criteria: string, ctx: WorkerContext) => {
   if (!(await can_run_block(ctx, 'openai.simpleChatGPT'))) {
     return null;
@@ -130,7 +190,7 @@ const run_open_ai = async (prompt: string, instruction: string, criteria: string
 
   const prompt_token_count = await count_tokens(instruction + '/' + prompt, ctx);
 
-  let models = await ctx.app.blocks.runBlock(ctx, 'openai.getGPTModels', {}, undefined, { cache: 'user' });
+  const models = await ctx.app.blocks.runBlock(ctx, 'openai.getGPTModels', {}, undefined, { cache: 'user' });
 
   if (!models.models) {
     // Missing key?
@@ -138,46 +198,28 @@ const run_open_ai = async (prompt: string, instruction: string, criteria: string
     return models;
   }
 
-  models = models.models;
-
   const response_token_count = 1024; // How many tokens in the reply (guess)
 
   const token_count = prompt_token_count + response_token_count;
 
-  let model = 'gpt-3.5-turbo'; // 4k context
-  if (token_count > 4096 && models.includes('gpt-3.5-turbo-16k')) {
-    model = 'gpt-3.5-turbo-16k';
+  const possibleModels = models.models
+    .filter((m: string) => token_count <= context_size_for_model(m))
+    .filter((m: string) => !m.includes('vision'))
+    .sort((a: string, b: string) => price_for_model(a) - price_for_model(b));
+
+
+  if (possibleModels.length === 0) {
+    console.log(`LLM: No models available for ${token_count} tokens`);
+    return 'No models available for input size';
   }
-  if (token_count > 16384 && models.includes('gpt-4-32k')) {
-    model = 'gpt-4-32k';
-  }
+
+  let model = possibleModels[0]; // The cheapest model which fits the context size.
 
   if (criteria === 'accurate') {
-    if (models.includes('gpt-4')) {
-      model = 'gpt-4'; // 8k context
+    const gpt4Models = possibleModels.filter((m:string) => m.includes('gpt-4'));
+    if (gpt4Models.length > 0) {
+      model = gpt4Models[0]; // Cheapest GPT-4 model
     }
-    if (token_count > 8192 && models.includes('gpt-4-32k')) {
-      model = 'gpt-4-32k';
-    }
-  }
-
-  if (criteria === 'cheap') {
-    model = 'gpt-3.5-turbo';
-  }
-
-  let token_limit = 4096;
-  if (model.includes('gpt-4')) {
-    token_limit = 8192;
-  }
-  if (model.includes('-16k')) {
-    token_limit = 16384;
-  }
-  if (model.includes('-32k')) {
-    token_limit = 32768;
-  }
-
-  if (token_count > token_limit) {
-    console.log(`LLM: Dropped tokens on ${model}, ${token_count} / ${token_limit}. Request may fail.`);
   }
 
   const args: any = {

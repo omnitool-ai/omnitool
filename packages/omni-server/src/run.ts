@@ -101,7 +101,7 @@ const bootstrap = async (): Promise<void> => {
     .option('-p, --port <port>', 'Overwrite the listening port', '1688')
     .option('--openBrowser')
     .option('-nx, --noExtensions', 'Disable all (non core) extensions')
-    .option('-s, --secure <is_secure>', 'Enforce secure connection', false)
+    .option('-s, --secure <secure>', 'Enforce secure connection', false)
     .option('--dburl <url>', 'Connection URL to the DB')
     .option('--dbuser <user>', 'DB admin user', 'admin@local.host')
     .option('--viteProxy <url>', 'Specify vite debugger URL')
@@ -311,7 +311,7 @@ const boot = async (options: OptionValues) => {
   await server.load();
   await server.start();
 
-  omnilog.status_success(`Server has started and is ready to accept connections on ${listenOn.origin}.`);
+  omnilog.status_success(`Server has started and is ready to accept connections on ${listenOn.origin}`);
   omnilog.status_success('Ctrl-C to quit.');
 
   // open default browser

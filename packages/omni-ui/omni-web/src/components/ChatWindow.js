@@ -544,7 +544,7 @@ const chatComponent = function (workbench) {
       
     client.sdkHost.sendChatMessage(message, 'text/markdown', 
       { audio, images, documents, commands: [
-        { 'id': 'run', title: '🞂 Run', args: [null, cmdFiles] }]}, ['no-picture'])
+        { 'id': 'run', title: 'Run', args: [null, cmdFiles] }]}, ['no-picture'])
       
       if (event.target) {
         event.target.value = ''; // Allow same file to be uploaded multiple times.

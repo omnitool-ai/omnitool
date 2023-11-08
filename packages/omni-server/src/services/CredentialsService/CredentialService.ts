@@ -132,7 +132,7 @@ class CredentialService extends Service {
       throw new Error('Get credential failed: DB service not initialized');
     }
 
-    omnilog.info(`Getting credential for user ${userId} namespace ${apiNamespace} type ${tokenType}`);
+    omnilog.info(`Getting credential for user ${userId} namespace ${apiNamespace} type ${tokenType} base url host ${baseUrl}`);
 
     const user = (await db.get(`user:${userId}`)) as User;
     if (user == null) {
@@ -162,6 +162,7 @@ class CredentialService extends Service {
         if (this.serviceConfig.encryption) {
           if (this._encKey) {
             const url = new URL(baseUrl);
+            omnilog.debug(`Decrypting secret for ${url.host} ${this._hmacSecret ? 'with signature' : ''}`)
             // Decrypt the secret
             const decipher = decrypt(secret, this._encKey, this.serviceConfig.encryption.algorithm, this._hmacSecret ? { hmacSecret: this._hmacSecret, data: url.host } : undefined);
             if (decipher) {
@@ -192,6 +193,7 @@ class CredentialService extends Service {
         // Get base URL from block manager
         const blockManager = this.server.blocks;
         const baseUrl = blockManager.getNamespace(apiNamespace)?.api?.basePath ?? '';
+
         // Encrypt the secret
         cipher = encrypt(secret, this._encKey, this.serviceConfig.encryption.algorithm, this._hmacSecret ? { hmacSecret: this._hmacSecret, data: new URL(baseUrl).host } : undefined);
         if (!cipher) {
@@ -571,7 +573,7 @@ class CredentialService extends Service {
       }
     });
 
-    const accessTokenStr = await this.get(user.id, apiNamespace, new URL(url).host, 'accessToken');
+    const accessTokenStr = await this.get(user.id, apiNamespace, url, 'accessToken');
     const accessToken = oauth2client.createToken(JSON.parse(accessTokenStr));
 
     if (accessToken.expired()) {

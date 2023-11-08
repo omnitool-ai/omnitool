@@ -235,7 +235,7 @@ class BlockManager extends Manager {
       ctx?: any
     ) => {
       if (!ctx.userId || !ctx.sessionId) {
-        this.warn('execute() called without ctx.userId or ctx.sessionId');
+        this.debug('execute() called without ctx.userId or ctx.sessionId');
       }
 
       const oid = api.split('.');
@@ -974,7 +974,7 @@ class BlockManager extends Manager {
   ) {
     opts ??= {};
 
-    this.warn('runblock', blockName, args, outputs, opts);
+    this.info('runblock', blockName, args, outputs, opts);
 
     if (!ctx.sessionId) {
       this.error('Invalid session');

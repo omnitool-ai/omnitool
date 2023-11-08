@@ -380,7 +380,9 @@ block.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerCon
 
   const imageData: Buffer = await transform.toBuffer();
 
-  return { Result: imageData, Mask: maskImageData, Width: imageInfo.width, Height: imageInfo.height };
+  const image = await ctx.app.cdn.putTemp(imageData, { userId: ctx.userId, jobId: ctx.jobId });
+
+  return { Result: image, Mask: maskImageData, Width: imageInfo.width, Height: imageInfo.height };
 });
 
 const PrepareImageBlock = block.toJSON();

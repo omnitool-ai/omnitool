@@ -888,6 +888,18 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
     this.showExtension('omni-core-collectionmanager', {type:'api'}, undefined, {winbox: {title: 'API Management', modal: true}, singletonHash: 'omni-core-collectionmanager-api'})
   }
 
+  showDevTool() {
+    if (this.getClient().extensions.has('omni-extension-log-viewer')) {
+      this.showExtension('omni-extension-log-viewer', {}, undefined, { 
+        winbox: { 
+          title: 'Developer Tool',
+          x: 'center',
+          y: 'bottom',
+        }
+      })
+    }
+  }
+
   showRecipeHelp() {
     const singletonHash = 'workflow-intro';
     const recipe = this.activeRecipe;

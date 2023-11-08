@@ -470,7 +470,7 @@ class KVStorage implements IKVStorage {
     }
   }
 
-  private _getRowValue(
+  public _getRowValue(
     row: { value: string; valueType: string; blob: Buffer; expiry: number; tags: string } | undefined
   ) {
     if (!row) {

@@ -299,7 +299,7 @@ abstract class OAIBaseComponent extends Rete.Component {
 
     const objType = obj.type;
     if (objType === null) {
-      console.warn('Null Object Type');
+      omnilog.warn('Null Object Type');
     }
 
     const customSocket = obj.customSocket;
@@ -442,7 +442,7 @@ class CustomReteNode extends Rete.Node {
 class OAIComponent31 extends OAIBaseComponent {
   constructor(config: OmniComponentFormat, patch?: OmniComponentPatch, fns?: any) {
     if (fns) {
-      console.warn('fns not implemented');
+      omnilog.warn('fns not implemented');
     }
     super(config, patch);
   }
@@ -664,7 +664,7 @@ class OAIComponent31 extends OAIBaseComponent {
     if (transforms) {
       if (Array.isArray(transforms) && transforms.length > 0) {
         transforms.forEach((script: string) => {
-          console.log('global jsonata');
+          omnilog.log('global jsonata');
           const expression = Exp(script);
           payload = expression.evaluate(payload);
         });
@@ -694,7 +694,7 @@ class OAIComponent31 extends OAIBaseComponent {
       // run jsonata script
       if (output.scripts) {
         if (output.scripts.jsonata) {
-          console.log('running jsonata', output.scripts.jsonata);
+          omnilog.log('running jsonata', output.scripts.jsonata);
           const expression = Exp(output.scripts.jsonata);
           try {
             payload[key] = await expression.evaluate(payload);
@@ -705,7 +705,7 @@ class OAIComponent31 extends OAIBaseComponent {
 
         // delete script - remove fields from payload
         if (output.scripts.delete) {
-          console.log('running delete', output.scripts.jsonata);
+          omnilog.log('running delete', output.scripts.jsonata);
           for (const field of output.scripts.delete) {
             delete payload[field];
           }

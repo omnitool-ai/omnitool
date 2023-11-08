@@ -59,8 +59,8 @@ known_extensions:
     id: omni-extension-wa-chat-ui
     url: https://raw.githubusercontent.com/omnitool-community/omni-extension-wa-chat-ui/master/extension.yaml
   - title: Omni Debugger
-    id: omni-extension-logging
-    url: https://raw.githubusercontent.com/shinta-liem/omni-extension-logging/main/extension.yaml
+    id: omni-extension-log-viewer
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-log-viewer/main/extension.yaml
 
 in_development:
   - title: Feed Reader

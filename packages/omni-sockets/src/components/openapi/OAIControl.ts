@@ -74,6 +74,7 @@ class OAIControl31 extends Rete.Control {
             description: string;
           }
 
+          const filterRegex = new RegExp(choices.map?.filter?.value);
           this.data.choices = list
             .map((v: any) => {
               let e: Choice = { value: v, title: v, description: '' };
@@ -86,7 +87,7 @@ class OAIControl31 extends Rete.Control {
               }
               return e;
             })
-            .filter((e: Choice) => e.value)
+            .filter((e: Choice) => e.value && filterRegex.test(e.title))
             .sort((a: Choice, b: Choice) => b.title.localeCompare(a.title));
         }
       }

@@ -60,6 +60,10 @@ server:
           opts:
             access_type: 'offline'
             prompt: 'consent'
+        google-gmail:
+          opts:
+            access_type: 'offline'
+            prompt: 'consent'
 
     db:
       pocketbase:

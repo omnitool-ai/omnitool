@@ -73,6 +73,8 @@ class Client extends App implements IAppEvents {
 
   async init() {
     try {
+      this.version = await(await fetch('/version')).text();
+      this.info(`Binding to version ${this.version}...`);
       this.info('Initializing Extension System...');
       await this.extensions.init();
       this.success('Extension System successfully initialized.');

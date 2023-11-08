@@ -63,7 +63,7 @@ component
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext, component: OAIComponent31) => {
     try {
       if (!payload.img && !payload.imgUrl) {
- 
+
         await component.setControlValue('preview', null, ctx);
         return null; // do not trigger error when no image is provided
       }
@@ -76,7 +76,7 @@ component
         payload.img = savedImage; // Set the savedImage as the img input
 
       }
-      if (!payload.img) {
+      if (payload.img == null) {
         return null; // do not throw error when no image is provided
       }
 
@@ -94,10 +94,10 @@ component
           size: payload.size,
           mimeType: payload.mimeType,
           ext: payload.img.meta.type,
-          fid: payload.fid,
+          fid: payload.img.fid,
           url:payload.url
         };
-      
+
 
      } catch (error) {
       console.error(error);

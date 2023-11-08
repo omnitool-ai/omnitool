@@ -630,9 +630,9 @@ const workflowEditorComponent = function (refName = 'editor', workbench) {
             }
           });
       }
-      audio = images.concat(client.clipboard?.audio || []);
+      audio = audio.concat(client.clipboard?.audio || []);
       images = images.concat(client.clipboard?.images || []);
-      documents = images.concat(client.clipboard?.documents || []);
+      documents = documents.concat(client.clipboard?.documents || []);
 
       const payload = JSON.parse(JSON.stringify({ text: args[0] || undefined, images, audio, documents }));
       client.clipboard = {};
