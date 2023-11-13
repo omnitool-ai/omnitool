@@ -381,7 +381,6 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
       : 'Welcome to Omnitool.ai!';
   }
 
-
   get canEdit(): boolean {
     return !this.readOnly;
   }
@@ -876,27 +875,43 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
     return markdown;
   }
 
-  showTutorial(modal:boolean) {
+  showTutorial(modal: boolean) {
     const singletonHash = 'workflow-tutorial';
-    this.showExtension('omni-core-viewers', { video: 'https://github.com/mercenaries-ai/omnitool-tutorials/releases/download/latest/quickstart.mp4' }, 'video.html', {
-      singletonHash,
-      winbox: { title: 'Quickstart Video', minwidth: 960, minheight: 575, modal }
-    });
+    this.showExtension(
+      'omni-core-viewers',
+      { video: 'https://github.com/mercenaries-ai/omnitool-tutorials/releases/download/latest/quickstart.mp4' },
+      'video.html',
+      {
+        singletonHash,
+        winbox: { title: 'Quickstart Video', minwidth: 960, minheight: 575, modal }
+      }
+    );
   }
 
   showApiManagement() {
-    this.showExtension('omni-core-collectionmanager', {type:'api'}, undefined, {winbox: {title: 'API Management', modal: true}, singletonHash: 'omni-core-collectionmanager-api'})
+    this.showExtension('omni-core-collectionmanager', { type: 'api' }, undefined, {
+      winbox: { title: 'API Management', modal: true },
+      singletonHash: 'omni-core-collectionmanager-api'
+    });
   }
 
-  showDevTool() {
+  toggleDevTool() {
     if (this.getClient().extensions.has('omni-extension-log-viewer')) {
-      this.showExtension('omni-extension-log-viewer', {}, undefined, { 
-        winbox: { 
-          title: 'Developer Tool',
-          x: 'center',
-          y: 'bottom',
-        }
-      })
+      const singletonHash = 'omni-extension-log-viewer';
+      if (this.getClient().getWindow(singletonHash)) {
+        this.getClient().closeWindow(singletonHash);
+      } else {
+        this.showExtension('omni-extension-log-viewer', {}, undefined, {
+          winbox: {
+            title: 'Developer Tool',
+            x: 'center',
+            y: 'bottom',
+            width: 1000,
+            height: 200
+          },
+          singletonHash: 'omni-extension-log-viewer'
+        });
+      }
     }
   }
 

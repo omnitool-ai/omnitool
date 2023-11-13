@@ -81,7 +81,7 @@ global.fetch = async (url: string, options: any) => {
       .map((d: string) => sanitize(d))
       .join(path.sep);
     file = sanitize(file);
-    console.log('fetching', url, modelPath, dir, file);
+    console.info('[NSFWCheck] Fetching', url, modelPath, dir, file);
     const data = await fs.readFile(path.join(process.cwd(), 'config.default', 'models', dir, file)); // Read the file from the filesystem (simplified')
 
     const buffer = data.buffer as ArrayBuffer;
@@ -102,6 +102,7 @@ global.fetch = async (url: string, options: any) => {
   }
 
   // Otherwise, use the original fetch
+  // eslint-disable-next-line @typescript-eslint/return-await
   return originalFetch(url, options);
 };
 
@@ -183,6 +184,6 @@ const nsfwCheck = async (imageBuffer: Buffer, options: NSFWOptions = { maxDimens
   }
 };
 
-initializeModel();
+void initializeModel();
 
 export { nsfwCheck, initializeModel };

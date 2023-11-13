@@ -59,8 +59,6 @@ abstract class CustomSocket extends Socket {
 
     return url.protocol === 'http:' || url.protocol === 'https:';
   }
-
-  // #v-endif
 }
 
 export default CustomSocket;

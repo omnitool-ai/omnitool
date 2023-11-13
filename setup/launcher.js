@@ -290,7 +290,7 @@ async function run() {
         run_development([]);
         break;
       case NodeProcessEnv.production:
-        server_entry = 'dist/server.cjs';
+        server_entry = 'dist/run.js';
         await check_for_updates();
         ensure_wasm();
         run_production([]);

@@ -72,7 +72,7 @@ component
 
   .addInput(
     component
-      .createInput('videos', 'array', 'file', { array: true })
+      .createInput('videos', 'array', 'video', { array: true })
       .set('title', 'Videos')
       .set('description', 'Video Files (.mp4)')
       .allowMultiple(true)

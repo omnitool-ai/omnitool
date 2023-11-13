@@ -59,7 +59,7 @@
         </div>
         <div class="flex-grow"></div>
         <div class='block-footer'>
-          <div x-show="!client.workbench.readOnly" x-id="['node.data.xOmniEnabled']" class="flex justify-center" x-tooltip="Enable/Disable">
+          <div x-show="!client.workbench.readOnly" x-id="['node.data.xOmniEnabled']" class="flex justify-center" x-tooltip="Enable/Disable" @change="client.workbench.activeRecipe.setDirty()">
             <label :for="$id('node.data.xOmniEnabled')" class="relative h-6 w-10 cursor-pointer">
               <input x-model="node.data.xOmniEnabled" type="checkbox" :id="$id('node.data.xOmniEnabled')" class="peer sr-only" />
               <span :class="{ 'bg-gray-400': !node.data.xOmniEnabled, 'bg-gray-400': node.data.xOmniEnabled }" class="absolute inset-0 rounded-full transition"></span>

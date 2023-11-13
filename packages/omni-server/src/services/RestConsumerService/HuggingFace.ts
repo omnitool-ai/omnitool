@@ -2,7 +2,7 @@
  * Copyright (c) 2023 MERCENARIES.AI PTE. LTD.
  * All rights reserved.
  */
-import { RESTConsumerService } from "./RESTConsumerService";
+import { type RESTConsumerService } from "./RESTConsumerService";
 import { HfInference } from '@huggingface/inference';
 import { type CredentialService } from '../CredentialsService/CredentialService.js'
 

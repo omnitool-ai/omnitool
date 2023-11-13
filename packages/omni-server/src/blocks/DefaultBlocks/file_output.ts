@@ -7,6 +7,7 @@
 // Chat Output
 // --------------------------------------------------------------------------
 
+import { EOmniFileTypes } from 'omni-sdk';
 import { OAIBaseComponent, OmniComponentMacroTypes, type WorkerContext, BlockCategory as Category } from 'omni-sockets';
 
 const NS_OMNI = 'omnitool';
@@ -46,7 +47,7 @@ component
       .createControl('textType', 'string')
       .set('title', 'Format')
       .set('description', 'The format of chat message')
-      .setChoices(['text/plain', 'text/markdown'], 'text/markdown')
+      .setChoices(['text/plain', 'text/markdown', 'text/html', 'application/json' ], 'text/markdown')
       .toOmniControl()
   )
 
@@ -107,10 +108,18 @@ component
       if (payload.textType === 'text/plain') {
         ext = '.txt';
       }
+      if (payload.textType === 'text/html') {
+        ext = '.html';
+      }
+      if (payload.textType === 'application/json') {
+        ext = '.json';
+      }
+
 
       await ctx.app.cdn[type](payload.text, {
         mimeType: payload.textType,
         fileName: fileName + ext,
+        fileType: EOmniFileTypes.document,
         userId: ctx.userId
       });
     }

@@ -61,6 +61,10 @@ known_extensions:
   - title: Omni Debugger
     id: omni-extension-log-viewer
     url: https://raw.githubusercontent.com/omnitool-community/omni-extension-log-viewer/main/extension.yaml
+  - title: TLDraw (Beta)
+    id: omni-extension-tldraw
+    url: https://raw.githubusercontent.com/omnitool-community/omni-extension-tldraw/master/extension.yaml
+
 
 in_development:
   - title: Feed Reader

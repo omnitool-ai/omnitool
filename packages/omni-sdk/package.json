@@ -1,7 +1,7 @@
 {
   "name": "omni-sdk",
   "packageManager": "yarn@3.3.0",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

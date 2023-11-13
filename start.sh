@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Check if node is installed
 if ! command -v node &> /dev/null; then
     echo "Node.js is not installed. Please install it from https://nodejs.org/"
@@ -33,4 +34,4 @@ fi
 
 # Run yarn commands
 yarn
-yarn start "$@"  # Pass all arguments to yarn start
+yarn start -u -rb "$@"  # Pass all arguments to yarn start

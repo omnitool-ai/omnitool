@@ -1,6 +1,7 @@
 <div class="editorTopMenuContainer" @keydown.window.prevent.stop.ctrl.b="workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Blocks'}}) : null"
     @keydown.window.prevent.stop.ctrl.k="workbench.newRecipe()"
-    @keydown.window.prevent.stop.ctrl.r="workbench.showExtension('omni-core-collectionmanager', {type:'recipe'}, undefined, {winbox: {title: 'Load Recipe'}})">
+    @keydown.window.prevent.stop.ctrl.r="workbench.showExtension('omni-core-collectionmanager', {type:'recipe'}, undefined, {winbox: {title: 'Load Recipe'}})"
+    @keydown.window.prevent.stop.ctrl.shift.d="workbench.toggleDevTool()">
     <nav x-data="{
         navigationMenuOpen: false,
         navigationMenu: '',
@@ -93,7 +94,7 @@
                     <g clip-path="url(#clip0_986_3320)">
                         <path
                             d="M11.6546 16.6411V16.6331M11.6546 14.2234C11.6546 10.5972 15.0392 11.4029 15.0392 8.58245C15.0392 6.8022 13.5238 5.35901 11.6546 5.35901C10.1391 5.35901 8.85619 6.30764 8.4249 7.61542M21.8084 11C21.8084 16.6079 17.2624 21.1539 11.6546 21.1539C6.04677 21.1539 1.50073 16.6079 1.50073 11C1.50073 5.39223 6.04677 0.846191 11.6546 0.846191C17.2624 0.846191 21.8084 5.39223 21.8084 11Z"
-                            stroke="white" stroke-width="1.76" stroke-linecap="round" stroke-linejoin="round" />
+                            stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
                     </g>
                     <defs>
                         <clipPath id="clip0_986_3320">
@@ -111,10 +112,9 @@
                                       'stroke-white': !isFavorite
                                     }"
                               d="M2.1095 7.70617L8.5 14.3333L14.8905 7.70617C15.6009 6.96942 16 5.97024 16 4.92838C16 2.75879 14.304 1 12.2119 1C11.2073 1 10.2437 1.41388 9.53333 2.15059L8.5 3.22222L7.46667 2.15059C6.75624 1.41388 5.79273 1 4.78807 1C2.69597 1 1 2.75879 1 4.92838C1 5.97024 1.3991 6.96942 2.1095 7.70617Z"
-                              stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                              stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
                           </svg>
             </button>
-
         </div>
         <div x-ref="navigationDropdown" x-show="navigationMenuOpen"
             x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-90"

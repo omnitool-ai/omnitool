@@ -34,4 +34,4 @@ if /I "%update%"=="y" (
 
 :: Run yarn commands
 yarn
-yarn start %*
+yarn start -u -rb %*

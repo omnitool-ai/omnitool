@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import { combineValues, runRecipe, blockOutput, createComponent } from '../../../src/utils/omni-utils.js';
+import { combineValues, runRecipe, blockOutput, createComponent, makeToast } from '../../../src/utils/omni-utils.js';
 import { type WorkerContext, BlockCategory as Category } from 'omni-sockets';
 
 const group_id = 'omnitool';
@@ -20,7 +20,7 @@ const inputs = [
     type: 'object',
     customSocket: 'object',
     description:
-      'A json containing the name of the input variable to loop the recipe over its array of values. If using Chat Input in the recipe, the name should be "text", "images", "audio", or "documents"'
+      'A json containing the name of the input variable to loop the recipe over its array of values. If using Chat Input in the recipe, the name should be "text", "images", "audio", or "documents". So, for example, we could have {"text":["hello","world"]} to loop the recipe over the values "hello" and "world".'
   },
   {
     name: 'other_inputs',
@@ -70,10 +70,14 @@ export const LoopRecipeComponent = createComponent(
 );
 
 async function parsePayload(payload: any, ctx: WorkerContext) {
-  const driving_input = payload.driving_input; // in the format {<type> : <array of values>}
+
+  let info = '*** LoopRecipeComponent ***  |';
+  console.warn("LoopRecipeComponent", JSON.stringify(payload));
+
+  const driving_input = payload.driving_input; // in the format {"<type>" : <array of values>}
   const other_args = payload.other_inputs || {};
   const recipe_id = payload.recipe_id;
-  let info = '';
+
   // ---------------------
   if (!recipe_id) throw new Error(`No recipe id specified`);
   if (!driving_input) throw new Error(`No loop input json specified`);
@@ -100,27 +104,63 @@ async function parsePayload(payload: any, ctx: WorkerContext) {
   let objects: any[] | null = [];
   let documents: any[] | null = [];
 
+  const initial_toast = `Looping Recipe ${recipe_id} #${input_array.length} times, using INPUT: ${input_name}.`;
+  makeToast(ctx, initial_toast);
+
   const result_array: any[] = [];
+  let input_index = 0;
   for (const input of input_array) {
     if (!input) continue;
     args[input_name] = input;
+    let toast_info = `Recipe ${recipe_id} finished executing loop ${input_index + 1} of ${input_array.length} `;
 
     try {
       const result: any = await runRecipe(ctx, recipe_id, args);
       if (result) {
         result_array.push(result);
-        if ('text' in result) texts = combineValues(texts, result.text);
-        if ('images' in result) images = combineValues(images, result.images);
-        if ('audio' in result) audio = combineValues(audio, result.audio);
-        if ('documents' in result) documents = combineValues(documents, result.documents);
-        if ('videos' in result) videos = combineValues(videos, result.videos);
-        if ('files' in result) files = combineValues(files, result.files);
-        if ('objects' in result) objects = combineValues(objects, result.objects);
-      } else info += `WARNING: could not read any value from recipe_id ${recipe_id} | `;
-    } catch {
-      info += `Error running recipe ${recipe_id} with input ${input} | `;
+        if ('text' in result && result.text && result.text != '') {
+          texts = combineValues(texts, result.text);
+          toast_info += `, with RESULT of type: text`;
+        }
+        if ('images' in result && result.images && result.images.length > 0) {
+          images = combineValues(images, result.images);
+          toast_info += `, with RESULT of type: images`;
+        }
+        if ('audio' in result && result.audio && result.audio.length > 0) {
+          audio = combineValues(audio, result.audio);
+          toast_info += `, with RESULT of type: audio`;
+        }
+        if ('documents' in result && result.documents && result.documents.length > 0) {
+          documents = combineValues(documents, result.documents);
+          toast_info += `, with RESULT of type: documents`;  
+        }
+        if ('videos' in result && result.videos && result.videos.length > 0) {
+          videos = combineValues(videos, result.videos);
+          toast_info += `, with RESULT of type: videos`;
+        }
+        if ('files' in result && result.files && result.files.length > 0) {
+          files = combineValues(files, result.files);
+          toast_info += `, with RESULT of type: files`;
+        }
+        if ('objects' in result && result.objects && result.objects.length > 0) {
+          objects = combineValues(objects, result.objects);
+          toast_info += `, with RESULT of type: objects`;
+        }
+      }
+      else {
+        info += `WARNING: could not read any value from recipe_id ${recipe_id}  |  `;
+        toast_info += `WARNING: could not read any value from recipe_id ${recipe_id}  |  `;
+      }
+    }
+    catch
+    {
+      info += `Error running recipe ${recipe_id} with input ${input} |  `;
+      toast_info += `Error running recipe ${recipe_id} with input ${input} |  `;
       continue;
     }
+
+    makeToast(ctx, toast_info);
+    input_index++
   }
 
   // text is a bit of a special case as we don't support textArray for now. TBD: support text arrays

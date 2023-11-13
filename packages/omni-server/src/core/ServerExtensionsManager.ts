@@ -567,8 +567,8 @@ class ServerExtensionManager extends ExtensionManager {
 
             const git = simpleGit(extensionPath);
             try {
-              const diffResult = await git.diffSummary();
-              if (diffResult.changed > 0) {
+              const statusResult = await git.status();
+              if (!statusResult.isClean()) {
                 omnilog.warn(
                   `Local changes detected in the ${extensionId} repo.\nPlease reconcile manually or reset by deleting the folder.`
                 );
@@ -578,10 +578,10 @@ class ServerExtensionManager extends ExtensionManager {
               } else {
                 const result = await git.pull();
                 const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
-                omnilog.info('☑️  Extension', extensionId, '... ok, ', statusString);
+                omnilog.status_success(`Extension ${extensionId}...${statusString}`);
               }
             } catch (ex) {
-              omnilog.warn(` Unable to update core extension ${extensionId}: ${ex}. This may cause problems.`);
+              omnilog.warn(`Unable to update core extension ${extensionId}: ${ex}. This may cause problems.`);
             }
             return;
           }
@@ -620,14 +620,14 @@ class ServerExtensionManager extends ExtensionManager {
             return;
           }
 
-          omnilog.info(`☑️  ${extensionId} was successfully installed. `);
+          omnilog.status_success(`☑️  ${extensionId} was successfully installed. `);
         })
       );
     } catch (ex) {
       omnilog.warn(`⚠️ Unable to validate core extensions: ${ex}.\n The product may be missing core functionality.`);
     }
 
-    omnilog.info('☑️  Core extensions validated.');
+    omnilog.status_success('Core extensions validated.');
   }
 
   static async pruneExtensions(extensionDir: string) {
@@ -698,8 +698,8 @@ class ServerExtensionManager extends ExtensionManager {
         omnilog.log(`Updating extension ${extension}...`);
         const git = simpleGit(extensionPath);
         try {
-          const diffResult = await git.diffSummary();
-          if (diffResult.changed > 0) {
+          const statusResult = await git.status();
+          if (!statusResult.isClean()) {
             omnilog.warn(
               `Local changes detected in the ${extension} repo.\nPlease reconcile manually or reset by deleting the folder.`
             );
@@ -710,7 +710,7 @@ class ServerExtensionManager extends ExtensionManager {
           else {
             const result = await git.pull();
             const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
-            omnilog.info(extension, '...', statusString);  
+            omnilog.status_success(`Extension ${extension}...${statusString}`);  
           }
         } catch (ex) {
           omnilog.warn(`Unable to update extension ${extension}: ${ex}`);

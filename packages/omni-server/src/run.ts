@@ -164,12 +164,12 @@ const boot = async (options: OptionValues) => {
   await ServerExtensionManager.ensureCoreExtensions(extensionPath);
   omnilog.status_success('OK');
 
-  omnilog.status_start('--- updating extensions -----');
+  omnilog.status_start('--- Updating extensions -----');
   await ServerExtensionManager.updateExtensions(extensionPath, options);
   omnilog.status_success('OK');
 
   if (options.pruneExtensions) {
-    omnilog.status_start('--- pruning extensions -----');
+    omnilog.status_start('--- Pruning extensions -----');
     await ServerExtensionManager.pruneExtensions(extensionPath);
     omnilog.status_success('OK');
   }

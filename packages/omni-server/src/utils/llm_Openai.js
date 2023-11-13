@@ -15,10 +15,13 @@ const BLOCK_OPENAI_ADVANCED_CHATGPT = 'openai.advancedChatGPT';
 const LLM_CONTEXT_SIZE_MARGIN = 500;
 const GPT3_MODEL_SMALL = 'gpt-3.5-turbo';
 const GPT3_MODEL_LARGE = 'gpt-3.5-turbo-16k';
-const GPT3_SIZE_CUTOFF = 4096 - LLM_CONTEXT_SIZE_MARGIN;
 const GPT4_MODEL_SMALL = 'gpt-4';
 const GPT4_MODEL_LARGE = 'gpt-4-32k';
+const GPT3_MODEL_PREVIEW = 'gpt-3.5-turbo-1106';
+const GPT4_MODEL_PREVIEW= 'gpt-4-1106-preview';
+
 const GPT4_SIZE_CUTOFF = 8192 - LLM_CONTEXT_SIZE_MARGIN;
+
 const ICON_OPENAI = '💰';
 const llm_openai_models = [
   {
@@ -30,7 +33,7 @@ const llm_openai_models = [
   {
     model_name: GPT3_MODEL_LARGE,
     model_type: LLM_MODEL_TYPE_OPENAI,
-    context_size: 16384,
+    context_size: 16385,
     provider: LLM_PROVIDER_OPENAI_SERVER
   },
   {
@@ -44,6 +47,18 @@ const llm_openai_models = [
     model_type: LLM_MODEL_TYPE_OPENAI,
     context_size: 32768,
     provider: LLM_PROVIDER_OPENAI_SERVER
+  },
+  {
+    model_name: GPT3_MODEL_PREVIEW,
+    model_type: LLM_MODEL_TYPE_OPENAI,
+    context_size: 16385,
+    provider: LLM_PROVIDER_OPENAI_SERVER
+  },
+  {
+    model_name: GPT4_MODEL_PREVIEW,
+    model_type: LLM_MODEL_TYPE_OPENAI,
+    context_size: 128000,
+    provider: LLM_PROVIDER_OPENAI_SERVER
   }
 ];
 
@@ -54,11 +69,16 @@ class Llm_Openai extends Llm {
     // @ts-ignore
     this.context_sizes[GPT3_MODEL_SMALL] = 4096;
     // @ts-ignore
-    this.context_sizes[GPT3_MODEL_LARGE] = 16384;
+    this.context_sizes[GPT3_MODEL_LARGE] = 16385;
     // @ts-ignore
     this.context_sizes[GPT4_MODEL_SMALL] = 8192;
     // @ts-ignore
-    this.context_sizes[GPT4_MODEL_LARGE] = 16384;
+    this.context_sizes[GPT4_MODEL_LARGE] = 32768;
+    // @ts-ignore
+    this.context_sizes[GPT3_MODEL_PREVIEW] = 16385;
+    // @ts-ignore
+    this.context_sizes[GPT4_MODEL_PREVIEW] = 128000;
+    
   }
 
   // -----------------------------------------------------------------------
@@ -147,8 +167,6 @@ class Llm_Openai extends Llm {
     const instruction_cost = this.tokenizer.countTextTokens(instruction);
     const cost = prompt_cost + instruction_cost;
 
-    args.model = this.adjustModel(cost, model);
-
     let response = null;
     try {
       response = await runBlock(ctx, BLOCK_OPENAI_ADVANCED_CHATGPT, args);
@@ -159,29 +177,6 @@ class Llm_Openai extends Llm {
       throw err;
     }
     return response;
-  }
-
-  // @ts-ignore
-  adjustModel(text_size, model_name) {
-    if (typeof text_size !== 'number') {
-      throw new Error(`adjust_model: text_size is not a string or a number: ${text_size}, type=${typeof text_size}`);
-    }
-
-    if (model_name === GPT3_MODEL_SMALL) return model_name;
-
-    if (model_name === GPT3_MODEL_LARGE) {
-      if (text_size < GPT3_SIZE_CUTOFF) return GPT3_MODEL_SMALL;
-      else return model_name;
-    }
-
-    if (model_name === GPT4_MODEL_SMALL) return model_name;
-
-    if (model_name === GPT4_MODEL_LARGE) {
-      if (text_size < GPT4_SIZE_CUTOFF) return GPT3_MODEL_SMALL;
-      else return model_name;
-    }
-
-    throw new Error(`pick_model: Unknown model: ${model_name}`);
   }
 }
 

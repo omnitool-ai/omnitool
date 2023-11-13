@@ -13,7 +13,7 @@ block
   .fromScratch()
   .set(
     'description',
-    'Prepare an image for further processing. Retrieve the source image and apply various transformations such as resizing, cropping, extending with black bars or blurred background, and creating a mask.'
+    'Prepare images for further processing. Retrieve the source image(s) and apply various transformations such as resizing, cropping, extending with a blurred background, and creating a mask.'
   )
   .set('title', 'Prepare Image')
   .set('category', Category.IMAGE_MANIPULATION)
@@ -21,15 +21,15 @@ block
 
 block.addInput(
   block
-    .createInput('Source', 'object', 'image')
-    .set('description', 'Source image')
+    .createInput('Source', 'array', 'imageArray')
+    .set('description', 'Source image(s)')
     .setControl({ controlType: 'AlpineLabelComponent' })
     .toOmniIO()
 );
 
-block.addOutput(block.createOutput('Result', 'object', 'image').toOmniIO());
+block.addOutput(block.createOutput('Result', 'array', 'imageArray').toOmniIO());
 
-block.addOutput(block.createOutput('Mask', 'image', 'image').toOmniIO());
+block.addOutput(block.createOutput('Mask', 'array', 'imageArray').toOmniIO());
 
 block.addOutput(block.createOutput('Width', 'number').toOmniIO());
 
@@ -110,7 +110,7 @@ interface ImageInfo {
   roi?: ROI; // Optional: Region-of-Interest or "safe region", e.g. for faces or masks
 }
 
-async function fetchAndProcessImage(cdnRecord: any, ctx: WorkerContext): Promise<ImageInfo> {
+async function fetchImage(cdnRecord: any, ctx: WorkerContext): Promise<ImageInfo> {
   const entry = await ctx.app.cdn.get(cdnRecord.ticket);
   const buffer = entry.data;
 
@@ -345,13 +345,10 @@ async function ExtendWithBlurredBackground(imageInfo: ImageInfo): Promise<ImageI
   };
 }
 
-block.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
-  const source = payload.Source;
-  const target = payload.Target;
-
+async function fetchAndProcessImage(source: any, target: string, ctx: WorkerContext): Promise<{ image: any; mask: Buffer }> {
   const [targetWidth, targetHeight, dpi, fileFormat] = getSize(target);
 
-  let imageInfo = await fetchAndProcessImage(source, ctx);
+  let imageInfo = await fetchImage(source, ctx);
   imageInfo.targetWidth = targetWidth;
   imageInfo.targetHeight = targetHeight;
 
@@ -381,8 +378,25 @@ block.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerCon
   const imageData: Buffer = await transform.toBuffer();
 
   const image = await ctx.app.cdn.putTemp(imageData, { userId: ctx.userId, jobId: ctx.jobId });
+  const mask = await ctx.app.cdn.putTemp(maskImageData, { userId: ctx.userId, jobId: ctx.jobId });
 
-  return { Result: image, Mask: maskImageData, Width: imageInfo.width, Height: imageInfo.height };
+  return { image, mask };
+}
+
+block.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
+  const sources = payload.Source;
+  const target = payload.Target;
+
+  const processingPromises = sources.map(async (source: any) => await fetchAndProcessImage(source, target, ctx));
+
+  const processedImages = await Promise.all(processingPromises);
+
+  const Result = processedImages.map(pi => pi.image);
+  const Mask = processedImages.map(pi => pi.mask);
+
+  const [Width, Height] = getSize(target);
+
+  return { Result, Mask, Width, Height };
 });
 
 const PrepareImageBlock = block.toJSON();

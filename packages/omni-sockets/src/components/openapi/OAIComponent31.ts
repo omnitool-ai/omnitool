@@ -601,7 +601,7 @@ class OAIComponent31 extends OAIBaseComponent {
         this.apiKey,
         requestBody,
         { params: parameters, responseContentType: this.data.responseContentType },
-        { user: ctx.userId, sessionId: ctx.sessionId }
+        { user: ctx.userId, sessionId: ctx.sessionId, jobId: ctx.jobId }
       );
 
       if (response === undefined) {

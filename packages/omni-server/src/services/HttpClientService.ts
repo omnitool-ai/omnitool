@@ -9,7 +9,69 @@ import type MercsServer from '../core/Server.js';
 
 // HTTP client service wraps up axios and logs requests
 
-const RETRYABLE_CODE = [408, 429, 500, 502, 503, 504]
+interface HTTPClientErrorCode {
+  retryable: boolean;
+  message: string;
+}
+
+const HTTP_CODES: Record<number, HTTPClientErrorCode> = {
+  400: {
+    message: 'The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
+    retryable: false
+  },
+  401: {
+    message: 'Authentication failed. Please check your credentials.',
+    retryable: false
+  },
+  403: {
+    message: 'You are not authorized to perform this action.',
+    retryable: false
+  },
+  404: {
+    message: 'The requested resource was not found.',
+    retryable: false
+  },
+  408: {
+    message: 'The server timed out waiting for the request.',
+    retryable: true
+  },
+  409: {
+    message: 'The server is having trouble processing your request due to a conflict. Please review your information and submit it again.',
+    retryable: false
+  },
+  410: {
+    message: 'The requested resource is no longer available.',
+    retryable: false
+  },
+  422: {
+    message: 'The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
+    retryable: false
+  },
+  429: {
+    message: 'The server is having trouble processing your request due to too many requests. Please try again later.',
+    retryable: true
+  },
+  500: {
+    message: 'The server encountered an internal error. Please try again later.',
+    retryable: true
+  },
+  501: {
+    message: 'The server does not support the requested feature.',
+    retryable: false
+  },
+  502: {
+    message: 'The server encountered an internal error. Please try again later.',
+    retryable: true
+  },
+  503: {
+    message: 'The server is currently unavailable. Please try again later.',
+    retryable: true
+  },
+  504: {
+    message: 'The server timed out waiting for the request.',
+    retryable: true
+  }
+}
 
 interface HttpClientServiceConfig extends IServiceConfig {}
 
@@ -57,12 +119,11 @@ class HttpClientService extends Service {
         err.message = `Failed to resolve host "${err.hostname}". Please check your network settings.`
       }
 
-      if (err.message === 'Request failed with status code 401' && err.code === 'ERR_BAD_REQUEST') {
-        err.message = 'Authentication failed. Please check your credentials.'
-      }
-
-      if (err.response && RETRYABLE_CODE.includes(err.response.status)) {
-        throw new HTTPClientError(err.message, true, err)
+      const errorCode = err.response ? err.response.status : err.code
+      const error = HTTP_CODES[errorCode]
+      if (error) {
+        err.message = error.message
+        throw new HTTPClientError(error.message, error.retryable, err)
       } else {
         throw new HTTPClientError(err.message, false, err)
       }

@@ -10,6 +10,16 @@ import { omnilog } from 'omni-shared';
 const VERBOSE = true;
 
 // @ts-ignore
+function makeToast(ctx, message)
+{
+    const app = ctx.app;
+    const user = ctx.userId;
+    const description_json = { type: "info", description: `Chunking document progress` };
+    const toast = { user, message, description_json };
+    app.sendToastToUser(user, toast);
+}
+
+// @ts-ignore
 function printObject(obj, text = '') {
   if (text !== '') console.log(text);
   for (const key in obj) {
@@ -297,5 +307,6 @@ export {
   blockOutput,
   runRecipe,
   sanitizeName,
-  combineValues
+  combineValues,
+  makeToast,
 };

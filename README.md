@@ -6,7 +6,7 @@ Omnitool.ai is an open-source, downloadable "AI Lab in a box" built for learners
 
 ![Alt text](assets/screenshot_desktop_03.png)
 
-Watch the [demo](https://tinyurl.com/omnitool-demo)!
+Watch the [demo](https://tinyurl.com/omnitool-demo)! and see more [videos](https://www.youtube.com/@OmnitoolAI/videos) on our Youtube channel.
 
 ## Why Omnitool?
 
@@ -39,18 +39,76 @@ Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based service
 
 ## Key Features
 
+### Self-hosted and Open Source
+
+* Omnitool is local self-hosted software that turns your machine into a powerful AI Lab.
+
+  * You install Omnitool and it runs on your Mac, Windows or Linux notebook, desktop or server, not cloud servers. 
+  * Data stores it's data locally on your machine and is only transmitted to the third party provider APIs you choose to access. Updates are managed via github.
+  * A Docker Image is forthcoming.
+  * If you are interested in running Omnitool in the cloud, please get in touch with us at contact@omnitool.ai
+
+* Open Source and Open Standards
+   * Omnitool is licensed as open source software and heavily leverages open standards, such as OpenAPI, making it interoperable and extensible.
+
+### Rapid Access to the world of generative AI without GPU, Managing Python installations and learning dozens of APIs and interfaces
+
+* Minimal Time-to-AI: It allows you to try out models and services in minutes without having to study API docs, write boilerplate code, manage python venvs or figuring out new user interfaces. Because of it's integration of many leading AI platforms, the lag time between "paper with code" to hands on experimentation often is cut down to days. 
+
+* It presents the vast world of generative AI - image, video, audio, text, and classification APIS - through a single, unified user interface without oversimplifying or hiding the power of the APIs.
+  
 ### Comprehensive AI Provider Support
-* Seamlessly integrates with leading AI providers including OpenAI, replicate.com, Stable Diffusion, Google, and many more.
+* Seamlessly provides access to 1000s of AI model and utility APIs from an rapidly growing list leading AI providers and aggregators, exposing them all via interoperable blocks.
+  
+Currently supported (v. 0.5.3) :
+   * [Civitai.com](https://civitai.com) (Model metadata access)
+   * [Deepl.com](https://deepl.com) (Document translation)
+   * [ElevenLabs.io](https://elevenlabs.io) (Multilingual voice generation)
+   * Getimg.ai (Image generation and manipulation APIs)
+   * Github.com (Various)
+   * Google.com
+      * Gmail
+      * Vertex (AI)
+      * Google Translate
+      * Google TTS (Text to Speech)
+      * Google Vision (Computer Vision)
+   * [Huggingface.com](https://huggingface.com) (1000's of models, including free inference models)
+   * [OpenAI.com](https://openai.com) (Image/Text/Audio Generation including GPT3/4/Visual, Whisper, Dall-e 2, Dall-e 3, Moderation APIs and more)
+   * [OpenRouter.ai](https://OpenRouter.ai) (100s of LLM APIs)
+   * [Perplexity.ai](https://perplexity.ai) (Text Generation)
+   * [Stability.ai](https://stability.ai) (Image Generation and Manipulation APIs)
+   * [TextSynth.com](https://textsynth.com) (LLM, translation, and classification APIs)
+   * [Replicate.com](https://replicate.com/explore) (1000s of models across all modalities)
+   * [Uberduck.com](https://uberduck.com) (Voice Generation, Music centric offerings)
+   * [Unsplash.com](https://unsplash.com) (Stock imagery)
+   * with many more APIs in testing...
 
-## Local Infrastructure Compatibility
-* Easily integrate with local AI infrastructure, including servers on your local network or even large language models running on your machine.
+* Support for the following Open Source APIs is in the final stages of testing:
+  * Automatic1111/SDNext API
+  * Oobabooga Text Generation API
+  * Ollama API
 
-## Extensible Architecture
-* A robust extensions mechanism allows for vertical integrations with specific AI providers, specialized focus on certain media types like image flipbooks, or additional recipe support such as integrated image editing (via minipaint) or audio editing (via wavacity).
+* Omnitool is able to generate blocks from any openapi.json definitions via URL or directly supplied file. We support a number of custom x- annotations that can be added to openapi definitions to allow omnitool to guide the block generation. It also supports creating "patches" on top of existing APIs to create customized blocks. With integrated JSONATA support, it is possible to build powerful data processing blocks using pure data.
 
-## Open Source Commitment
-* Omnitool.ai is fully committed to the ethos of open-source development. You have complete access to the source code for educational, research, and further development purposes.
 
+### Extensible Architecture
+
+* Inspired by the common modding architecture found in video game toolsets, Omnitool is built, from the ground up, to be extensible via multiple mechanisms:  
+  * Simple **Client and Server scripts** allowing addition of /commands that are hot-reloaded, so editing and building is a breeze.
+  * **Client Extensions** - any web-app/webpage can be turned into an extension and integrated directly on Omnitool's desktop via it's window system. Omnitool's client SDK exposes the full range of platform functionality to extensions, allowing you to write apps or tools using every API or recipe enabled in Omnitool. 
+  * **Server Extensions** - Server extensions written in javascript that can add new blocks, API and core functionality.
+
+* Some examples of currently available extensions:
+  * omni-core-replicate, a core extensions that allows import of any AI model on [replicate.com](https://replicate.com) into a ready to use block in Omnitool 
+  * [omni-extension-sharp](https://github.com/omnitool-community/omni-extension-sharp), an extension adding an array of Image Manipulation blocks such as format conversion, masking, composition and more based on the powerful [sharp](https://github.com/lovell/sharp) image processing library.
+  * omni-extension-minipaint, a powerful [photo editing tool](https://github.com/viliusle/miniPaint) useful for quickly creating and editing images without switching out of the app.
+  * omni-extension-openpose, a [OpenPose based](https://github.com/CMU-Perceptual-Computing-Lab/openpose) pose estimation and generation toolkit useful for creating guidance images for controlnet/diffusion models.
+  * omni-extension-tldraw, a whiteboarding/sketching extension built on [TLDraw](https://github.com/tldraw/tldraw), useful for generating input for visual transformers and diffusion models
+  * omni-extension-wavacity, a [full wasm implementation](https://wavacity.com/) of Audacity, a state of the art audio recorder/editor useful for generating and editing audio content.
+    
+* Visit the Extension tab in app or see our [Omnitool Community Github](https://github.com/orgs/omnitool-community/repositories) for a list of currently available extensions
+
+  
 ## Quickstart Guide
 
 We are currently testing installers for Windows and macOS. Until those are publicly available, please follow the manual installation steps.
@@ -96,8 +154,14 @@ You can then access the Omnitool software from a web browser on your local machi
 
   Now we will use `yarn` and `Node.js` to build the server software locally on your machine and then start it running.
 
+  Windows:
   ```
-    yarn start
+    start.bat
+  ```
+
+  MacOS/Linux:
+  ```
+   ./start.sh
   ```
 
   When successful, you will see the following message:
@@ -234,9 +298,3 @@ As an open-source platform, we welcome contributions from users like you. Whethe
 3. Feedback and Suggestions
 
 Your feedback helps shape the future of Omnitool.ai. Send your feedback and suggestions to [support@omnitool.ai](mailto:support@omnitool.ai), or share them directly in our [Discord #feedback channel](https://tinyurl.com/omnitool-feedback). 
-
-## Changelist
-
- * Version 0.5.0, 2023-10
-
-   Initial release with support for recipes and multiple API providers include OpenAI, replicate.com and ElevenLabs.

@@ -16,12 +16,14 @@ switch(environment) {
         esbuild
         .build({
           entryPoints: ['src/run.ts'],
-          outfile: 'dist/server.cjs',
+          outdir: 'dist',
           color: true,
           bundle: true,
           platform: 'node',
+          format: 'esm',
           tsconfig: 'tsconfig.json',
-          logLevel: 'info',
+          logLevel: 'warning',
+          packages: 'external',
           define: {
             'process.env.NODE_ENV': `"${environment}"`
           },
