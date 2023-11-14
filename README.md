@@ -10,9 +10,9 @@ Watch the [demo](https://tinyurl.com/omnitool-demo)! and see more [videos](https
 
 ## Why Omnitool?
 
-With thousands of preprints and countless "AI tools" released each week, it is incredibly challenging to stay on top of the rapidly evolving AI ecosystem, to separate hype and facts and to extract durable long term skills and learning. PapersWithCode and Github repositories attached to ArxIV papers provide ability to hands-on validate and apply the latest discoveries, but the fragile nature of the Python ecosystem and often steep hardware requirments dramatically limits accessibility. Likewise implementing and testing cloud based models requires delving deep into API documentation and wrestling with connecting code.
+With thousands of preprints and countless "AI tools" released each week, it is incredibly challenging to stay on top of the rapidly evolving AI ecosystem, to separate hype and facts and to extract durable long term skills and learning. PapersWithCode and GitHub repositories attached to arXiv papers provide ability to hands-on validate and apply the latest discoveries, but the fragile nature of the Python ecosystem and often steep hardware requirments dramatically limits accessibility. Likewise implementing and testing cloud based models requires delving deep into API documentation and wrestling with connecting code.
 
-We believe that is a serious problem. AI may represent the first large scale technological disruption unbounded by logistical challenges, scaling along existing wires, API infastructure and app delivery platforms. Meanwhile, market pressure to adopt AI is felt by many   businesses and teams. 
+We believe that is a serious problem. AI may represent the first large scale technological disruption unbounded by logistical challenges, scaling along existing wires, API infastructure and app delivery platforms. Meanwhile, market pressure to adopt AI is felt by many businesses and teams.
 
 Without educated decision makers and technical experts,  businesses and public organisations alike are at high risk of falling for hype and magical narratives and expensive misadventures.      
 
@@ -149,6 +149,12 @@ You can then access the Omnitool software from a web browser on your local machi
   ```
     yarn install
   ```
+**Troubleshooting**
+
+* **PYTHON 3.12** - some users are reporting a yarn install failure due to **a missing python module 'distutils'**. To resolve this, we recommend running our fix script to detect and autofix any potential issues and try again. Or you can manually pip install 'setuptools' from the terminal.
+```
+  node setup\fix.js
+```
 
 4. **Build and Start the Server**
 
@@ -283,7 +289,7 @@ Upon success, the API will initiate the specified recipe. You will receive a JSO
 
 **Troubleshooting**
 
-If you encounter authorization errors, ensure the JWT has not expired, is correctly set in the header, and was generated with the proper parameters.
+* If you encounter authorization errors, ensure the JWT has not expired, is correctly set in the header, and was generated with the proper parameters.
 
 ## Next Steps
 
