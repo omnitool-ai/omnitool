@@ -47,7 +47,7 @@ const workflowEditorComponent = function (refName = 'editor', workbench) {
         client.showTopBanner("Attention", "Your Omnitool environment is missing external API keys. Use the API Key Management menu to add your keys and enable more capabilities.", {link: ''})
         workbench.showApiManagement()
       }
-      
+
       if (!this.reviewedNUX()) {
         workbench.showTutorial(true);
         this.setReviewedNUX(true);
@@ -82,7 +82,7 @@ const workflowEditorComponent = function (refName = 'editor', workbench) {
             if (!check.has(n.name)) {
               n.data[
                 'x-omni-summary'
-              ] = `The block named <b>"${n.name}"</b> is currently not installed on your system. Please find and install this extension via <b><u>Extensions Manager</u></b>. After installation, restart the server if required, and reload the recipe.`;
+              ] = `The block named <b>"${n.name}"</b> is currently not installed on your system. It is likely you are missing an API or extension. Please locate and install the relevant API or extension and restart the server.`;
               n.missingBlockName = n.name;
               n.name = 'omnitool._block_missing';
             }

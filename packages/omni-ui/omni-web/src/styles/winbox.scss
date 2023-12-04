@@ -1,0 +1,68 @@
+
+
+
+.winbox {
+  font-size: 11px;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
+    inset -2px -2px grey, inset 2px 2px #fff;
+  background-color: #ece9d8 !important;
+
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 0 0 3px;
+  -webkit-font-smoothing: antialiased;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.wb-drag {
+  background-color: #505050;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  margin: 0px;
+
+  user-select: none;
+}
+
+
+.winbox.test .wb-header{
+  margin: 0px;
+  background-color: #505050;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  color: white;
+}
+.wb-body {
+  display: flex;
+}
+
+
+
+
+.winbox.test{
+  border: 0px;
+  border-radius: 0px;
+  box-shadow: none;
+  margin: 0px;
+  background-color: transparent !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+.winbox.test .wb-body {
+  background: transparent;
+
+  position: absolute;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+
+}
+.winbox.test .wb-title {
+  margin: 0px;
+
+}
+
+
+.winbox.test .wb-drag.wb-header.wb-control {
+  color:black;
+  stroke: black;
+}

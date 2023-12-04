@@ -141,8 +141,18 @@ const updateExtension = async function (ctx, extensionId) {
 const script = {
   name: 'extensions',
 
+  permission: async function (ctx, ability, payload) {
+    const auth = ctx.app.integrations.get('auth')
+    const isAdmin = await auth.isAdmin(ctx.user)
+    if (!isAdmin) {
+      await ctx.app.sendMessageToSession(ctx.sessionId, 'Admin permission needed to change server settings', 'text/plain')
+      throw new Error('Admin permission needed to change server settings')
+    }
+  },
+
+
   exec: async function (ctx, payload) {
-    const sessionId = ctx.session.sessionId
+    const sessionId = ctx.session.sessionId || ctx.sessionId
     let [command, arg1] = [...payload]
 
     ctx.integration.debug('extensions', command, arg1)

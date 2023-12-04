@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import { combineValues, runRecipe, blockOutput, createComponent, makeToast } from '../../../src/utils/omni-utils.js';
+import { combineValues, runRecipe, blockOutput, createComponent } from '../../../src/utils/omni-utils.js';
 import { type WorkerContext, BlockCategory as Category } from 'omni-sockets';
 
 const group_id = 'omnitool';
@@ -84,7 +84,7 @@ async function parsePayload(payload: any, ctx: WorkerContext) {
 
   const input_keys = Object.keys(driving_input);
   const input_name = input_keys[0].toLowerCase();
-  if (!input_name || input_name == '') throw new Error(`No input name specified`);
+  if (!input_name || input_name === '') throw new Error(`No input name specified`);
 
   const loop_input_value = driving_input[input_name];
   const args = { ...other_args };
@@ -105,8 +105,7 @@ async function parsePayload(payload: any, ctx: WorkerContext) {
   let documents: any[] | null = [];
 
   const initial_toast = `Looping Recipe ${recipe_id} #${input_array.length} times, using INPUT: ${input_name}.`;
-  makeToast(ctx, initial_toast);
-
+  await ctx.app.sendToastToUser(ctx.userId, { message: initial_toast });
   const result_array: any[] = [];
   let input_index = 0;
   for (const input of input_array) {
@@ -118,7 +117,7 @@ async function parsePayload(payload: any, ctx: WorkerContext) {
       const result: any = await runRecipe(ctx, recipe_id, args);
       if (result) {
         result_array.push(result);
-        if ('text' in result && result.text && result.text != '') {
+        if ('text' in result && result.text && result.text !== '') {
           texts = combineValues(texts, result.text);
           toast_info += `, with RESULT of type: text`;
         }
@@ -158,20 +157,31 @@ async function parsePayload(payload: any, ctx: WorkerContext) {
       toast_info += `Error running recipe ${recipe_id} with input ${input} |  `;
       continue;
     }
-
-    makeToast(ctx, toast_info);
+    await ctx.app.sendToastToUser(ctx.userId, { message: toast_info });
     input_index++
   }
 
   // text is a bit of a special case as we don't support textArray for now. TBD: support text arrays
-  let text = '';
+  let text:string|null = '';
   if (texts) {
     for (const text_value of texts) {
-      if (text == '') text = text_value;
+      if (text === '') text = text_value;
       else text = `${text} | ${text_value}`;
     }
   }
 
-  const return_value = blockOutput({ text, images, audio, documents, videos, files, objects, result_array, info });
+  const results : Record<string,any> = {};
+  if (text && text !== "") results.text = text;
+  if (images && images.length > 0) results.images = images;
+  if (audio && audio.length > 0) results.audio = audio;
+  if (videos && videos.length > 0) results.videos = videos;
+  if (files && files.length > 0) results.files = files;
+  if (objects && objects.length > 0) results.objects = objects;
+  if (documents && documents.length > 0) results.documents = documents;
+  results.result_array = result_array;
+  results.info = info;
+  results.ok = true;
+
+  const return_value = blockOutput(results);//{ text, images, audio, documents, videos, files, objects, result_array, info });
   return return_value;
 }

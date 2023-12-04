@@ -46,6 +46,8 @@ class StorageAdapter<T> implements IStorageAdapter<T> {
     }
   }
 
+
+
   // Wipe the storage
   clear(
     doubleConfirm: 'Yes I want to wipe the storage even though I have not set a key prefix and it will wipe any other storage on the same KVStorage'

@@ -20,7 +20,8 @@ esbuild
     tsconfig: 'tsconfig.json',
     logLevel: 'warning',
     target: 'es2020',
-    sourcemap: true,
+    sourcemap: 'linked',
+    packages: 'external',
     define: {
       'process.env.NODE_ENV': `"${environment}"`
     },

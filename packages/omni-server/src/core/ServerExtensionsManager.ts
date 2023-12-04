@@ -17,38 +17,10 @@ import { simpleGit } from 'simple-git';
 import { validateDirectoryExists, validateFileExists } from '../helper/validation.js';
 import type MercsServer from './Server.js';
 import { ServerExtension } from './ServerExtension.js';
+import { ExtensionUtils, type IExtensionYaml, type IKnownExtensionsManifest, type IKnownExtensionsManifestEntry } from './ServerExtensionUtils.js';
 
 // For how many MS to cache extension details before refetchign them
 const EXTENSION_UPDATE_AFTER_MS = 1000 * 60 * 60 * 24;
-
-interface IExtensionYaml {
-  title: string;
-  version?: string;
-  description: string;
-  author: string;
-  origin?: string;
-  client?: {
-    addToWorkbench?: boolean;
-    minimizeChat?: boolean;
-  };
-}
-
-interface IKnownExtensionsManifestEntry {
-  title: string;
-  id: string;
-  url: string;
-  deprecated?: boolean;
-  installed?: boolean;
-  isCore?: boolean;
-  isLocal?: boolean;
-  error?: string;
-  manifest?: IExtensionYaml;
-}
-
-interface IKnownExtensionsManifest {
-  core_extensions: IKnownExtensionsManifestEntry[];
-  known_extensions: IKnownExtensionsManifestEntry[];
-}
 
 // Use this enum to export available events to extensions
 export enum PERMITTED_EXTENSIONS_EVENTS {
@@ -171,6 +143,9 @@ class ServerExtensionManager extends ExtensionManager {
     if (!(await validateDirectoryExists(path.join(process.cwd(), 'extensions')))) {
       await ensureDir(path.join(process.cwd(), 'extensions'));
     }
+    if (!(await validateDirectoryExists(path.join(process.cwd(), 'data.local', 'apis-local')))) {
+      await ensureDir(path.join(process.cwd(), 'data.local', 'apis-local'));
+    }
 
     mercsServer.subscribeToServiceEvent('httpd', 'onRegisterStatics', this.onRegisterStatics.bind(this));
 
@@ -250,7 +225,10 @@ class ServerExtensionManager extends ExtensionManager {
         const errors = [];
 
         if (await validateDirectoryExists(path.join(extensionPath, 'server'))) {
-          const extFile = path.join(extensionPath, 'server', 'extension.js');
+          let extFile = path.join(extensionPath, 'server', 'extension.cjs');
+          if (!await validateFileExists(extFile)) {
+            extFile = path.join(extensionPath, 'server', 'extension.js');
+          }
           if (await validateFileExists(extFile)) {
             let loadedScript;
             try {
@@ -438,9 +416,13 @@ class ServerExtensionManager extends ExtensionManager {
     if (!(await validateFileExists(knownExtensionsPath))) {
       throw new Error(`Unable to find known extensions manifest at ${knownExtensionsPath}`);
     }
-    const knownExtensions = (await yaml.load(
-      await fs.readFile(knownExtensionsPath, 'utf-8')
-    )) as IKnownExtensionsManifest;
+
+    const knownExtensions = await ExtensionUtils.loadCombinedManifest(knownExtensionsPath);
+
+    if (knownExtensions.core_extensions === undefined) {
+      throw new Error(`Unable to find core extensions manifest at ${knownExtensionsPath}`);
+    }
+
     let ret = knownExtensions.core_extensions.map((extension: any) => {
       // Extension ids are alphanumeric
       const extensionId = extension.id.replace(/[^a-zA-Z0-9-_]/g, '_');
@@ -452,7 +434,7 @@ class ServerExtensionManager extends ExtensionManager {
         installed: this.extensions.has(extensionId)
       };
     });
-
+    knownExtensions.known_extensions = knownExtensions.known_extensions ?? [];
     ret = ret.concat(
       knownExtensions.known_extensions.map((extension: any) => {
         // Extension ids are alphanumeric
@@ -489,7 +471,7 @@ class ServerExtensionManager extends ExtensionManager {
         if (extension.installed) {
           extension.manifest = (this.extensions.get(extension.id) as ServerExtension).extensionConfig;
         } // for others, we fetch the manifest from the repo
-        else {
+        else if (extension.url){
           try {
             const result = await fetch(extension.url);
             if (!result.ok) {
@@ -519,45 +501,30 @@ class ServerExtensionManager extends ExtensionManager {
     return this.app as MercsServer;
   }
 
-  static async validateLocalChanges(extensionBaseDir: string, extension: string): Promise<boolean> {
-    // ensure critical paths can be reached on submit
-    const extensionDir = path.join(extensionBaseDir, extension);
-    const manifestFile = path.join(extensionDir, 'extension.yaml');
-    if (!(await validateFileExists(manifestFile))) {
-      omnilog.error(
-        `Validation error: Unable to find manifest file for extension ${extension} at ${manifestFile}. Please check your changes.`
-      );
-      return false;
-    }
-    // ensure url is valid
-    const extensionYaml: any = await yaml.load(await fs.readFile(manifestFile, 'utf-8'));
-    if (!extensionYaml?.origin?.endsWith('.git')) {
-      omnilog.error(
-        `Validation error: Manifest does not have a valid origin repository for extension ${extension}. Please check your changes.`
-      );
-      return false;
-    }
-    const remoteManifestFile = await fetch(extensionYaml.origin);
-    if (!remoteManifestFile.ok) {
-      omnilog.error(
-        `Validation error: Checking ${manifestFile}.\nUnable to connect to repo for origin ${extensionYaml.origin}.\nPlease check your changes.`
-      );
-      return false;
-    }
-    return true;
-  }
-
   // Ensure core extensions exist and are on the latest version
-  static async ensureCoreExtensions(extensionDir: string) {
+  static async ensureCoreExtensions(extensionDir: string, sdkVersion: string) {
     try {
       // Ensure the extensions directory exists
       await ensureDir(extensionDir);
 
       const coreExtensions = await ServerExtensionManager.getCoreExtensions();
 
+      if (coreExtensions === undefined) {
+        throw new Error(`Unable to load core extension manifest.`);
+      }
+
       // for each core extension, check if it exists in the extensions directory
       await Promise.all(
         coreExtensions.map(async (extension) => {
+          if (!extension.url) {
+            omnilog.warn(`⚠️  Failed to install ${extension.id}:  No repository url available. Skipping.`);
+            return;
+          }
+
+          // @ts-ignore (fetch is actually available in node 20 but it complains)
+          const manifestFile = await fetch(extension.url)
+          const manifestText = await manifestFile.text();
+          const manifest = (await yaml.load(manifestText)) as IExtensionYaml;
           // Extension ids are alphanumeric
           const extensionId = extension.id.replace(/[^a-zA-Z0-9-_]/g, '_');
           const extensionPath = path.join(extensionDir, extensionId);
@@ -572,12 +539,12 @@ class ServerExtensionManager extends ExtensionManager {
                 omnilog.warn(
                   `Local changes detected in the ${extensionId} repo.\nPlease reconcile manually or reset by deleting the folder.`
                 );
-                if (await this.validateLocalChanges(extensionDir, extensionId)) {
+                if (await ExtensionUtils.validateLocalChanges(extensionDir, extensionId)) {
                   omnilog.status_success(`Local changes validated on ${extensionId}`);
                 }
               } else {
-                const result = await git.pull();
-                const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
+                const result = await ExtensionUtils.updateToLatestCompatibleVersion(extensionId, manifest, extensionPath, sdkVersion);
+                const statusString = result.didUpdate ? `updated to ${result.currentHash}` : `up-to-date at ${result.currentHash}`;
                 omnilog.status_success(`Extension ${extensionId}...${statusString}`);
               }
             } catch (ex) {
@@ -594,33 +561,24 @@ class ServerExtensionManager extends ExtensionManager {
           }
 
           try {
-            // @ts-ignore (fetch is actually available in node 20 but it complains)
-            const manifestFile = await fetch(extension.url);
-            if (!manifestFile.ok) {
-              throw new Error(`Unable to fetch manifest for extension from ${extension.url}`);
-            }
-            const manifestText = await manifestFile.text();
-            const manifest = (await yaml.load(manifestText)) as IExtensionYaml;
-
             if (!manifest?.origin?.endsWith('.git')) {
               throw new Error('Manifest does not have a valid origin repository.');
             }
 
-            const git = simpleGit();
             omnilog.log(`⌛  Cloning extension ${extensionId}...`);
 
             try {
               // if it doesn't exist, clone it from the git repo specified in known_extensions.yaml
-              await git.clone(manifest.origin, extensionPath);
+              await ExtensionUtils.installExtension(extensionId, manifest, extensionPath, sdkVersion);
             } catch (ex) {
-              omnilog.warn(`⚠️  Unable to clone from ${extension.url}: ${ex}.`);
+              omnilog.warn(`⚠️  Unable to clone from ${manifest.origin}: ${ex}.`);
             }
           } catch (ex: any) {
             omnilog.warn(`⚠️  Failed to install ${extensionId}: ${ex.message}.`);
             return;
           }
 
-          omnilog.status_success(`☑️  ${extensionId} was successfully installed. `);
+          omnilog.status_success(`${extensionId} was successfully installed. `);
         })
       );
     } catch (ex) {
@@ -658,6 +616,7 @@ class ServerExtensionManager extends ExtensionManager {
 
   static async updateExtensions(
     extensionDir: string,
+    sdkVersion: string,
     options: { updateExtensions?: boolean; pruneExtensions?: boolean }
   ) {
     // For each directory in the extensions directory, check if it's a git repo and if so, pull the latest changes
@@ -703,14 +662,14 @@ class ServerExtensionManager extends ExtensionManager {
             omnilog.warn(
               `Local changes detected in the ${extension} repo.\nPlease reconcile manually or reset by deleting the folder.`
             );
-            if (await this.validateLocalChanges(extensionDir, extension)) {
+            if (await ExtensionUtils.validateLocalChanges(extensionDir, extension)) {
               omnilog.status_success(`Local changes validated on ${extension}`);
             }
           }
           else {
-            const result = await git.pull();
-            const statusString = result.summary.changes === 0 ? 'up-to-date' : 'updated';
-            omnilog.status_success(`Extension ${extension}...${statusString}`);  
+            const result = await ExtensionUtils.updateToLatestCompatibleVersion(extension, extensionYaml, extensionPath, sdkVersion);
+            const statusString = result.didUpdate ? `updated to ${result.currentHash}` : `up-to-date at ${result.currentHash}`;
+            omnilog.status_success(`Extension ${extension}...${statusString}`);
           }
         } catch (ex) {
           omnilog.warn(`Unable to update extension ${extension}: ${ex}`);

@@ -36,11 +36,21 @@ import TextToJSONBlock from './DefaultBlocks/text_to_json.js'
 import TokenCountBlock from './DefaultBlocks/token_count.js'
 import UsageInfoBlock from './DefaultBlocks/recipe_metadata.js'
 import ValidatorComponent from './DefaultBlocks/output_validator.js'
+import WriteFilesToDirectoryComponent from './DefaultBlocks/file_to_directory.js'
 import StaticFileComponent from './DefaultBlocks/static_file.js'
+import GetFilesFromDirectoryComponent from './DefaultBlocks/files_from_directory.js';
 import { LoopRecipeComponent } from './DefaultBlocks/loop_recipe.js'
 import { RecipeOutputComponent } from './DefaultBlocks/recipe_output.js'
 import { StringarrayToJsonComponent } from './DefaultBlocks/stringarray_to_json.js';
 import { ImagesToMarkdownComponent } from './DefaultBlocks/images_to_markdown.js';
+import { RecipePickerComponent } from './DefaultBlocks/recipe_picker.js';
+import { NumberInputSliderBlock } from './DefaultBlocks/number_input_slider.js';
+import { JsonPackerComponent} from './DefaultBlocks/json_packer.js';
+import { JsonUnpackerComponent} from './DefaultBlocks/json_unpacker.js';
+import { RunRecipeComponent } from './DefaultBlocks/run_recipe.js';
+import  PasswordInputComponent from './DefaultBlocks/masked_input.js';
+import { HuggingfaceGetModelsComponent } from './DefaultBlocks/hf_get_models.js';
+import { GetRecipesComponent } from './DefaultBlocks/get_recipes.js';
 
 const blocks = [];
 blocks.push(BooleanInputBlock);
@@ -53,6 +63,7 @@ blocks.push(FileArraySplitterBlock);
 blocks.push(FileMetaDataWriterComponent);
 blocks.push(FileOutputComponent);
 blocks.push(FileSwitchComponent);
+blocks.push(GetFilesFromDirectoryComponent)
 blocks.push(ImageInfoBlock);
 blocks.push(ImagesToMarkdownComponent);
 blocks.push(JSONataBlock);
@@ -65,6 +76,7 @@ blocks.push(NameToRgbBlock);
 blocks.push(NumberInputBlock);
 blocks.push(NSFWCheckerBlock);
 blocks.push(PrepareImageBlock);
+blocks.push(PasswordInputComponent);
 blocks.push(RecipeOutputComponent);
 blocks.push(RunScriptBlock);
 blocks.push(SocketTestComponent);
@@ -82,6 +94,15 @@ blocks.push(TextToJSONBlock);
 blocks.push(TokenCountBlock);
 blocks.push(UsageInfoBlock);
 blocks.push(ValidatorComponent);
+
+blocks.push(RecipePickerComponent);
+blocks.push(NumberInputSliderBlock);
+blocks.push(JsonPackerComponent);
+blocks.push(JsonUnpackerComponent);
+blocks.push(RunRecipeComponent);
+blocks.push(HuggingfaceGetModelsComponent);
+blocks.push(GetRecipesComponent);
+blocks.push(WriteFilesToDirectoryComponent);
 
 const OmniDefaultBlocks = blocks;
 export { OmniDefaultBlocks };

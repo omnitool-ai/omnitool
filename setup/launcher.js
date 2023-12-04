@@ -13,6 +13,7 @@ const { ensureDirSync } = require('fs-extra');
 const { update_build } = require('./updater.js');
 const readline = require('node:readline');
 const fs = require('node:fs');
+const { migrate_from_pocket } = require('./pocket2sqlite.js');
 
 const { copyFileSync, existsSync } = require('node:fs');
 let args = process.argv.slice(2);
@@ -108,6 +109,10 @@ function start_pocketbase() {
   child_processes.set(pocketDBProcess.pid, pocketDBProcess);
 }
 
+async function migrate_pocketbase() {
+  await migrate_from_pocket(pocketbaseInstallPath);
+}
+
 function start_vite() {
   const viteProcess = exec('yarn frontend');
   viteProcess.stderr.pipe(process.stderr);
@@ -174,27 +179,29 @@ async function check_for_updates() {
 }
 
 async function run_development(server_args) {
-  const pocketready = await ensure(pocketbaseInstallPath);
-  if (!pocketready) {
-    console.error('Fatal error setting up PocketBase DB');
-    process.exit(1);
-  }
+  // const pocketready = await ensure(pocketbaseInstallPath);
+  // if (!pocketready) {
+  //   console.error('Fatal error setting up PocketBase DB');
+  //   process.exit(1);
+  // }
   start_vite();
-  await sleep(1000);
-  start_pocketbase();
+  //await sleep(1000);
+  //start_pocketbase();
+  await migrate_pocketbase();
   await sleep(1000);
   start_server(server_args);
   log_processes();
 }
 
 async function run_production(server_args) {
-  const pocketready = await ensure(pocketbaseInstallPath);
-  if (!pocketready) {
-    console.error('Fatal error setting up PocketBase DB');
-    process.exit(1);
-  }
-  start_pocketbase();
-  await sleep(1000);
+  // const pocketready = await ensure(pocketbaseInstallPath);
+  // if (!pocketready) {
+  //   console.error('Fatal error setting up PocketBase DB');
+  //   process.exit(1);
+  // }
+  // start_pocketbase();
+  // await sleep(1000);
+  await migrate_pocketbase();
   start_server(server_args);
   log_processes();
 }

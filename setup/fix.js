@@ -3,8 +3,13 @@ const { execSync } = require('node:child_process');
 async function fix_python312_distutils() {
   console.log('Checking if python3.12 is installed...');
   // validate python3.12 is installed
-  const python312 = execSync('python3.12 --version').toString().trim();
-  console.log()
+  let python312 = undefined; 
+  try {
+    python312 = execSync('python --version').toString().trim();
+  }
+  catch {
+    return console.log('Python not found. Verify if python is installed and in the path.');
+  }
   const result = python312.split(' ');
   const version = result[1];
   const versionParts = version.split('.');

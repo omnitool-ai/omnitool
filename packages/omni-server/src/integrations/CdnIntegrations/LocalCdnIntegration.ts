@@ -21,12 +21,10 @@ import {
   type ICDNFidServeOpts,
   EOmniFileTypes
 } from './CdnIntegration.js';
-import mime from 'mime-types';
+
 import fs from 'fs/promises';
 import { createReadStream } from 'fs';
-import { ensureDir } from 'fs-extra';
-import detectContentType from 'detect-content-type';
-import { fileTypeFromBuffer } from 'file-type';
+import { ensureDir, exists } from 'fs-extra';
 import { performance } from 'perf_hooks';
 import sharp from 'sharp';
 import { Readable, PassThrough } from 'stream';
@@ -36,6 +34,8 @@ import { customAlphabet } from 'nanoid';
 import path from 'path';
 import { file as tmpFile } from 'tmp-promise';
 import type MercsServer from 'core/Server.js';
+
+import { sanitizeFilename, detectFileDetails } from './fileUtils.js';
 
 const HARD_DELETE_AFTER_MINUTES = 60 * 24 * 7; // 7 days
 const THUMBNAIL_RETENTION = '7d';
@@ -166,6 +166,19 @@ class LocalCdnIntegration extends CdnIntegration {
     return fileName;
   }
 
+  async exportFile(fid:string, exportDir:string, fileName: string, opts: {overwrite: boolean}) 
+  {
+    const file = this.getPathForFid(fid);
+
+    const exportFile = path.join(exportDir, fileName)
+    ensureDir(exportDir)    
+    if (await exists(exportFile) && !opts.overwrite)
+    {
+      return
+    }
+    await fs.copyFile(file, exportFile)
+  }
+
   // This fires whenever the kvstore expires a ew
   override async onExpired(purgedKeys: string[] = []): Promise<any> {
     this.info(`Purging ${purgedKeys.length} expired files from local CDN`);
@@ -235,7 +248,16 @@ class LocalCdnIntegration extends CdnIntegration {
       this.info('Soft deleting', fid);
       // create a tracking entry
       const hard_delete_after_ms = HARD_DELETE_AFTER_MINUTES * 1000 * 60;
+      
+      if (obj.localImport?.hash)
+      {
+        this.kvStorage.del('local-import.'+obj.localImport.hash)
+      }
+            
       this.kvStorage.softDelete(`file.${fid}`, obj.expiry ?? Date.now() + hard_delete_after_ms);
+
+
+
 
       return true;
     } else {
@@ -284,6 +306,7 @@ class LocalCdnIntegration extends CdnIntegration {
     }
 
     let encoding = 'binary';
+    
 
     // When we receive strings, it's a bit tricky to figure out what to do
     if (typeof record.data === 'string') {
@@ -319,7 +342,6 @@ class LocalCdnIntegration extends CdnIntegration {
       // everything else is probably a text file?
       else {
         encoding = 'utf8';
-        opts.mimeType ??= 'text/plain';
         opts.fileType ??= EOmniFileTypes.document;
       }
 
@@ -332,55 +354,12 @@ class LocalCdnIntegration extends CdnIntegration {
     }
 
     // ---------------------- Sanitize the metadata filename ---------------------------------
-    let extName;
+    /*let extName;
     let mimeType = opts.mimeType;
     let fileName = opts.fileName;
+    */
 
-    // If we're dealing with text, let's augment the meta-data a bit
-    if (encoding === 'utf8' && mimeType?.startsWith('text/')) {
-      if (mimeType.startsWith('text/markdown')) {
-        // Try to infer reasonable filenames
-        fileName =
-          fileName ??
-          record.data
-            .toString()
-            .substring(0, 20)
-            .trim()
-            .replace(/[^a-z0-9]/gi, '_');
-        extName = 'md';
-      } else if (mimeType.startsWith('text/html')) {
-        extName = 'html';
-      } else if (mimeType.startsWith('text/svg')) {
-        extName = 'html';
-      } else {
-        // Try to infer reasonable filenames
-        fileName =
-          fileName ??
-          record.data
-            .toString()
-            .substring(0, 20)
-            .trim()
-            .replace(/[^a-z0-9]/gi, '_');
-        extName = 'txt';
-      }
-    } else {
-      // For non text types, we try various ways of identifying the mime type
-      if (!mimeType || !mimeType.startsWith('text/')) {
-        const t = await fileTypeFromBuffer(record.data);
-        if (t != null) {
-          mimeType = t.mime ?? mimeType;
-          extName = t.ext;
-        } else {
-          mimeType = detectContentType(record.data);
-        }
-      }
-    }
-
-    const sanitizedFilename = this.mangleFilename(
-      fileName ?? ticket.fid,
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      extName || mime.extension(mimeType) || undefined
-    );
+    const {mimeType, sanitizedFilename } = await detectFileDetails(ticket.fid, record.data, opts) 
 
     // ---------------------- Generate the on disk cdn object filename  ----------------------
 
@@ -423,6 +402,7 @@ class LocalCdnIntegration extends CdnIntegration {
     let ttl: number | undefined = this.parseTTL(opts.ttl ?? '');
 
     const expiresAt = ttl > 0 ? ttl + Date.now() : Number.MAX_SAFE_INTEGER; // permanent
+
 
     const file = new CdnResource({
       fid: ticket.fid,
@@ -483,12 +463,39 @@ class LocalCdnIntegration extends CdnIntegration {
 
   async updateFileEntry(file: ICdnResource): Promise<ICdnResource> {
     if (file) {
+      // just in case
+      file.fileName = sanitizeFilename(file.fileName);
       this.kvStorage.updateValue(`file.${file.fid}`, file);
     }
     return await Promise.resolve(file);
   }
 
   async importLocalFile(filePath: string, tags: string[] = [], userId?: string): Promise<ICdnResource | null> {
+    const buffer = await fs.readFile(filePath);
+    const inputString = buffer.toString('binary'); // Convert buffer to binary string
+    const hash = murmurHash(inputString + filePath)
+      .result()
+      .toString();
+
+    const exists = await this.find(`local-import:${hash}`);
+    if (exists) {
+      this.info('Local File with hash', hash, 'already exists');
+
+      return exists;
+    } else {
+      this.info('Importing Local File with hash ', hash, '...');
+      const result = await this.put(buffer, { fileName: path.basename(filePath), tags, userId }, {localImport: {
+        filePath: filePath,
+        hash: hash
+      }});      
+      delete result.data
+      this.kvStorage.set(`local-import.${hash}`, result.fid);
+      return result;
+    }
+  }
+
+
+  async importSampleFile(filePath: string, tags: string[] = [], userId?: string): Promise<ICdnResource | null> {
     const buffer = await fs.readFile(filePath);
     const inputString = buffer.toString('binary'); // Convert buffer to binary string
     const hash = murmurHash(inputString + filePath)
@@ -502,7 +509,10 @@ class LocalCdnIntegration extends CdnIntegration {
       return null;
     } else {
       this.info('Importing sample with hash ', hash, '...');
-      const result = await this.put(buffer, { fileName: path.basename(filePath), tags, userId });
+      const result = await this.put(buffer, { fileName: path.basename(filePath), tags, userId }, {localImport: 
+        filePath,
+        hash
+      });
       this.kvStorage.set(`sample-import.${hash}`, result.fid);
       return result;
     }
@@ -574,15 +584,30 @@ class LocalCdnIntegration extends CdnIntegration {
         fid = actualFid
       }
     }
+      // Allow
+      if (fid.startsWith('local-import:'))
+      {
+        const actualFid = this.kvStorage.get(fid.replace('local-import:', 'local-import.'))
+        console.warn("looking for local file",fid, actualFid)
+        if (actualFid != null)
+        {
+          fid = actualFid
+        }
+      }    
 
     const ret = await Promise.resolve(this.kvStorage.get(`file.${fid}`, true));
     const res = this.kvStorage._getRowValue(ret)
     if (res) {
       res.fid ??= fid;
       res.expires = res.expiry
+      const resource = new CdnResource(res)
+      return resource;
     }
-    const resource = new CdnResource(res)
-    return resource;
+    else
+    {
+      return null
+    }
+
   }
 
   async getByFid(fid: string, opts?: any, format?: 'asBase64' | 'stream' | 'file'): Promise<CdnResource> {

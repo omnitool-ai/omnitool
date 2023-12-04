@@ -35,7 +35,6 @@ log.txt
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
-.pnp.*
 /etc/ssl/
 tmp/
 Untitled*.md

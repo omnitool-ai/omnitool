@@ -50,6 +50,10 @@ interface FastifyServerServiceConfig extends IServiceConfig {
     viteDebugger: string;
   };
   autologin: boolean;
+  admin: {
+    username: string;
+    password: string;
+  }
   plugins: {};
   session: {
     secret: string;
@@ -182,6 +186,7 @@ class FastifyServerService extends Service {
       //@ts-ignore
       cloudflare: this.app.config.integrations?.auth?.cloudflare,
       autologin: this.serviceConfig.autologin,
+      admin: this.serviceConfig.admin,
       //@ts-ignore
       kvStorage: this.app.config.integrations?.auth?.kvStorage
     });

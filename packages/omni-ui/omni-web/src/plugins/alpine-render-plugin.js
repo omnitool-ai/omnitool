@@ -65,9 +65,10 @@ export class AlpineRenderPlugin {
       },
 
       async rename() {
-        let newName = prompt('New Name', this.node.title) || '';
+        const newName = prompt('New Name', this.node.title) || '';
         if (newName === this.title) {
-          newName = ''; // Restore default name.
+          delete this.node.data['x-omni-title']
+          return;
         }
         const prevName = this.node.data['x-omni-title'] || '';
         this.node.data['x-omni-title'] = newName || undefined;

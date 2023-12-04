@@ -19,6 +19,7 @@ import {
   type OmniComponentPatch,
   type OmniControl,
   type OmniIO,
+  type OmniIOBase,
   type OmniAPIAuthenticationScheme
 } from './types.js';
 import { ComponentComposer, PatchComposer } from './Composers.js';
@@ -41,6 +42,7 @@ abstract class OAIBaseComponent extends Rete.Component {
   // #v-endif
 
   constructor(config: OmniComponentFormat, patch?: OmniComponentPatch) {
+
     const data = merge(config, patch ?? {});
     super(`${data.displayNamespace}.${data.displayOperationId}`);
     this.data = data;
@@ -266,67 +268,95 @@ abstract class OAIBaseComponent extends Rete.Component {
     return this;
   }
 
-  pickDefaultControl(obj: {
-    control?: { controlType?: string };
-    controlType?: string;
-    choices?: any;
-    step?: number;
-    type?: string;
-    minimum?: number;
-    maximum?: number;
-    customSocket?: string;
-  }): string {
-    if (obj.choices != null) {
+
+  pickDefaultControlFromDataType(dataType: string, ioBase: OmniIOBase): string | null {
+
+    if (dataType === 'number' || dataType === 'integer' || dataType === 'float')
+    {
+
+      if (ioBase.format?.includes('int')) {
+        dataType = 'integer';
+      }
+      else if (ioBase.format === 'float' || ioBase.format === 'double') {
+        dataType = 'float';
+      }
+      
+
+      if (ioBase.step != null || (ioBase.minimum != null && ioBase.maximum != null && Math.abs(ioBase.maximum - ioBase.minimum) <= 100)) {
+        if (dataType === 'float') {
+          ioBase.step ??= 0.1;
+        }
+
+        return 'AlpineNumWithSliderComponent';
+      }
+
+      return 'AlpineNumComponent';
+
+    } else if (dataType === 'boolean') {
+      return 'AlpineToggleComponent';
+    } else if (dataType === 'object') {
+      return 'AlpineCodeMirrorComponent';
+    } else if (dataType === 'string') {
+      return ioBase.format ==='password' ? 'AlpinePasswordComponent' :  'AlpineTextComponent';
+    }
+    return null
+  }
+
+
+  pickDefaultControlFromControl(ctl: OmniControl): string {
+
+    const controlType = ctl.controlType;
+    if (controlType != null) {
+      return controlType;
+    }
+
+    if (ctl.choices != null) {
       return 'AlpineSelectComponent';
     }
 
-    if (obj.control?.controlType != null) {
-      return obj.control?.controlType;
-    }
-    if (obj.controlType != null) {
-      return obj.controlType;
-    }
-
-    if (
-      obj.step != null ||
-      (obj.minimum != null && obj.maximum != null && Math.abs(obj.maximum - obj.minimum) <= 100)
-    ) {
-      if (obj.type === 'float') {
-        obj.step ??= 0.1;
+    const dataType =  ctl.dataType
+    if (dataType != null){
+      const fromDataType = this.pickDefaultControlFromDataType(dataType, ctl);
+      if (fromDataType != null) {
+        return fromDataType;
       }
-      return 'AlpineNumWithSliderComponent';
+      }
+    return 'AlpineLabelComponent';
+
+  }
+
+
+  pickDefaultControlFromIO(io: OmniIO): string {
+
+    const controlType =  io.control?.controlType //?? obj.controlType;
+    //@ts-ignore
+
+    if (controlType != null) {
+      return controlType;
     }
 
-    const objType = obj.type;
-    if (objType === null) {
-      omnilog.warn('Null Object Type');
+    if (io.choices != null) {
+      return 'AlpineSelectComponent';
     }
 
-    const customSocket = obj.customSocket;
+    // @ts-ignore
+    const customSocket = io.customSocket;
 
     if (
       customSocket &&
-      ['imageArray', 'image', 'document', 'documentArray', 'audio', 'file', 'audioArray', 'fileArray'].includes(
+      ['imageArray', 'image', 'document', 'documentArray', 'audio', 'file', 'video', 'audioArray', 'fileArray'].includes(
         customSocket
       )
     ) {
+
       return 'AlpineLabelComponent';
     }
 
-    if (objType === 'number' || objType === 'integer' || objType === 'float') {
-      return 'AlpineNumComponent';
-    } else if (objType === 'boolean') {
-      return 'AlpineToggleComponent';
-    } else if (objType === 'error') {
-      return 'AlpineTextComponent';
-    } else if (objType === 'object') {
-      return 'AlpineCodeMirrorComponent';
+    const dataType = io.type
+    const fromDataType = this.pickDefaultControlFromDataType(dataType, io);
+    if (fromDataType != null) {
+      return fromDataType;
     }
-
-    if (objType === 'string' || customSocket === 'text') {
-      return 'AlpineTextComponent';
-    }
-
     return 'AlpineLabelComponent';
   }
 
@@ -493,9 +523,21 @@ class OAIComponent31 extends OAIBaseComponent {
       io.name ??= key;
       io.title ??= key;
 
-      const ctlType = this.pickDefaultControl(io);
+      const ctlType = this.pickDefaultControlFromIO(io);
+
+      // Sometimes we change type on sockets, so we clean it up here.
+      if (node.data[key] != null && io.default != null) {
+        if (typeof(node.data[key]) != typeof(io.default) )
+        {
+          delete node.data[key]
+        }
+        else if (io.type === 'number' && typeof(node.data[key]) === 'string') {
+          delete node.data[key]
+        }
+      }
 
       const control = await OAIControl31.fromIO(ctlType, io, this.editor);
+
 
       if (!io.hidden) {
         if (io.readonly) {
@@ -516,7 +558,7 @@ class OAIComponent31 extends OAIBaseComponent {
       if (!ctl.hidden) {
         ctl.name ??= key;
 
-        ctl.controlType ??= this.pickDefaultControl(ctl);
+        ctl.controlType ??= this.pickDefaultControlFromControl(ctl);
         const control = await OAIControl31.fromControl(ctl, this.editor);
 
         node.addControl(control);
@@ -534,6 +576,8 @@ class OAIComponent31 extends OAIBaseComponent {
         node.addOutput(output);
       }
     }
+
+
   }
 
   async runXFunction(ctx: WorkerContext, method: string, payload: any): Promise<any> {
@@ -587,6 +631,8 @@ class OAIComponent31 extends OAIBaseComponent {
 
     let response;
 
+  
+
     // Custom Functions
     if (this.method.startsWith('X-')) {
       response = await this.runXFunction(ctx, this.method, payload);
@@ -597,6 +643,7 @@ class OAIComponent31 extends OAIBaseComponent {
     }
     // Everything Else is a standard API call
     else {
+
       response = await ctx.app.api2.execute(
         this.apiKey,
         requestBody,
@@ -734,7 +781,7 @@ class OAIComponent31 extends OAIBaseComponent {
   }
 
   getRequestComponents(payload: any, ctx: WorkerContext): { requestBody: any; parameters: any[] } {
-    const requestBody: any = {};
+    let requestBody: any = {};
     const parameters = [];
 
     // #v-ifdef MERCENARIES_SERVER=1
@@ -745,7 +792,15 @@ class OAIComponent31 extends OAIBaseComponent {
       const source = inputs[key]?.source;
 
       if (!source || source.sourceType === 'requestBody') {
-        requestBody[key] = value;
+        // a hoisted property is one that is pushed to the top of the component request body
+        if (this.scripts?.['hoist:input']?.includes(key))
+        {
+          requestBody = {...requestBody, ...value} 
+        }
+        else  
+        {
+          requestBody[key] = value;
+        }
       } else {
         if (source.sourceType === 'parameter') {
           const param = {
@@ -757,6 +812,9 @@ class OAIComponent31 extends OAIBaseComponent {
         }
       }
     }
+
+  
+
     // ------------------------------------ SERVER ------------------------------------
     // #v-endif
     return { requestBody, parameters };
@@ -794,6 +852,7 @@ class OAIComponent31 extends OAIBaseComponent {
     // ------------------------------------ SERVER ------------------------------------
     const inputs = this.enumerateInputs(ctx.node);
     for (const key in inputs) {
+
       const input = inputs[key];
       const inputValue = ctx.inputs[key] as any[];
       let value;
@@ -801,7 +860,7 @@ class OAIComponent31 extends OAIBaseComponent {
         value = inputValue?.flat?.() ?? ctx.node.data[key] ?? input.default;
       } else {
         value = inputValue?.[0] ?? ctx.node.data[key] ?? input.default;
-        if (input.dataTypes?.[0] === 'integer' && value === '') {
+        if (['integer', 'float', 'number'].includes(input.type) && value === '') {
           value = input.default; // replicate.com, 2023-10
         }
       }

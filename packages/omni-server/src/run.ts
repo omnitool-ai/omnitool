@@ -161,11 +161,11 @@ const boot = async (options: OptionValues) => {
   const extensionPath = path.join(process.cwd(), 'extensions');
 
   omnilog.status_start('--- Ensuring core extensions -----');
-  await ServerExtensionManager.ensureCoreExtensions(extensionPath);
+  await ServerExtensionManager.ensureCoreExtensions(extensionPath, packagejson.version);
   omnilog.status_success('OK');
 
   omnilog.status_start('--- Updating extensions -----');
-  await ServerExtensionManager.updateExtensions(extensionPath, options);
+  await ServerExtensionManager.updateExtensions(extensionPath, packagejson.version, options);
   omnilog.status_success('OK');
 
   if (options.pruneExtensions) {
@@ -262,11 +262,18 @@ const boot = async (options: OptionValues) => {
     corsOrigin.push(options.viteProxy);
   }
 
+  const dbuser: string = options.dbuser
+  const adminUsername = dbuser.split(':')[0] ?? 'admin@local.host'
+  const adminPassword = dbuser.split(':')[1] ?? 'admin@local.host'
   const fastifyConfig: FastifyServerServiceConfig = {
     id: 'httpd',
     listen: { host: listenOn.hostname, port: Number.parseInt(listenOn.port) },
     cors: { origin: corsOrigin, credentials: true },
     autologin: options.autologin,
+    admin: {
+      username: adminUsername,
+      password: adminPassword
+    },
     proxy: {
       enabled: options.viteProxy !== undefined,
       viteDebugger: options.viteProxy

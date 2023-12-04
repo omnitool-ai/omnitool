@@ -65,6 +65,8 @@ const config = {
   ],
 
   build: {
+    //sourcemap: true,
+    //minify: false,
     outDir: '../../omni-server/public',
     emptyOutDir: true,
     rollupOptions: {

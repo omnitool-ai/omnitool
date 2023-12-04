@@ -5,9 +5,8 @@
 
 import type Nano from 'nano';
 import { type DBServiceProvider } from './DBService/DBServiceProvider.js';
-import { DBPocketBaseServiceProvider } from './DBService/DBPocketbaseServiceProvider.js';
-import { type IManager, type IServiceConfig, Service, omnilog } from 'omni-shared';
-import { DBLoggingReporter } from './DBService/DBLoggingReporter.js';
+import { type IManager, type IServiceConfig, Service } from 'omni-shared';
+import { DBSQLiteServiceProvider } from './DBService/DBSQLiteServiceProvider.js';
 
 interface QueryResult {
   docs: Array<any>;
@@ -34,6 +33,9 @@ interface IDBServerServiceConfig extends IServiceConfig {
       dbUrl: string;
     };
   };
+  kvStorage: {
+    dbPath: string;
+  }
   pocketbaseDbUrl: string;
   pocketbaseDbAdmin: string;
   flushLogs: boolean;
@@ -57,10 +59,7 @@ class DBService extends Service {
   constructor(id: string, manager: IManager, config: IDBServerServiceConfig) {
     super(id, manager, config || { id });
 
-    this.provider = new DBPocketBaseServiceProvider(this, config);
-    if (config.flushLogs) {
-      omnilog.addConsolaReporter(new DBLoggingReporter(this));
-    }
+    this.provider = new DBSQLiteServiceProvider(this, config);
   }
 
   async getDocumentsByOwnerId(
@@ -87,16 +86,14 @@ class DBService extends Service {
     ownerIds: string[],
     page: number,
     limitPerPage: number,
-    customFilters?: Map<string, string>,
-    sortOption?: string
+    customFilters?: Map<string, string>
   ): Promise<QueryResult> {
     const result = await this.provider.getDocumentsByOwnerIdV2(
       document_type,
       ownerIds,
       page,
       limitPerPage,
-      customFilters,
-      sortOption
+      customFilters
     );
     return result;
   }
@@ -136,7 +133,6 @@ class DBService extends Service {
 
   async load(): Promise<boolean> {
     const result = await this.provider.connect();
-
     return result;
   }
 

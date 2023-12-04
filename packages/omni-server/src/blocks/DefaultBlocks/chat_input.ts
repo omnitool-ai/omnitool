@@ -82,6 +82,13 @@ component
       })
       .toOmniIO()
   )
+  .addInput(
+    component
+      .createInput('json', 'array', 'objectArray')
+      .set('title', 'JSON Object(s)')
+      .set('description', 'One or more object')
+      .toOmniIO()
+  )
   .addOutput(component.createOutput('text', 'string', 'text').set('title', 'Text').toOmniIO())
   .addOutput(component.createOutput('images', 'array', 'imageArray').set('title', 'Images').toOmniIO())
   .addOutput(component.createOutput('audio', 'array', 'audioArray').set('title', 'Audio').toOmniIO())
@@ -102,11 +109,18 @@ component
 
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
     const input = Object.assign({}, payload || {}, ctx.args);
-
+    const input_json = input.json;
     let json;
-    try {
-      json = JSON.parse(input.text); // Check if JSON
-    } catch (e) {}
+    if (input_json) 
+    {
+      json = input_json;
+    }
+    else
+    {
+      try {
+        json = JSON.parse(input.text); // Check if JSON
+      } catch (e) {}
+    }
 
     if (typeof json === 'object' && !Array.isArray(json)) {
       json = [json];

@@ -24,6 +24,7 @@ interface IKVStorage {
   init: () => Promise<boolean>;
   stop: () => Promise<void>;
   registerView: (name: string, sql: string) => void;
+  runSQL: (sql: string, args: any) =>void;
 }
 
 interface IKVStorageConfig {
@@ -96,6 +97,8 @@ class KVStorage implements IKVStorage {
     return Boolean(row);
   }
 
+
+
   // Simple Migration Functionality
   private runMigrations() {
     migrations.sort((a, b) => a.version - b.version);
@@ -116,6 +119,12 @@ class KVStorage implements IKVStorage {
     });
 
     transaction();
+  }
+
+  public runSQL(sql: string, args: any): void {
+    const statement = this.db.prepare(sql);
+    omnilog.info(sql, args)
+    statement.run(args);
   }
 
   async init(): Promise<boolean> {

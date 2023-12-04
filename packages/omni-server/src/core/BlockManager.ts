@@ -247,11 +247,11 @@ class BlockManager extends Manager {
 
       let result: any;
       try {
-        // TODO Fix this with a proper function
+
         result = await amqpService.publishAwaitable(
           'omni_tasks',
           undefined,
-          Object.assign({}, { integration: { key: integrationId, operationId: opKey } }, { body }, requestConfig, {
+          Object.assign({}, { integration: { key: integrationId, operationId: opKey, block: api } }, { body }, requestConfig, {
             job_ctx: ctx
           })
         );
@@ -276,11 +276,14 @@ class BlockManager extends Manager {
     };
   }
 
-  // Preload APIS
-  private async preload() {
-    const start = performance.now(); // Start timer
 
-    const registryDir = process.cwd() + '/extensions/omni-core-blocks/server/apis/';
+  private async preloadDir(registryDir:string, prefix?: string)
+  {
+    // check if directory exists
+    if (!await this.checkDirectory(registryDir)) {
+      return;
+    }
+
     const registryFiles = await readdir(registryDir);
     this.debug(`Scanning registry folder ${registryDir}, containing ${registryFiles.length} files.`);
 
@@ -291,17 +294,46 @@ class BlockManager extends Manager {
       const filePath = path.join(registryDir, file);
       const s = await stat(filePath);
       if (s.isDirectory()) {
-        await this.registerFromFolder(filePath);
+        await this.registerFromFolder(filePath, prefix, (this.app as MercsServer).options.refreshBlocks);
       }
     });
 
     await Promise.all(tasks);
-
-    const end = performance.now(); // End timer
-    this.info(`BlockManager preload completed ${registryFiles.length} in ${(end - start).toFixed()}ms`);
   }
 
-  async registerFromFolder(dirPath: string): Promise<void> {
+  // Preload APIS
+  private async preload() {
+    const start = performance.now(); // Start timer
+
+    const testDir =  process.cwd() + '/data.local/apis-testing/';
+    await this.preloadDir(testDir, 'test')
+
+    // First load the local apis defined by the user
+    const localDir =  process.cwd() + '/data.local/apis-local/';
+    await this.preloadDir(localDir, 'local')
+
+    const registryDir = process.cwd() + '/extensions/omni-core-blocks/server/apis/';
+    await this.preloadDir(registryDir)
+
+    const end = performance.now(); // End timer
+    this.info(`BlockManager preload completed in ${(end - start).toFixed()}ms`);
+  }
+
+  async uninstallNamespace(ns: string, prefix: string = 'local') {
+    // sanitize
+    ns = ns.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (ns.length <3) {
+      throw new Error('Namespace too short');
+    }
+    const name = `${prefix}-${ns}`
+    if (!this.namespaces.get(name)) {
+      throw new Error('Namespace '+name+'not found');
+    }
+    this.info(`Uninstalling namespace ${name}`);
+    this._kvStorage?.runSQL(`DELETE FROM kvstore WHERE key LIKE ?`, `%:${name}%`);
+  }
+
+  async registerFromFolder(dirPath: string, prefix?:string, forceRefresh:boolean=false): Promise<void> {
     const start = performance.now(); // Start timer
     const files = await readdir(dirPath);
 
@@ -316,15 +348,22 @@ class BlockManager extends Manager {
               nsData.title = nsData.namespace;
             }
 
+            if (prefix)
+            {
+              nsData.namespace = `${prefix}-${nsData.namespace}`;
+              nsData.title = `$${nsData.title} (${prefix})`;
+              nsData.prefix = prefix
+            }
+
             // get the namespace
-            const ns = nsData.namespace;
+            const ns =  nsData.namespace;
             const url = nsData.api?.url ?? nsData.api?.spec ?? nsData.api?.json;
             if (!ns || !url) {
               this.error(`Skipping ${dirPath}\\${file} as it does not have a valid namespace or api field`);
               return;
             }
 
-            if (this.namespaces.has(ns) && !(this.app as MercsServer).options.refreshBlocks) {
+            if (this.namespaces.has(ns) && !forceRefresh) {
               this.debug('Skipping namespace ' + ns + " as it's already registered");
               await Promise.resolve();
               return;
@@ -343,7 +382,14 @@ class BlockManager extends Manager {
                   if (component.endsWith('.yaml')) {
                     // load the yaml file
                     const patch = yaml.load(await readFile(cDir + '/' + component, 'utf8')) as any;
-
+                    if (nsData.prefix)
+                    {
+                      patch.title = `${patch.title} (${nsData.prefix})`;
+                      patch.apiNamespace = `${nsData.prefix}-${patch.apiNamespace}`;
+                      patch.displayNamespace = `${nsData.prefix}-${patch.displayNamespace}`;
+                      patch.tags = patch.tags ?? [];
+                      patch.tags.push(nsData.prefix);
+                    }
                     opIds.push(patch.apiOperationId);
                     patches.push(patch);
                   }
@@ -671,6 +717,11 @@ class BlockManager extends Manager {
       }
     }
 
+    // Once there is patch, hide _omni_result socket in outputs if it exists
+    if (patch && Object.keys(ret.outputs ?? {}).length > 1 && ret.outputs?._omni_result) {
+      ret.outputs['_omni_result'].hidden = true;
+    }
+
     if (userId && !(await this.canRunBlock(ret, userId))) {
       ret.data.errors.push('Block cannot run');
     }
@@ -692,7 +743,7 @@ class BlockManager extends Manager {
         if (extension)
         {
           const block = await extension.invokeKnownMethod(KNOWN_EXTENSION_METHODS.resolveMissingBlock, ctx, blockKey)
-        
+
           if (block)
           {
             return block;

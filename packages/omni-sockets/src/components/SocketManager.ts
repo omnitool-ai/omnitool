@@ -89,7 +89,7 @@ class SocketManager {
   }
 
   getOrCreateSocket(type: string, opts: ICustomSocketOpts): CustomSocket {
-    ['image', 'audio', 'document', 'cdnObject', 'object', 'video'].forEach((t) => {
+    ['image', 'audio', 'document', 'cdnObject', 'object', 'video', 'file'].forEach((t) => {
       if (type.startsWith(t)) {
         type = t;
       }

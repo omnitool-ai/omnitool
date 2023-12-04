@@ -137,6 +137,12 @@ const AlpineTextComponent = (control) => {
   };
 };
 
+const AlpinePasswordComponent = (control) => {
+  return {
+    ...controlsShared(control.opts.default || '', control, './PasswordControl.hbs')
+  };
+};
+
 const AlpineButtonComponent = (control) => {
   return {
     ...controlsShared(control.opts.default || '', control, './ButtonControl.hbs'),
@@ -308,5 +314,6 @@ export {
   AlpineSelect2TagComponent,
   AlpineSelectComponent,
   AlpineTextComponent,
+  AlpinePasswordComponent,
   AlpineToggleComponent
 };

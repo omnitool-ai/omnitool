@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-import { type IService } from 'omni-shared';
+import { type IService, type User } from 'omni-shared';
 import Nano, { type MangoQuery } from 'nano';
 import { DBServiceProvider, DBServiceProviders, type IDBServiceProviderConfig } from './DBServiceProvider.js';
 import { OMNITOOL_DOCUMENT_TYPES, type QueryResult } from '../DBService.js';
@@ -359,7 +359,7 @@ class DBCouchServiceProvider extends DBServiceProvider {
     throw new Error('Method not implemented.');
   }
 
-  async authAsAdmin(): Promise<any> {
+  async authAsAdmin(): Promise<User | undefined> {
     throw new Error('Method not implemented.');
   }
 }

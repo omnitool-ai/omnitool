@@ -26,7 +26,7 @@ const block = OAIBaseComponent.create(NS_OMNI, 'number_input')
 block
   .addInput(
     block
-      .createInput('number', 'number') // Should this be type `string` ?
+      .createInput('number', 'Number')
       .set('description', 'Input number')
       .setRequired(true)
       .setDefault(1)

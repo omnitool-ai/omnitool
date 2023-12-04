@@ -204,7 +204,7 @@ const chatComponent = function (workbench) {
           // eslint-disable-next-line no-ex-assign
           error = error.message ?? JSON.stringify(error, null, 2);
         } else {
-          console.error('Failed to send message:' + error);
+          console.error( error);
         }
         await onChatMessage({
           message: '<div class="w-full text-red-500font-semibold">❌ Error</div><div>' + error + '</div>',
@@ -519,9 +519,9 @@ const chatComponent = function (workbench) {
     async genericFileUpload(files, event) {
       await onChatMessage({ message: 'Uploading files...', sender: 'omni' });
       const uploaded = await this.uploadFiles(files);
-      // TODO: Moveto 
+      // TODO: Moveto
       const audio = uploaded.filter((f) => f.fileType === EOmniFileTypes.audio)
-      const images = uploaded.filter((f) => f.fileType === EOmniFileTypes.image)      
+      const images = uploaded.filter((f) => f.fileType === EOmniFileTypes.image)
       const videos = uploaded.filter((f) => f.fileType === EOmniFileTypes.video)
       const documents = uploaded.filter((f) => f.fileType === EOmniFileTypes.document);
       client.clipboard ??= {};
@@ -541,11 +541,11 @@ const chatComponent = function (workbench) {
       }
 
     const cmdFiles = [...client.clipboard.images,...client.clipboard.videos,...client.clipboard.documents, ...client.clipboard.audio].filter(e=>e)
-      
-    client.sdkHost.sendChatMessage(message, 'text/markdown', 
+
+    client.sdkHost.sendChatMessage(message, 'text/markdown',
       { audio, images, documents, commands: [
         { 'id': 'run', title: 'Run', args: [null, cmdFiles] }]}, ['no-picture'])
-      
+
       if (event.target) {
         event.target.value = ''; // Allow same file to be uploaded multiple times.
       }

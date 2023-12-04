@@ -3,12 +3,13 @@
  * All rights reserved.
  */
 
-import { type IService } from 'omni-shared';
+import { type IService, type User } from 'omni-shared';
 import { type OMNITOOL_DOCUMENT_TYPES, type QueryResult } from '../DBService.js';
 
 enum DBServiceProviders {
   CouchDB,
-  PocketBase
+  PocketBase,
+  SQLite
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -39,8 +40,7 @@ abstract class DBServiceProvider {
     ownerIds: string[],
     page: number,
     limitPerPage: number,
-    customFilters?: Map<string, string>,
-    sortOption?: string
+    customFilters?: Map<string, string>
   ): Promise<QueryResult>;
   abstract putDocumentById(
     document_type: OMNITOOL_DOCUMENT_TYPES,
@@ -76,7 +76,7 @@ abstract class DBServiceProvider {
     use_index?: string
   ): Promise<any>;
   abstract authWithPassword(username: string, password: string): Promise<any>;
-  abstract authAsAdmin(): Promise<any>;
+  abstract authAsAdmin(): Promise<User | undefined>;
   abstract hasTable(tablename: string): Promise<boolean>;
   abstract flushLog(level: string, msg: string, tag?: string): Promise<void>;
 }

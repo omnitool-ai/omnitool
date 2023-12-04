@@ -11,7 +11,7 @@ import {
   type MessagingClientService
 } from 'omni-client-services';
 import { Workbench } from './workbench';
-import { OmniSDKHost, MarkdownEngine } from 'omni-sdk';
+import { OmniSDKHost, MarkdownEngine, OmniSDKClient } from 'omni-sdk';
 
 import {
   OmniSSEMessages,
@@ -35,7 +35,27 @@ import OmniExtensionListRenderer from './renderers/chat/OmniExtensionListRendere
 import { OAIComponent31, type OAIBaseComponent, type OmniComponentFormat } from 'omni-sockets';
 //@ts-expect-error
 import WinBox from '@winbox/src/js/winbox.js';
+
+
 import '@winbox/src/css/winbox.css';
+
+WinBox.prototype.setUrl = function(url:string, onload:Function){
+
+
+  const node = this.body.firstChild;
+
+  if(node && (node.tagName.toLowerCase() === "iframe")){
+
+      node.src = url;
+  }
+  else{
+
+      this.body.innerHTML = `<iframe allowtransparency="${this.allowTransparency?"true": "false"}" style="background:${this.allowTransparency?"transparent": "white"};"  src="${url}"></iframe>`;
+      onload && (this.body.firstChild.onload = onload);
+  }
+
+  return this;
+};
 
 enum ReteCurveType {
   CurveBasis = 'curveBasis',
@@ -133,7 +153,7 @@ class OmnitoolClient extends Client {
     curvature: number;
     arrow: boolean;
   };
-
+  SDK: typeof OmniSDKClient = OmniSDKClient
   windows: Map<string, WinBox>;
   sdkHost: OmniSDKHost<OmnitoolClient>;
   public readonly markdownEngine: MarkdownEngine;
@@ -235,10 +255,11 @@ class OmnitoolClient extends Client {
 
   public toggleWindow(url: string, singletonHash: string | undefined, opts: any): WinBox | undefined {
     opts ??= {};
-    opts.minwidth ??= '600px';
-    opts.minheight ??= '500px';
+    //opts.minwidth ??= '600px';
+    //opts.minheight ??= '500px';
     opts.x ??= 'center';
     opts.y ??= 'center';
+    opts.class = "test";
 
     if (singletonHash)
     {
@@ -248,7 +269,7 @@ class OmnitoolClient extends Client {
 
     const template = document.createElement('div');
     template.innerHTML = `
-        <div class="wb-header">
+        <div class="wb-header asdf">
             <div class="wb-control">
                 <span class="wb-custom"></span>
                 <span class="wb-close"></span>
@@ -259,19 +280,23 @@ class OmnitoolClient extends Client {
             </div>
         </div>
         <div class="wb-body"></div>
-    `;
+    `
 
-    const window = new WinBox(
+
+    const w = new WinBox(
       Object.assign(
         {},
         {
-          title: opts.title,
           url,
           class: [],
-          autosize: true
+          autosize: true,
+
         },
         opts,
         {
+          onCreate: (instance: WinBox) => {
+            instance.allowTransparency = opts.allowTransparency ?? false;
+          },
           onclose: () => {
             if (singletonHash) {
               this.windows.delete(singletonHash);
@@ -283,11 +308,13 @@ class OmnitoolClient extends Client {
       )
     );
 
-    if (singletonHash) {
-      this.windows.set(singletonHash, window);
-    }
 
+
+    if (singletonHash) {
+      this.windows.set(singletonHash, w);
+    }
     this.workbench.refreshUI();
+
     return window;
   }
 

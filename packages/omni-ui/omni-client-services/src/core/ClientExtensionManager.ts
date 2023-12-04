@@ -8,7 +8,8 @@ import type Client from './Client';
 
 interface IClientExtensionConfig extends IExtensionConfig {
   addToWorkbench?: boolean;
-  addBackButton?: boolean;
+  addToSidebar?: true;
+
   singleton: boolean;
   winbox?: any;
   fileIntents?: {
@@ -52,7 +53,7 @@ class ClientExtension extends AppExtension {
 
   get pinned(): boolean {
     return (
-      this.extensionConfig.addToWorkbench === true && window.localStorage.getItem(`fav-extension${this.id}`) !== null
+      this.extensionConfig.addToSidebar === true || (this.extensionConfig.addToWorkbench === true && window.localStorage.getItem(`fav-extension${this.id}`) !== null)
     );
   }
 

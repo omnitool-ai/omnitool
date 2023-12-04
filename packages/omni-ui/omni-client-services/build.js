@@ -24,8 +24,7 @@ esbuild
     define: {
       'process.env.NODE_ENV': `"${environment}"`
     },
-    minify: true,
-    sourcemap: true
+    sourcemap: 'linked'
   })
   .then(() => console.log('Building omni-client-services done'))
   .catch(() => process.exit(1));

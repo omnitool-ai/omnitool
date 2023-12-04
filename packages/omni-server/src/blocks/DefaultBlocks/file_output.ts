@@ -7,6 +7,7 @@
 // Chat Output
 // --------------------------------------------------------------------------
 
+import { util } from '@tensorflow/tfjs-core';
 import { EOmniFileTypes } from 'omni-sdk';
 import { OAIBaseComponent, OmniComponentMacroTypes, type WorkerContext, BlockCategory as Category } from 'omni-sockets';
 
@@ -62,7 +63,7 @@ component
 
   .addInput(
     component
-      .createInput('images', 'array', 'imageArray')
+      .createInput('images', 'array', 'imageArray', {array: true})
       .set('title', 'Images')
       .set('description', 'One or more images')
       .allowMultiple(true)
@@ -71,7 +72,7 @@ component
 
   .addInput(
     component
-      .createInput('audio', 'array', 'audioArray')
+      .createInput('audio', 'array', 'audioArray', {array: true})
       .set('title', 'Audio')
       .set('description', 'One or more audio files')
       .toOmniIO()
@@ -86,24 +87,41 @@ component
   )
   .addInput(
     component
-      .createInput('documents', 'array', 'documentArray')
+      .createInput('documents', 'array', 'documentArray', {array: true})
       .set('title', 'Documents')
       .set('description', 'One or more documents')
       .toOmniIO()
   )
   .addInput(
     component
-      .createInput('object', 'array', 'objectArray')
+      .createInput('object', 'array', 'objectArray', {array: true})
       .set('title', 'JSON')
       .set('description', 'A JSON object')
       .toOmniIO()
   )
+  .addInput(
+    component
+      .createInput('unique', 'boolean', 'boolean')
+      .set('title', 'Unique Names')
+      .set('description', 'If true, will avoid creating files with the same name by adding _2, _3 etc. to the end of the file names')
+      .toOmniIO()
+  )
+  .addOutput(
+    component.createOutput('files', 'array', 'fileArray').set('title', 'Files').set('description', 'The file(s)').toOmniIO()
+  )
+  .addOutput(
+    component.createOutput('urls', 'string', 'text').set('title', 'URLs').set('description', 'The URLs to download the created file(s)').toOmniIO()
+  )
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
+    
     const type: string = payload.storageType === 'Permanent' ? 'put' : 'putTemp';
+    const unique: boolean = payload.unique || false;
 
     const fileName = payload.fileName?.trim?.() || undefined;
+    const files = [];
 
-    if (payload.text?.trim().length > 0) {
+    if (payload.text?.trim().length > 0) 
+    {
       let ext = '.md';
       if (payload.textType === 'text/plain') {
         ext = '.txt';
@@ -115,67 +133,62 @@ component
         ext = '.json';
       }
 
-
-      await ctx.app.cdn[type](payload.text, {
+      const file = await ctx.app.cdn[type](payload.text, {
         mimeType: payload.textType,
         fileName: fileName + ext,
         fileType: EOmniFileTypes.document,
         userId: ctx.userId
       });
+      files.push(file);
     }
 
-    if (payload.images) {
-      await Promise.all(
-        payload.images.forEach((image: any) => {
-          ctx.app.cdn[type](
-            image,
-            { mimeType: image.mimeType, fileName: fileName || image.fileName, userId: ctx.userId, jobId: ctx.jobId },
-            image.meta
-          );
-        })
-      );
-    }
+    if (payload.documents) await uploadAndAddFiles(payload.documents, type, fileName, ctx, files, unique);
+    if (payload.images) await uploadAndAddFiles(payload.images, type, fileName, ctx, files, unique);
+    if (payload.audio) await uploadAndAddFiles(payload.audio, type, fileName, ctx, files, unique);
+    if (payload.videos) await uploadAndAddFiles(payload.videos, type, fileName, ctx, files, unique);
+    
+    const urls = [];
+    if (!files || files.length === 0) return {"ok":false};
 
-    if (payload.documents) {
-      await Promise.all(
-        payload.documents.forEach((doc: any) => {
-          ctx.app.cdn[type](
-            doc,
-            { mimeType: doc.mimeType, fileName: fileName || doc.fileName, userId: ctx.userId, jobId: ctx.jobId },
-            doc.meta
-          );
-        })
-      );
-    }
+      for (const file of files) 
+      {
+        const name = file.fileName;
+        const fid = file.fid;
 
-    if (payload.audio) {
-      await Promise.all(
-        payload.audio.forEach((audio: any) => {
-          ctx.app.cdn[type](
-            audio,
-            { mimeType: audio.mimeType, fileName: fileName || audio.fileName, userId: ctx.userId, jobId: ctx.jobId },
-            audio.meta
-          );
-        })
-      );
-    }
+        const raw_url = "http://"+file.ticket.publicUrl + file.url+"?download=true";
+        const url = `<a href="${raw_url}" target="_blank">${name} --> ${fid}</a>\n  `;
 
-    if (payload.videos) {
-      await Promise.all(
-        payload.videos.forEach((video: any) => {
-          ctx.app.cdn[type](
-            video,
-            { mimeType: video.mimeType, fileName: fileName || video.fileName, userId: ctx.userId, jobId: ctx.jobId },
-            video.meta
-          );
-        })
-      );
-    }
-
-
-    return {};
+        urls.push(url);
+      }
+   
+    const result = {"ok":true, files, urls};
+    return result;
   });
 
 const FileOutputComponent = component.toJSON();
 
 export default FileOutputComponent;
+
+async function uploadAndAddFiles(items: any[], type: string, fileName: string, ctx: any, files: any[], unique: boolean) 
+{
+  let index = 0;
+  for (const cdnRecord of items) 
+  {
+
+    //const entry = await ctx.app.cdn.get(cdnRecord.ticket);
+    const buffer = cdnRecord.data;
+    const data = Buffer.from(buffer);//, 'base64');
+    const ext = cdnRecord.fileName.split('.').pop();
+    let new_filename = fileName || cdnRecord.fileName;
+    if (unique && files.length > 0) new_filename = new_filename + '_' + (index+1);
+    if (ext) new_filename = new_filename + '.' + ext;
+
+    const file = await ctx.app.cdn[type](
+      data,
+      { mimeType: cdnRecord.mimeType, fileName: new_filename, userId: ctx.userId, jobId: ctx.jobId },
+      cdnRecord.meta);
+
+    files.push(file);
+    index++;
+  }
+}

@@ -24,8 +24,8 @@ esbuild
     define: {
       'process.env.NODE_ENV': `"${environment}"`
     },
-    minify: true,
-    sourcemap: true,
+    sourcemap: 'linked',
+    packages: 'external',
     external: ['axios', 'consola', 'insane']
   })
   .then(() => console.log('Building omni-shared done'))

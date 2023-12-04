@@ -13,7 +13,7 @@ import { type FastifyRequest, type FastifyReply } from 'fastify';
 import { EObjectAction, EObjectName, type User, Workflow, type IWorkflowMeta } from 'omni-shared';
 import { type WorkflowIntegration } from '../WorkflowIntegration';
 import { PermissionChecker } from '../../../helper/permission.js';
-import { add } from 'lodash-es';
+import sanitize from 'sanitize-filename'
 
 const getMetaSchema = function () {
   return {
@@ -520,6 +520,62 @@ const loadWorkflowHandler = function (integration: WorkflowIntegration, config: 
   };
 };
 
+const downloadWorkflowHandler = function (integration: WorkflowIntegration, config: any) {
+  return {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          workflowId: { type: 'string' }
+          // version: { type: 'string' }
+        },
+        required: ['workflowId']
+      },
+      response: {
+        200: getRecipeSchema(true),
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          },
+          required: ['error']
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          },
+          required: ['error']
+        }
+      }
+    },
+    handler: async function (request: FastifyRequest, reply: FastifyReply) {
+      if (!integration.db) {
+        return await reply.status(500).send({ success: 'error', error: 'Internal server error' });
+      }
+
+      const user: User = request.user as User;
+      // @ts-ignore
+      const workflowId = request.params.workflowId;
+
+      // @ts-ignore
+      const workflow = await integration.getRecipe(workflowId, user.id, true);
+
+      if (!workflow) {
+        return await reply.status(404).send({ error: 'Workflow not found' });
+      }
+
+      let fileName = `${workflow.meta.name}_${workflow.id.replace(
+        /[^a-zA-Z0-9-_]/g,
+        '_'
+      )}_${Date.now()}.json`;
+      fileName = sanitize(fileName);
+
+      return await reply.header('Content-Disposition', `attachment; filename="${fileName}"`).header('Content-Type', 'application/json').status(200).send(workflow);
+    }
+  };
+};
+
 export {
   cloneWorkflowHandler,
   cloneWorkflowHandlerClientExport,
@@ -532,5 +588,6 @@ export {
   createUpdateWorkflowHandler,
   updateWorkflowHandlerClientExport,
   loadWorkflowHandler,
-  loadWorkflowHandlerClientExport
+  loadWorkflowHandlerClientExport,
+  downloadWorkflowHandler
 };

@@ -10,13 +10,13 @@ import { omnilog } from 'omni-shared';
 const VERBOSE = true;
 
 // @ts-ignore
-function makeToast(ctx, message)
+async function makeToast(ctx, message)
 {
     const app = ctx.app;
     const user = ctx.userId;
     const description_json = { type: "info", description: `Chunking document progress` };
     const toast = { user, message, description_json };
-    app.sendToastToUser(user, toast);
+    await app.sendToastToUser(user, toast);
 }
 
 // @ts-ignore
@@ -231,7 +231,8 @@ function sanitizeName(name) {
   const sanetized_name = name
     .trim()
     .toLowerCase()
-    .replace(/[ '"`\\]/g, '_');
+    .replace(/[^a-z0-9]/g, "_");
+    //.replace(/[ '"`\\]/g, '_');
   return sanetized_name;
 }
 

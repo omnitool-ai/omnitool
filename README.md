@@ -194,37 +194,6 @@ You can then access the Omnitool software from a web browser on your local machi
     yarn run
   ```
 
-## PocketBase DB Admin (ADVANCED)
-Recipes and various cache data are stored in a [PocketBase](https://pocketbase.io) database.
-
-If the database is currently running, you can access the default PocketBase admin interface by navigating to [127.0.0.1:8090/_](http://127.0.0.1:8090/_)
-
-Alternatively, the admin interface can be accessed directly within omnitool. From the main menu, choose the `Database Admin` option and the same interface will open inside the omnitool browser window.
-
-o log in to the database, use the credentials
- * Email: **admin@local.host**
- * Password: **admin@local.host**
-
-Once logged in, you can directly modify records using the PocketBase admin interface. This is particularly useful for advanced configurations and troubleshooting.
-
-### Reset Local PocketBase Storage (ADVANCED)
-
-There may be occasions when you need to reset your local database, either to recover from an invalid state or to start with a fresh install.
-
-For Linux:
-   ```bash
-   rm -rf ./local.bin
-   yarn start
-   ```
-For Windows:
-  ```cmd
-  rmdir /s /q .\local.bin
-  yarn start
-  ```
-
-- **Warning**:
-  - **ALL YOUR LOCAL RECIPES, GENERATED IMAGES, DOCUMENTS, AUDIO ETC, WILL BE PERMANENTLY ERASED**
-
 ## Generating a JWT Token
 
 Our service allows you to generate a JWT by running a specific script designed for this purpose. The script's signature is as follows:

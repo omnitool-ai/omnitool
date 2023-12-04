@@ -42,6 +42,7 @@ import {
   createWorkflowClientExport,
   createWorkflowClientHandler,
   deleteWorkflowClientExport,
+  downloadWorkflowHandler,
   getWorkflowsClientExport,
   loadWorkflowHandler,
   loadWorkflowHandlerClientExport,
@@ -94,6 +95,7 @@ class WorkflowIntegration extends APIIntegration {
     this.handlers.set('exec', execWorkflowHandler);
     this.handlers.set('stop', stopWorkflowHandler);
     this.handlers.set('jobs', createJobsHandler);
+    this.handlers.set('download', downloadWorkflowHandler);
 
     this.clientExports.set('exec', execWorkflowClientExport);
     this.clientExports.set('stop', stopWorkflowClientExport);
@@ -340,17 +342,22 @@ class WorkflowIntegration extends APIIntegration {
       queryFilter.set('meta.description', filter);
       queryFilter.set('meta.tags', filter);
     }
-    // Sort descending by updated date
-    const sortOption = '-blob.meta.updated';
+
     // Fetch workflows from the database.
     const result: QueryResult = await this.db.getDocumentsByOwnerIdV2(
       OMNITOOL_DOCUMENT_TYPES.WORKFLOW,
       userIds,
       page,
       docsPerPage,
-      queryFilter,
-      sortOption
+      queryFilter
     );
+
+    // Sort descending by updated date
+    if (result.docs) {
+      result.docs.sort((a: any, b: any) => {
+        return b.meta.updated - a.meta.updated;
+      });  
+    }
 
     const ability = new PermissionChecker(ctx.session.get('permission'));
     const workflows = result.docs.map((x) => {

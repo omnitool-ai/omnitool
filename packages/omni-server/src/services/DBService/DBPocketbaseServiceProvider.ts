@@ -9,6 +9,7 @@ import PocketBase, { type ClientResponseError, type RecordModel as Record } from
 import { type IService, omnilog } from 'omni-shared';
 import { DBCouchToPocketQuerifier } from './DBCouchToPocketQuerifier.js';
 import pb_schemas from './pb_schema.json' assert { type: 'json' };
+import { User } from 'omni-shared';
 
 const MONO_COLLECTION_ID = 'legacyMonoCollection';
 const LOG_COLLECTION = 'logs';
@@ -49,8 +50,7 @@ class DBPocketBaseServiceProvider extends DBServiceProvider {
     ownerIds: string[],
     page: number,
     limitPerPage: number,
-    customFilters?: Map<string, string>,
-    sortOption?: string
+    customFilters?: Map<string, string>
   ): Promise<QueryResult> {
     const flatOwnerIds = JSON.stringify(ownerIds);
     // API assumes zero-index paging but PocketBase starts from 1...
@@ -65,8 +65,7 @@ class DBPocketBaseServiceProvider extends DBServiceProvider {
     }
     try {
       const pkbResult = await this.db?.collection(MONO_COLLECTION_ID).getList(pktbase_page, limitPerPage, {
-        filter: pkbFilter,
-        sort: sortOption
+        filter: pkbFilter
       });
       if (pkbResult?.items !== undefined) {
         result.docs = pkbResult.items.map((r) => r.blob);
@@ -361,9 +360,24 @@ class DBPocketBaseServiceProvider extends DBServiceProvider {
     return await this.db?.admins.authWithPassword(username, password);
   }
 
-  async authAsAdmin(): Promise<any> {
+  async authAsAdmin(): Promise<User | undefined> {
     const config = this.config;
-    return await this.authWithPassword(config.pocketbaseDbAdmin, config.pocketbaseDbAdmin);
+    const authData = await this.authWithPassword(config.pocketbaseDbAdmin, config.pocketbaseDbAdmin);
+    if (authData) {
+      const query = {
+        externalId: authData.admin.id,
+        authType: 'pocketbase'
+      };
+
+      const result = this.find(query, undefined, undefined, undefined, undefined, 'externalId')
+      if (result && Array.isArray(result) && result.length > 0) {
+        const user = User.fromJSON(result[0]);
+        return user;
+      }
+      return undefined
+    } else {
+      throw new Error("Invalid pocketdb login")
+    }
   }
 
   logout(): void {

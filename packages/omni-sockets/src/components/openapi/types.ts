@@ -39,6 +39,8 @@ type ExtendedParameterObject = OpenAPIV3.ParameterObject & {
     summary?: string;
     minimum?: number;
     maximum?: number;
+    format?: string;
+    steps?: number;
   };
 };
 
@@ -53,13 +55,15 @@ interface OmniComponentMeta {
   };
 }
 
-interface OmniIOBase {
+export interface OmniIOBase {
   name: string;
+  version?: string;
   title: string;
   hidden?: boolean;
   minimum?: number;
   maximum?: number;
   step?: number;
+  format?: string;
   required?: boolean;
   readonly?: boolean;
   choices?:
@@ -162,6 +166,7 @@ interface OmniComponentPatch {
 
 interface OmniComponentFormat {
   type: string;
+  version?: string;
   hash?: string;
   dependsOn?: string[];
   origin?: string;
@@ -194,6 +199,7 @@ interface OmniComponentFormat {
     'hideExcept:outputs'?: string[];
     'transform:input'?: string[];
     'transform:output'?: string[];
+    'hoist:input'?: string[]; // hoists an input to the top of the data
   };
   /*apiDefaults:
   {
@@ -211,6 +217,7 @@ interface OmniNamespaceDefinitionBase {
   title: string;
   version?: string;
   info?: OmniNSInfo;
+  prefix?: string;
 }
 
 interface OmniNSInfo {
@@ -231,6 +238,7 @@ interface OmniNamespaceDefinition extends OmniNamespaceDefinitionBase {
     json?: string;
     credentials?: any;
     basePath: string;
+    defaultPath?: string;
     allowCustomUrl?: boolean;
     patch?: any;
     auth?: OmniAPIAuthenticationScheme;

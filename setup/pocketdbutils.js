@@ -156,5 +156,6 @@ async function ensure(installpath) {
 }
 
 module.exports = {
-  ensure
+  ensure,
+  getExecutable
 };

@@ -56,7 +56,9 @@ module.exports = {
     'spaced-comment': 'off',
     'new-cap': 'off',
     '@typescript-eslint/quotes': 'off',
+    '@typescript-eslint/consistent-indexed-object-style': 'off',
     'promise/param-names': 'off',
+    '@typescript-eslint/dot-notation': 'off',
     '@typescript-eslint/array-type': 'off', // candidate for code quality pass
     '@typescript-eslint/space-before-blocks': 'off',
     '@typescript-eslint/keyword-spacing': 'off',
@@ -100,7 +102,8 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'warn',
     '@typescript-eslint/return-await': 'warn',
     '@typescript-eslint/no-this-alias': 'off',
-    '@typescript-eslint/no-extraneous-class': 'warn',
+    '@typescript-eslint/no-extraneous-class': 'warn',    
+    '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
     'no-eval': 'warn',
     'eqeqeq': 'warn'
   }

@@ -91,6 +91,11 @@ class IOComposer {
     return this;
   }
 
+  setFormat(format: string): IOComposer {
+    this.data.format = format;
+    return this;
+  }
+
   setDefault(defaultValue: any): IOComposer {
     this.data.default = defaultValue;
     return this;

@@ -72,6 +72,8 @@ server:
           login: 'admin@local.host'
         development:
           dbUrl: 'https://pocket.intern.mercenaries.ai'
+      kvStorage:
+        dbPath: './data.local/db'
 
     rest_consumer:
       exchange: { name: 'omni_tasks', type: 'topic', options: { durable: true, autoDelete: false, internal: false, arguments: {} } }
@@ -270,6 +272,9 @@ server:
         'GET /api/v1/workflow/:workflowId': # Load the non-published version of a workflow
           handler: 'load'
           clientExport: 'load'
+
+        'GET /api/v1/workflow/download/:workflowId': # Download a workflow
+          handler: 'download'
 
         'DELETE /api/v1/workflow/:workflowId':  # Delete a workflow
           handler: 'deleteWorkflow'

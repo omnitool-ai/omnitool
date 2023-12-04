@@ -22,6 +22,10 @@ declare module 'fastify' {
 
 interface AuthenticatorConfig {
   autologin: boolean;
+  admin: {
+    username: string;
+    password: string;
+  };
   cloudflare: {
     publicKeyUrl: string;
     policyAud: string;
@@ -207,28 +211,32 @@ class Authenticator {
     }
 
     const start = performance.now();
-    const authData = await this._db.provider.authAsAdmin();
-    if (authData) {
-      omnilog.debug('authAsPocketbaseAdmin', authData);
-      const user = await this.getUserByExternalIdAndAuthType(authData.admin.id, 'pocketbase');
+    // Try to login with pocketbase
+    let user = await this._db.provider.authAsAdmin();
+    if (user) {
+      const end = performance.now();
+      omnilog.info(`authWithAutologin in ${(end - start).toFixed(1)}ms`);
+      return user;
+    } 
+    // User not exist, try to login with username and password
+    user = await this.getUserByUsername(this._config.admin.username)
+    if (user) {
+      user = await this.authenticateWithUsernameAndPassword(this._config.admin.username, this._config.admin.password)
       if (user) {
         const end = performance.now();
-        omnilog.info(`authAsPocketbaseAdmin in ${(end - start).toFixed(1)}ms`);
+        omnilog.info(`authWithAutologin in ${(end - start).toFixed(1)}ms`);
         return user;
-      } else {
-        // User not exist, create one
-        const org = await this.createOrg('pocketbase');
-        const group = await this.createAdminGroup('admin', org);
-        const newUser = await this.createAndAddUserToOrg('Admin', authData.admin.id, 'pocketbase', group, org);
-        const end = performance.now();
-        omnilog.info(`authAsPocketbaseAdmin in ${(end - start).toFixed(1)}ms`);
-        return newUser;
       }
     }
+    
+    omnilog.debug('Creating new user')
+    // There's no legacy user and it is a new install: create a new user with username and password
+    const org = await this.createOrg('autologin');
+    const group = await this.createAdminGroup('admin', org);
+    const newUser = await this.createAndAddUserToOrg(this._config.admin.username, this._config.admin.password, null, null, group, org);
     const end = performance.now();
-
-    omnilog.info(`authAsPocketbaseAdmin errors in ${(end - start).toFixed(1)}ms`);
-    throw new Error('Authentication failure.');
+    omnilog.info(`authWithAutologin in ${(end - start).toFixed(1)}ms`);
+    return newUser;
   }
 
   private async authenticateWithCloudFlareZeroTrustToken(token: string) {
@@ -278,7 +286,7 @@ class Authenticator {
                 const username = email.split('@')[0];
                 const org = await this.createOrg('cloudflare');
                 const group = await this.createAdminGroup('admin', org);
-                const newUser = await this.createAndAddUserToOrg(username, cloudflareUserId, 'cloudflare', group, org);
+                const newUser = await this.createAndAddUserToOrg(username, null, cloudflareUserId, 'cloudflare', group, org);
                 omnilog.debug('Created user: ', newUser);
                 resolve(newUser);
               }
@@ -326,12 +334,6 @@ class Authenticator {
       const result = await this._db.find(query, undefined, undefined, undefined, undefined, 'externalId');
       if (result && result.length > 0) {
         const user = User.fromJSON(result[0]);
-        // const groups = await getGroupByMemberId(this._db, user.id)
-        // groups.forEach(group => {
-        //   if (group.name.toLowerCase() === 'admin') {
-        //     user.tags.push('admin')
-        //   }
-        // })
         const end = performance.now();
         omnilog.info(`getUserByExternalIdAndAuthType in ${(end - start).toFixed(1)}ms`);
         return user;
@@ -392,15 +394,20 @@ class Authenticator {
 
   private async createAndAddUserToOrg(
     username: string,
-    externalId: string,
-    authType: string,
+    password: string | null,
+    externalId: string | null,
+    authType: string | null,
     group: Group | Group[],
     org: Organisation
   ): Promise<User> {
+    const salt = crypto.randomBytes(16);
+
     // Create user
     const newUser = new User(generateId(), username.toLowerCase());
     // newUser.tier = tier // null is default / free tier
     newUser.organisation = { id: org.id, name: org.name };
+    newUser.password = password ? hashPassword(password, salt).toString('hex') : null
+    newUser.salt = salt.toString('hex');
     newUser.createdAt = Math.floor(Date.now() / 1000);
     newUser.lastUpdated = Math.floor(Date.now() / 1000);
     newUser.externalId = externalId;

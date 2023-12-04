@@ -7,6 +7,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Short+Stack&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import './winbox.scss';
 
 :root {
   --doc-height: 100%;
@@ -15,9 +16,8 @@
 html,
 body {
   overscroll-behavior-y: none;
-  min-height: 100vh;
-  /* fallback for Js load */
-  min-height: var(--doc-height);
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
   width: 100vw;
   /* TailwindCSS font-sans */
   font-family: Roboto, ui-sans-serif, system-ui, -apple-system,
@@ -25,32 +25,6 @@ body {
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
   font-weight: 400;
-}
-
-
-.winbox {
-  font-size: 11px;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
-    inset -2px -2px grey, inset 2px 2px #fff;
-  background-color: #ece9d8 !important;
-  padding: 3px;
-
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  padding: 0 0 3px;
-  -webkit-font-smoothing: antialiased;
-
-}
-
-.wb-drag {
-  background-color: #505050;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.wb-body {
-  display: flex;
-
 }
 
 
@@ -462,7 +436,7 @@ p {
     user-select: none;
 
     svg {
-      
+
       fill: transparent;
       stroke: white;
     }

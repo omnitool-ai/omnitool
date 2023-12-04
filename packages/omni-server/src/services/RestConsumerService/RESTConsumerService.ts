@@ -21,7 +21,7 @@
 
 import { Service, omnilog, type IServiceConfig, type ServiceManager } from 'omni-shared';
 
-import os from 'os';
+import os, { type } from 'os';
 import * as Amqp from './MockMQ.js';
 
 import FormData from 'form-data';
@@ -34,6 +34,7 @@ import { type OmniAPIAuthenticationScheme } from 'omni-sockets/src/components/op
 import { capitalize } from 'lodash-es'
 import Replicate from 'replicate'
 import { processHuggingface } from "./HuggingFace.js"
+import { t } from 'tar';
 
 
 const TASK_PROTOCOL_VERSION = 'aardvark' // Protocol version, needs to match the version used by the AMQP service
@@ -434,13 +435,14 @@ class RESTConsumerService extends Service {
 
       const input = payload.body;
 
+
       const output = await replicate.run(`${owner}/${model}:${version}`, { input });
       return { output, _omni_status: 200 };
     }
 
     if (payload.integration.key.startsWith('huggingface')) {
       const results = await processHuggingface(payload, this);
-      return results;
+      if (results) return results;      
     }
 
     payload.headers ??= {};
@@ -496,26 +498,46 @@ class RESTConsumerService extends Service {
     }
 
     let data = JSON.parse(JSON.stringify(payload.body));
+
     if (signature.method.toLowerCase() !== 'get') {
       if (signature.requestContentType === 'multipart/form-data') {
-        if (data.file?.ticket?.fid) {
-          const formData = new FormData();
+        const blockManager = this.server.blocks;
+        const block = blockManager.getBlock(payload.integration.block)
+        const formData = new FormData();
 
-          // @ts-ignore
-          const cdnRecord = await this.app.cdn.get(data.file.ticket, {}, 'stream');
-          const stream = cdnRecord.data;
-          formData.append('file', stream, {
-            filename: data.file.fileName || Date.now().toString(),
-            contentType: data.file.mimeType
-          });
-
-          delete data.file;
-          for (const key in data) {
-            formData.append(key, data[key]);
+        // Iterate over all fields
+        for (const key in data)
+        {
+          // if we have a block definition
+          if (block)
+          {
+            const input = block.inputs[key]
+            // Detect binary inputs.
+            if (input.format === 'binary')
+            {
+              // If the input is a CDN object, we need to fetch it and add it to the form data via stream
+              if (data[key] && typeof(data[key]) === 'object' && data[key].fid && typeof(data[key].fid) === 'string'  )
+              {
+                //@ts-ignore
+                const cdnRecord = await this.app.cdn.get({fid: data[key].fid}, {}, 'stream');
+                if (cdnRecord)
+                {
+                  const stream = cdnRecord.data;
+                  formData.append(key, stream, {
+                    filename: cdnRecord.fileName || 'file.bin',
+                    contentType: cdnRecord.mimeType
+                  });
+                  continue;
+                }
+              }
+            }
           }
-          data = formData;
+          formData.append(key, data[key]);
         }
+
+        data = formData;
       }
+
     }
 
     const requestConfig = {
@@ -564,11 +586,11 @@ class RESTConsumerService extends Service {
 
       if (response.data && typeof response.data === 'string') {
         // Not sure what to do here??
-        return { result: response.data, _omni_status: response.status };
+        return { result: response.data};
       }
 
       // Return the successful response
-      return { ...response.data, _omni_status: response.status };
+      return { ...response.data};
     } catch (error: any) {
       let originalError = null
       if (error instanceof HTTPClientError) {
@@ -760,7 +782,7 @@ class RESTConsumerService extends Service {
           }
         } finally {
           // Acknowledge the message to remove it from the queue.
-          // TODO: We can do retry logic here          
+          // TODO: We can do retry logic here
           channel.ack(message);
         }
       } catch (error: unknown) {

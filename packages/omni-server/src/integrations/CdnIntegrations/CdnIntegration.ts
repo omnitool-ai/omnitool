@@ -17,7 +17,6 @@ import { APIIntegration, type IAPIIntegrationConfig } from '../APIIntegration.js
 import { createFidHandler, createUploadHandler, fidClientExport, uploadClientExport } from './handlers/fid.js';
 import imageSize from 'image-size';
 import axios from 'axios';
-import sanitize from 'sanitize-filename';
 import { basename, extname, join as joinPath } from 'path';
 import { type IKVStorageConfig, KVStorage } from '../../core/KVStorage.js';
 
@@ -140,7 +139,9 @@ abstract class CdnIntegration extends APIIntegration {
   abstract get(ticket: ICdnTicket, opts?: any, format?: 'asBase64' | 'stream' | 'file'): Promise<CdnResource>;
   abstract serveFile(fid: string, opts: { download?: boolean }, reply: any): Promise<any>;
   abstract checkFileExists(fid: string): Promise<boolean>;
-  abstract importLocalFile(filePath: string, tags: string[], userId?: string): Promise<ICdnResource | null>;
+  abstract importLocalFile(filePath: string, tags: string[], userId?: string): Promise<ICdnResource | null>
+  abstract importSampleFile(filePath: string, tags: string[], userId?: string): Promise<ICdnResource | null>
+  
 
   async load(): Promise<boolean> {
     this.handlers.set('fid', createFidHandler);
@@ -172,10 +173,10 @@ abstract class CdnIntegration extends APIIntegration {
 
     const cdnFiles = await Promise.all(
       files.map(async (file) => {
-        return this.importLocalFile(file, ['sample']);
+        return this.importSampleFile(file, ['sample']);
       })
     );
-    this.success('Imported ' + cdnFiles.filter((f) => f).length + ' new sample files');
+    this.success('Imported sample files');
 
     return await super.load();
   }
@@ -216,19 +217,6 @@ abstract class CdnIntegration extends APIIntegration {
     }
   }
 
-  //mangle a filename to make it safe for the cdn
-  mangleFilename(fileName: string, overrideExtension?: string): string {
-    const newName = sanitize(fileName, { replacement: '_' }).toLowerCase();
-    let ext = extname(newName);
-    const base = basename(newName, ext);
-    if (overrideExtension && !overrideExtension.startsWith('.')) {
-      overrideExtension = '.' + overrideExtension;
-    }
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    ext = overrideExtension || extname(newName) || '';
-
-    return `${base}${ext}`;
-  }
 
   createResource(resource: ICdnResource): CdnResource {
     return new CdnResource(resource);

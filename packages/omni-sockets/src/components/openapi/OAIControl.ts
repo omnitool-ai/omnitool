@@ -60,8 +60,9 @@ class OAIControl31 extends Rete.Control {
 
           const root = choices.map?.root;
 
-          if (root && list[root] != null && Array.isArray(list[root])) {
-            list = list[root];
+          if (root && list[root] != null) {
+            // Convert the object to an array if it's not already an array
+            list = Array.isArray(list[root]) ? list[root] : Array.from(Object.values(list[root]));
           }
 
           if (!Array.isArray(list)) {

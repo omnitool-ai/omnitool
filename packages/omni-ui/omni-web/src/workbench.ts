@@ -85,9 +85,21 @@ class Workbench {
       },
       opts.winbox || {}
     );
+
+    // if winboxOpts.height or width is a string, parse it as a percentage of the screen size (dh, dw)
+    const dh = window.screen.height;
+    const dw = window.screen.width;
+    if (typeof winboxOpts.height === 'string') {
+      winboxOpts.height = parseInt(winboxOpts.height) / 100.0 * dh;
+    }
+    if (typeof winboxOpts.width === 'string') {
+      winboxOpts.width = parseInt(winboxOpts.width) / 100.0 * dw;
+    }
+
+
     const win = this.getClient().toggleWindow(url, singletonHash, winboxOpts);
     if (win) {
-      win.show();
+      win.show?.();
     }
 
     // @ts-ignore
@@ -257,27 +269,22 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
     });
 
     client.registerClientScript('dump', async () => {
-      if (this.activeWorkflow == null) {
+      if (this.activeRecipe == null) {
         return;
       }
+      await this.syncToServer();
+      // Create a link element
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = `/api/v1/workflow/download/${this.activeRecipe.id}`;
+      document.body.appendChild(a);
 
-      const result = JSON.stringify(await this.activeWorkflow.toJSON(), null, 2);
+      // Trigger the download
+      a.click();
 
-      // sanitize to alphanumeric, dash, underscore
-      let fileName = `${this.activeWorkflow.meta.name}_${this.activeWorkflow.id.replace(
-        /[^a-zA-Z0-9-_]/g,
-        '_'
-      )}_${Date.now()}.json`;
-      fileName = sanitize(fileName);
-      const dataUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(result);
-      const tempNode = document.createElement('a');
-      tempNode.setAttribute('href', dataUrl);
-      tempNode.setAttribute('download', fileName);
-      document.body.appendChild(tempNode); // required for firefox
-      tempNode.click();
-      tempNode.remove();
-
-      return { response: 'Recipe Exported as ' + fileName };
+      // Clean up
+      document.body.removeChild(a);
+      return 'Recipe Exported';
     });
 
     client.registerClientScript('load', async (args: any) => {
@@ -943,8 +950,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
             title: '▶️' + recipe.meta.name,
             x: 'center',
             y: 'center',
-            minheight: 500,
-            minwidth: 600,
+
             autosize: true
           },
           hideToolbar: true

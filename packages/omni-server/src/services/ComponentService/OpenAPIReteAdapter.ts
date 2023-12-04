@@ -3,7 +3,10 @@
  * All rights reserved.
  */
 
-import Ajv, { type ValidateFunction } from 'ajv';
+
+
+
+//import Ajv, { type ValidateFunction } from 'ajv';
 import {
   type OmniAPIAuthenticationScheme,
   type DataType,
@@ -14,23 +17,22 @@ import {
 } from 'omni-sockets/src/components/openapi/types';
 
 import { type oas31 as OpenAPIV3 } from 'openapi3-ts';
-import serialize from 'serialize-javascript';
+//import serialize from 'serialize-javascript';
 // const deserialize = function(jsString:string){  return eval('(' + jsString + ')') };
 
 class OpenAPIReteAdapter {
   private readonly openApiDocument: OpenAPIV3.OpenAPIObject;
   private readonly namespace: string;
   private readonly credentials?: string;
-  private ajv: Ajv;
+  //private ajv: Ajv;
   private readonly patch: any;
   // Some OpenAPI spec doesn't have the authentication mech defined in the spec. So we need to patch the APIs
-  // TODO: maybe put this in the component patch instead?
-  private readonly securitySpecs?: OmniAPIAuthenticationScheme;
+  private readonly securitySpecs?: OmniAPIAuthenticationScheme | 'disable';
 
   constructor(
     namespace: string,
     openApiDocument: OpenAPIV3.OpenAPIObject,
-    securitySpecs?: OmniAPIAuthenticationScheme,
+    securitySpecs?: OmniAPIAuthenticationScheme | 'disable',
     credentials?: string,
     patch: any = {}
   ) {
@@ -38,11 +40,11 @@ class OpenAPIReteAdapter {
     this.openApiDocument = openApiDocument;
     this.credentials = credentials;
     this.patch = patch;
-    this.ajv ??= new Ajv({ strict: false });
+   // this.ajv ??= new Ajv({ strict: false });
     this.securitySpecs = securitySpecs;
   }
 
-  private getValidator(schema: OpenAPIV3.SchemaObject): ValidateFunction | undefined {
+ /* private getValidator(schema: OpenAPIV3.SchemaObject): ValidateFunction | undefined {
     this.ajv ??= new Ajv({ strict: false });
     try {
       return this.ajv.compile(schema);
@@ -50,7 +52,7 @@ class OpenAPIReteAdapter {
       omnilog.log('Exception compiling validator', schema, ex);
     }
     return undefined;
-  }
+  }*/
 
   private constructInputSchema(operation: OpenAPIV3.OperationObject): OpenAPIV3.SchemaObject {
     const parameterObjects = (operation.parameters ?? []).filter(
@@ -157,19 +159,24 @@ class OpenAPIReteAdapter {
     }
   }
 
+
+
   private extractOmniIOsFromParameters(
     parameters: Array<ExtendedParameterObject | OpenAPIV3.ReferenceObject>
   ): Record<string, OmniIO> {
     const parameterObjects = parameters.filter((param): param is ExtendedParameterObject => !('$ref' in param));
 
+
     return parameterObjects.reduce<Record<string, OmniIO>>((acc, parameter) => {
       const dataTypes = this.getDataType(parameter.schema as OpenAPIV3.SchemaObject);
+      // @ts-ignore
+      const customSocket = parameter.schema?.['x-omni-socket'] ??  parameter.schema?.['format'] === 'binary' ? 'file' : undefined
+
       acc[parameter.name] = {
         name: parameter.name,
         type: Array.isArray(dataTypes) ? dataTypes[0] : (dataTypes as DataType),
         dataTypes: this.getDataType(parameter.schema as OpenAPIV3.SchemaObject),
-        // @ts-ignore
-        customSocket: parameter.schema?.['x-omni-socket'],
+        customSocket: customSocket,
         required: parameter.required ?? false,
         default: parameter.schema?.default, // Add the default value
         title: parameter.schema?.title ?? parameter.name.replace(/_/g, ' '),
@@ -181,6 +188,7 @@ class OpenAPIReteAdapter {
         source: { sourceType: 'parameter', in: parameter.in },
         minimum: parameter.schema?.minimum, // Add minimum
         maximum: parameter.schema?.maximum, // Add maximum
+        format: parameter.schema?.format, // Add format
         step:
           parameter.schema?.minimum != null &&
           parameter.schema?.maximum != null &&
@@ -205,6 +213,13 @@ class OpenAPIReteAdapter {
       mediaType.startsWith('image/') ||
       mediaType === 'application/octet-stream'
     ) {
+
+      let customSocket  = 'file'
+      // TODO: Use central logic for this
+      if (mediaType.startsWith('audio/') || mediaType === 'application/ogg') customSocket = 'audio'
+      if (mediaType.startsWith('video/')) customSocket = 'video'
+      if (mediaType.startsWith('image/')) customSocket = 'image'
+
       return {
         result: {
           name: 'result',
@@ -213,7 +228,7 @@ class OpenAPIReteAdapter {
           dataTypes: ['object'],
           source: socketType === 'input' ? { sourceType: 'requestBody' } : { sourceType: 'responseBody' },
           type: 'object',
-          customSocket: 'cdnObject'
+          customSocket
         }
       };
     }
@@ -226,16 +241,28 @@ class OpenAPIReteAdapter {
 
     const properties = resolved_schema.properties ?? {};
 
+    if (!resolved_schema.properties) {
+      return {
+        _omni_result: {
+          type: 'object',
+          dataTypes: ['object'],
+          source: { sourceType: 'responseBody' },
+          name: '_omni_result',
+          title: 'Result',
+          description: 'The underlying API did not have top property, this is a single result object'
+        }
+      };
+    }
+
     return Object.entries(properties).reduce<Record<string, OmniIO>>((acc, [key, propertySchema]) => {
       const resolvedPropertySchema = this.resolveSchema(propertySchema as OpenAPIV3.SchemaObject);
       const dataTypes = this.getDataType(resolvedPropertySchema);
-
+      const customSocket =resolvedPropertySchema['x-omni-socket'] ?? resolvedPropertySchema['format'] === 'binary' ? 'file' : undefined
       acc[key] = {
         name: key,
         type: Array.isArray(dataTypes) ? dataTypes[0] : (dataTypes as DataType),
         dataTypes,
-        customSocket: resolvedPropertySchema['x-omni-socket'],
-
+        customSocket: customSocket,
         required: resolved_schema.required?.includes(key) ?? resolvedPropertySchema['x-omni-required'] ?? false,
         default: resolvedPropertySchema.default,
         title: this.getOmniValue(
@@ -247,6 +274,7 @@ class OpenAPIReteAdapter {
         choices: resolvedPropertySchema['x-omni-choices'] || resolvedPropertySchema.enum || undefined,
         description: resolvedPropertySchema.description ?? key.replace(/_/g, ' '),
         source: socketType === 'input' ? { sourceType: 'requestBody' } : { sourceType: 'responseBody' },
+        format: resolvedPropertySchema.format,
         minimum: resolvedPropertySchema.minimum,
         maximum: resolvedPropertySchema.maximum,
         step:
@@ -286,7 +314,7 @@ class OpenAPIReteAdapter {
           dataTypes: ['object'],
           source: { sourceType: 'responseBody' },
           name: '_omni_result',
-          title: 'Result',
+          title: '_omni_result',
           description: 'The underlying API did not describe the return value, this is a single result object'
         }
       };
@@ -384,6 +412,7 @@ class OpenAPIReteAdapter {
           : this.resolveReference<OpenAPIV3.RequestBodyObject>(operation.requestBody)
         : undefined;
 
+    // TODO: We just take the first content types here, technically we should probably generate multiple components (with the first component retaining the current OperationId)
     const requestContentType: string | undefined =
       requestBodyObject?.content != null ? Object.keys(requestBodyObject.content)[0] : undefined;
 
@@ -405,6 +434,7 @@ class OpenAPIReteAdapter {
       title: this.getOmniValue(operation, 'title', this.mangleTitle(operation.operationId) ?? 'Unnamed Component'),
       category: this.namespace,
       xOmniEnabled: true,
+      //ersion: '1.0.0',
       errors: [],
       flags: 0,
       tags,
@@ -412,7 +442,7 @@ class OpenAPIReteAdapter {
       method: operationMethod ?? 'get', // use the determined method or fallback to 'get'
       security: this.getAuthenticationScheme(operation.security ?? []),
       requestContentType,
-      validator: undefined /* inputValidator, */,
+      validator: undefined /* inputValidator, */, // TODO: Consider reenabling when OpenAPI incompatibilities on major APIs are not as painful anymore
       credentials: this.credentials,
       description: this.getOmniValue(
         operation,
@@ -438,6 +468,8 @@ class OpenAPIReteAdapter {
   ): OmniAPIAuthenticationScheme[] {
     const schemes: OmniAPIAuthenticationScheme[] = [];
 
+    if (this.securitySpecs === 'disable') return [];
+
     if (this.securitySpecs) {
       // Authentication scheme override in the namespace API patch
       schemes.push(this.securitySpecs);
@@ -445,7 +477,7 @@ class OpenAPIReteAdapter {
     }
 
     // If there is no override, translate the authentication scheme defined in the OpenAPI document
-    if (this.openApiDocument.components?.securitySchemes) {
+    if (this.openApiDocument.components?.securitySchemes && this.securitySpecs !== 'disable') {
       const isOptional = securityRequirements.reduce((acc, requirement) => {
         Object.keys(requirement).length > 0 ? (acc = false) : (acc = true);
         return acc;

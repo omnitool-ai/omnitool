@@ -249,6 +249,7 @@ export default class OmniSDKClient extends OmniSDKShared {
   }
 
   public async runExtensionScript(scriptName: string, payload: any) {
+    payload ??= {};
     const response = await this._httpClient.executeRequest(
       `/api/v1/mercenaries/runscript/${this.extensionId}:` + scriptName,
       {
