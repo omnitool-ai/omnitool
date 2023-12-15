@@ -49,19 +49,22 @@ import {
   updateWorkflowHandlerClientExport
 } from './handlers/workflow.js';
 import { PermissionChecker } from '../../helper/permission.js';
+import { KVStorage } from 'core/KVStorage.js';
+import { readFileSync, unlinkSync } from 'fs';
+import path from 'path';
 
-interface IWorkflowIntegrationConfig extends IAPIIntegrationConfig {}
+interface IWorkflowIntegrationConfig extends IAPIIntegrationConfig {
+  tempExportDir?: string,
+}
 
 // Workflow related indexes
 
 class WorkflowIntegration extends APIIntegration {
-  Rete: any;
   db: DBService;
 
   constructor(id: string, manager: IntegrationsManager, config: IWorkflowIntegrationConfig) {
     super(id, manager, config || {});
 
-    this.Rete = Rete;
     this.db = manager.app.services.get('db') as DBService;
   }
 
@@ -149,8 +152,6 @@ class WorkflowIntegration extends APIIntegration {
     });
     workflow.setRete(data.rete);
     workflow.setMeta(meta);
-
-    this.buildAPISignature(workflow);
 
     const result = await this.db.put(workflow);
     if (!result) {
@@ -263,8 +264,6 @@ class WorkflowIntegration extends APIIntegration {
     /* if (!changed) {
       return workflow
     } */
-
-    this.buildAPISignature(workflow);
 
     const result = await this.db.put(workflow);
     workflow._rev = result._rev; // Update _rev from DB
@@ -382,7 +381,137 @@ class WorkflowIntegration extends APIIntegration {
     return responseObj;
   }
 
-  buildAPISignature(workflow: Workflow) {}
+  async exportWorkflow(workflowId: string, userId: string, fileName: string):Promise<Buffer> {
+    omnilog.debug('exportWorkflow', workflowId, userId)
+    const workflow = await this.getRecipe(workflowId, userId, true);
+
+    if (!workflow) {
+      throw new Error('Workflow not found')
+    }
+
+    const blockNames = Array.from(new Set(Object.values(workflow.rete.nodes).map((n: any) => n.name)));
+    //@ts-ignore
+    const blocks = (await this.app.blocks.getInstances(blockNames, userId, undefined))?.blocks;
+
+    if (!blocks || blocks.length === 0) {
+      throw new Error('Invalid workflow')
+    }
+
+    // Create a new KV storage file for export
+    //@ts-ignore
+    const exportFile = new KVStorage(this, {
+
+      // @ts-ignore
+      dbPath: this.config.tempExportDir ?? this.config.settings.paths?.tmpPath ?? './data.local/tmp',
+      dbName: fileName
+    });
+    await exportFile.init();
+    
+    await Promise.all(Object.values(workflow.rete.nodes).map(async (n: any) => {
+      const c = blocks.find((b:any) => b.name === n.name);
+
+      for (const inputKey of Object.keys(c.inputs)) {
+        // Data format is password
+        if (c.inputs[inputKey].format === 'password') {
+          n.data[inputKey] = '';
+        }
+
+        // CDN socket
+        if (['image', 'file', 'audio', 'video', 'document'].includes(c.inputs[inputKey].customSocket)) {
+          // Node data is an fid: Load the file from CDN and save in KV storage
+          if (n.data[inputKey] && n.data[inputKey].startsWith('fid:')) {
+            // @ts-ignore
+            const resource = await this.app.cdn.get({fid: n.data[inputKey].replace('fid://', '')})
+            omnilog.debug('Resource', resource.data ? resource.data.length : 'null')
+            if (resource) {
+              exportFile.set(n.data[inputKey], resource.data);
+            }
+          }
+        }
+      }
+    }));
+
+    exportFile.set(`wf:${workflow.id}`, workflow);
+    await exportFile.stop();
+
+    const exportFilePath = path.join(exportFile.config.dbPath, fileName);
+    const fileBuff = readFileSync(exportFilePath);
+    // Delete the temporary file
+    unlinkSync(path.join(exportFile.config.dbPath, fileName));
+
+    return fileBuff;
+  }
+
+  async importWorkflow(userId: string, fid: string): Promise<Workflow | null> {
+    //@ts-ignore
+    const resource = await this.app.cdn.get({fid: fid.replace('fid://', '')})
+
+    // Initialize KV with the CDN file
+    //@ts-ignore
+    const kv = new KVStorage(this.app, {
+      //@ts-ignore
+      dbPath: this.config.tempExportDir ?? './data.local/tmp',
+    });
+
+    await kv.initFromBuffer(resource.data);
+
+    // Get the packaged CDN files from KV storage
+    // const newFidMap = new Map<string, string>();
+    // const cdnEntries = kv.getAny('fid://');
+    // for (const kvPair of cdnEntries) {
+    //   // Save all the files in the CDN storage
+    //   //@ts-ignore
+    //   const cdnResource = await this.app.cdn.put(kvPair.value, {userId})
+    //   newFidMap.set(kvPair.key.replace('fid://',''), cdnResource.fid);      
+    // }
+
+    // Get the workflow from the KV storage
+    const kvEntries = kv.getAny('wf:');
+    if (!kvEntries || kvEntries.length === 0) {
+      throw new Error('No workflows to be imported')
+    }
+
+    // Iterate over all workflows
+    const result: Workflow[] = []
+    for (const kvPair of kvEntries) {
+      const workflow = kvPair.value as Workflow;
+
+      const blockNames = Array.from(new Set(Object.values(workflow.rete.nodes).map((n: any) => n.name)));
+      //@ts-ignore
+      const blocks = (await this.app.blocks.getInstances(blockNames, userId, undefined))?.blocks;
+
+      // For all the nodes in the workflow, check if there are any CDN sockets
+      for (const node of Object.values(workflow.rete.nodes)) {
+        // @ts-ignore
+        const block = blocks.find((b:any) => b.name === node.name);
+        if (!block) {
+          throw new Error(`Block ${node.name} not found`)
+        }
+
+        // Iterate over all the inputs of the block
+        for (const inputKey of Object.keys(block.inputs)) {
+          // Check if the input is a CDN socket
+          if (['image', 'file', 'audio', 'video', 'document'].includes(block.inputs[inputKey].customSocket)) {
+            // Check if the node data is an fid
+            if (node.data[inputKey] && typeof node.data[inputKey] === 'string' && (node.data[inputKey] as string).startsWith('fid:')) {
+              // Check if the fid exists in the KV storage
+              const keyValue = kv.get(node.data[inputKey] as string);
+              if (keyValue !== undefined) {
+                // @ts-ignore
+                const resource = await this.app.cdn.put(node.data[inputKey].replace('fid://', ''), { userId });
+                node.data[inputKey] = `fid://${resource.fid}`;
+              }
+            }
+          }
+        }
+      }
+
+      result.push(workflow);
+    }
+
+    return result
+  }
+
 }
 
 export { WorkflowIntegration, type IWorkflowIntegrationConfig };

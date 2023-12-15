@@ -836,6 +836,16 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
           fileReader.readAsText(wfDef);
         });
       }
+      else if (wfDef.name.endsWith('.sql')) {
+        // Upload file to server and get back the recipe json
+        const result = await this.getClient().sdkHost.uploadSingleFile(wfDef, 'temporary')
+        if (result && (result.ticket || result.fid)) {
+          const workflows = await this.getClient().sdkHost.runServerScript('workflow', ['import', result.fid ?? result.ticket?.fid])
+          if (workflows && workflows.length > 0) {
+            recipe = workflows[0]
+          }
+        }
+      }
     }
 
     if (recipe?.id && recipe?.meta?.name && recipe?.rete?.id?.startsWith('mercs@')) {
@@ -950,7 +960,8 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
             title: '▶️' + recipe.meta.name,
             x: 'center',
             y: 'center',
-
+            minwidth: 800,
+            minheight: 600,
             autosize: true
           },
           hideToolbar: true

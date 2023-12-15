@@ -305,11 +305,18 @@ class BlockManager extends Manager {
   private async preload() {
     const start = performance.now(); // Start timer
 
-    const testDir =  process.cwd() + '/data.local/apis-testing/';
+    //const testDir =  process.cwd() + '/data.local/apis-testing/';
+    //@ts-ignore
+    const apisTestingPath = this.app.config.settings.paths?.apisTestingPath || 'data.local/apis-testing';
+    const testDir = path.join(process.cwd(), apisTestingPath)
     await this.preloadDir(testDir, 'test')
 
     // First load the local apis defined by the user
-    const localDir =  process.cwd() + '/data.local/apis-local/';
+    //const localDir =  process.cwd() + '/data.local/apis-local/';
+    //@ts-ignore
+    const apisLocalPath = this.app.config.settings.paths?.apisLocalPath || 'data.local/apis-local';
+    const localDir = path.join(process.cwd(), apisLocalPath)
+
     await this.preloadDir(localDir, 'local')
 
     const registryDir = process.cwd() + '/extensions/omni-core-blocks/server/apis/';
@@ -717,10 +724,11 @@ class BlockManager extends Manager {
       }
     }
 
+    // TODO: Do not hide _omni_result socket for now as it is easier to debug and surface issue
     // Once there is patch, hide _omni_result socket in outputs if it exists
-    if (patch && Object.keys(ret.outputs ?? {}).length > 1 && ret.outputs?._omni_result) {
-      ret.outputs['_omni_result'].hidden = true;
-    }
+    // if (patch && Object.keys(ret.outputs ?? {}).length > 1 && ret.outputs?._omni_result) {
+    //   ret.outputs['_omni_result'].hidden = true;
+    // }
 
     if (userId && !(await this.canRunBlock(ret, userId))) {
       ret.data.errors.push('Block cannot run');

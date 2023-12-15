@@ -41,7 +41,7 @@ class DBSQLiteServiceProvider extends DBServiceProvider {
     skip?: number | undefined,
     bookmark?: string | undefined
   ): Promise<QueryResult> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method deprecated. Use getDocumentsByOwnerIdV2() instead.');
   }
   async getDocumentsByOwnerIdV2(
     document_type: OMNITOOL_DOCUMENT_TYPES,

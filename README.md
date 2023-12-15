@@ -60,7 +60,7 @@ Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based service
 ### Comprehensive AI Provider Support
 * Seamlessly provides access to 1000s of AI model and utility APIs from an rapidly growing list leading AI providers and aggregators, exposing them all via interoperable blocks.
   
-Currently supported (v. 0.5.3) :
+Currently supported (v. 0.6.0) :
    * [Civitai.com](https://civitai.com) (Model metadata access)
    * [Deepl.com](https://deepl.com) (Document translation)
    * [ElevenLabs.io](https://elevenlabs.io) (Multilingual voice generation)
@@ -83,12 +83,15 @@ Currently supported (v. 0.5.3) :
    * [Unsplash.com](https://unsplash.com) (Stock imagery)
    * with many more APIs in testing...
 
-* Support for the following Open Source APIs is in the final stages of testing:
-  * Automatic1111/SDNext API
-  * Oobabooga Text Generation API
-  * Ollama API
+Currently supported Local APIs:
+  * LM-studio
+  * Oobabooga Text Generation UI
+  * Automatic1111/SD-Next
+  * Paperless-ng
+  * Qdrant Vector Store
 
-* Omnitool is able to generate blocks from any openapi.json definitions via URL or directly supplied file. We support a number of custom x- annotations that can be added to openapi definitions to allow omnitool to guide the block generation. It also supports creating "patches" on top of existing APIs to create customized blocks. With integrated JSONATA support, it is possible to build powerful data processing blocks using pure data.
+
+Omnitool is able to generate blocks from any openapi.json definitions via URL or directly supplied file. We support a number of custom x- annotations that can be added to openapi definitions to allow omnitool to guide the block generation. It also supports creating "patches" on top of existing APIs to create customized blocks. With integrated JSONATA support, it is possible to build powerful data processing blocks using pure data.
 
 
 ### Extensible Architecture

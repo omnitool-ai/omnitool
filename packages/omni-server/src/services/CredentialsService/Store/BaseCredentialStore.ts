@@ -7,7 +7,7 @@ import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { convertMapsToObjects } from '../../../helper/utils.js';
 import yaml from 'js-yaml';
-
+import path from 'path';
 /**
  * Base class for credential storage
  */
@@ -33,7 +33,10 @@ class LocalFileCredentialStore extends BaseCredentialStore {
   }
 
   async init(): Promise<void> {
-    this.loadCredentials(`${this._config.keystore ?? './data.local/keystore'}/vault.yaml`);
+    //this.loadCredentials(`${this._config.keystore ?? './data.local/keystore'}/vault.yaml`);
+    //@ts-ignore
+    const keystorePath = this._config.keystore ?? this._config.settings.paths?.keystorePath ?? './data.local/keystore';
+    this.loadCredentials(path.join(keystorePath, 'vault.yaml'));    
   }
 
   loadCredentials(file: string): void {
@@ -87,7 +90,12 @@ class LocalFileCredentialStore extends BaseCredentialStore {
   private flushToFile(): void {
     try {
       ensureDirSync(this._config.keystore);
-      writeFileSync(`${this._config.keystore}/vault.yaml`, yaml.dump(convertMapsToObjects(this._vault)));
+
+      debugger;
+      //writeFileSync(`${this._config.keystore}/vault.yaml`, yaml.dump(convertMapsToObjects(this._vault)));
+      //@ts-ignore
+      const keystorePath = this._config.keystore ?? this._config.settings.paths?.keystorePath ?? './data.local/keystore';
+      writeFileSync(path.join(keystorePath, `vault.yaml`), yaml.dump(convertMapsToObjects(this._vault)));    
     } catch (err) {
       omnilog.error(err);
       throw new Error('Failed to write keystore to file');

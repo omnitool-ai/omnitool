@@ -241,14 +241,14 @@ class OpenAPIReteAdapter {
 
     const properties = resolved_schema.properties ?? {};
 
-    if (!resolved_schema.properties) {
+    if (!resolved_schema.properties && socketType === 'output') {
       return {
         _omni_result: {
           type: 'object',
           dataTypes: ['object'],
           source: { sourceType: 'responseBody' },
           name: '_omni_result',
-          title: 'Result',
+          title: '_omni_result',
           description: 'The underlying API did not have top property, this is a single result object'
         }
       };

@@ -21,7 +21,7 @@ component
         .createInput('recipes_list', 'string', 'text')
         .set('title', 'Recipes List')
         .set('description', 'The Id of the recipe to run')
-        .setChoices({ block: "omnitool.get_recipes", map: {root: "models", title: "title", value: "value", cache: "user"}})
+        .setChoices({ block: "omnitool.get_recipes", map: {root: "models", title: "title", value: "value", cache: "none"}})
         .setDefault('invalid')
         .toOmniIO()
     )

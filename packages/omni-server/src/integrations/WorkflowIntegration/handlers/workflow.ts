@@ -14,6 +14,8 @@ import { EObjectAction, EObjectName, type User, Workflow, type IWorkflowMeta } f
 import { type WorkflowIntegration } from '../WorkflowIntegration';
 import { PermissionChecker } from '../../../helper/permission.js';
 import sanitize from 'sanitize-filename'
+import { readFileSync } from 'fs';
+import path from 'path';
 
 const getMetaSchema = function () {
   return {
@@ -522,33 +524,33 @@ const loadWorkflowHandler = function (integration: WorkflowIntegration, config: 
 
 const downloadWorkflowHandler = function (integration: WorkflowIntegration, config: any) {
   return {
-    schema: {
-      params: {
-        type: 'object',
-        properties: {
-          workflowId: { type: 'string' }
-          // version: { type: 'string' }
-        },
-        required: ['workflowId']
-      },
-      response: {
-        200: getRecipeSchema(true),
-        404: {
-          type: 'object',
-          properties: {
-            error: { type: 'string' }
-          },
-          required: ['error']
-        },
-        500: {
-          type: 'object',
-          properties: {
-            error: { type: 'string' }
-          },
-          required: ['error']
-        }
-      }
-    },
+    // schema: {
+    //   params: {
+    //     type: 'object',
+    //     properties: {
+    //       workflowId: { type: 'string' }
+    //       // version: { type: 'string' }
+    //     },
+    //     required: ['workflowId']
+    //   },
+    //   response: {
+    //     200: getRecipeSchema(true),
+    //     404: {
+    //       type: 'object',
+    //       properties: {
+    //         error: { type: 'string' }
+    //       },
+    //       required: ['error']
+    //     },
+    //     500: {
+    //       type: 'object',
+    //       properties: {
+    //         error: { type: 'string' }
+    //       },
+    //       required: ['error']
+    //     }
+    //   }
+    // },
     handler: async function (request: FastifyRequest, reply: FastifyReply) {
       if (!integration.db) {
         return await reply.status(500).send({ success: 'error', error: 'Internal server error' });
@@ -568,10 +570,12 @@ const downloadWorkflowHandler = function (integration: WorkflowIntegration, conf
       let fileName = `${workflow.meta.name}_${workflow.id.replace(
         /[^a-zA-Z0-9-_]/g,
         '_'
-      )}_${Date.now()}.json`;
+      )}_${Date.now()}.sql`;
       fileName = sanitize(fileName);
 
-      return await reply.header('Content-Disposition', `attachment; filename="${fileName}"`).header('Content-Type', 'application/json').status(200).send(workflow);
+      const exportFile = await integration.exportWorkflow(workflowId, user.id, fileName);
+
+      return await reply.header('Content-Disposition', `attachment; filename="${fileName}"`).header('Content-Type', 'application/vnd.sqlite3').status(200).send(exportFile);
     }
   };
 };

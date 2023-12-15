@@ -143,7 +143,10 @@ class ServerExtensionManager extends ExtensionManager {
     if (!(await validateDirectoryExists(path.join(process.cwd(), 'extensions')))) {
       await ensureDir(path.join(process.cwd(), 'extensions'));
     }
-    if (!(await validateDirectoryExists(path.join(process.cwd(), 'data.local', 'apis-local')))) {
+
+    const apisLocalPath = this.app.config.settings.paths?.apisLocalPath || 'data.local/apis-local';
+    const localDir = path.join(process.cwd(), apisLocalPath)
+    if (!(await validateDirectoryExists(localDir))) {
       await ensureDir(path.join(process.cwd(), 'data.local', 'apis-local'));
     }
 

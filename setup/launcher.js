@@ -153,15 +153,11 @@ async function check_for_updates() {
   const result = await checkGitForUpdates();
   if (result.hasUpdates) {
     const input = await user_confirmation(
-      `You are currently on ${result.local}.\nThere's a new version ${result.remote} available. Would you like to pull and update with git? [y/n]:`
+      `You are currently on ${result.local}.\nThere's a new version ${result.remote} available. Would you like to update first? [y/n]:`
     );
     if (input === 'y') {
       try {
-        console.log('\nCalling git pull...');
-        execSync('git pull', { cwd: omniCwd(), stdio: 'inherit' });
-        console.log('Calling yarn install...');
-        execSync('yarn', { cwd: omniCwd(), stdio: 'inherit' });
-        console.log('\nUpdate complete. Please re-run the application with: yarn start');
+        console.log('\nPlease run "git pull" to update your local repository followed by "yarn install" to update to the latest version.\n');
         process.exit(0);  
       }
       catch(e) {

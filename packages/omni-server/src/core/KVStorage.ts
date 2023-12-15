@@ -134,52 +134,61 @@ class KVStorage implements IKVStorage {
       await ensureDir(dbPath);
       this._db = new BetterSqlite3(dbFile);
 
-      if (!this.tableExists('kvstore')) {
-        omnilog.info("KVStorage table doesn't exist, initializing...");
-        this.db.exec(`CREATE TABLE IF NOT EXISTS kvstore (
-          seq INTEGER PRIMARY KEY AUTOINCREMENT,
-          key TEXT UNIQUE NOT NULL,
-          value TEXT,
-          valueType TEXT NOT NULL,
-          blob BLOB,
-          expiry INTEGER,
-          tags TEXT,
-          owner TEXT,
-          deleted BOOLEAN DEFAULT 0
-        );`);
-        this.db.exec('CREATE INDEX IF NOT EXISTS idx_kvstore_key ON kvstore(key);');
-        this.db.exec('CREATE INDEX IF NOT EXISTS idx_owner ON kvstore(owner);');
-
-        this.db.exec(`PRAGMA user_version = ${KVSTORE_VERSION};`);
-        this.version = KVSTORE_VERSION;
-      } else {
-        this.version = (this._db.prepare('PRAGMA user_version;').get() as { user_version: number }).user_version || 0;
-        if (this.version < KVSTORE_VERSION) {
-          omnilog.info(
-            `KVStorage ${dbFile} exists at version ${this.version}, master is ${KVSTORE_VERSION}, checking for migrations...`
-          );
-          try {
-            this.runMigrations();
-            omnilog.info(`KVstorage ${dbFile} is now at version ` + this.version);
-          } catch (ex) {
-            omnilog.error(`Failed KVStorage ${dbFile} migration`, ex);
-            throw new Error('Failed KVStorage migration, aborting.');
-          }
-        }
-      }
-      // Create views
-      this.views.forEach((sql, name) => {
-        omnilog.info(`KVStorage ${this.parent.id} creating view ${name} with SQL: ${sql}`);
-        this.db.exec('DROP VIEW IF EXISTS ' + name + ';');
-        this.db.exec(sql);
-      });
-
-      this.db.pragma('integrity_check');
-      this.parent.success(`KVStorage ${this.parent.id}, schema v${this.version} loaded and mapped to ${dbFile}`);
-
+      this._init();
       return true;
     }
     return false;
+  }
+
+  private async _init() {
+    if (!this.tableExists('kvstore')) {
+      omnilog.info("KVStorage table doesn't exist, initializing...");
+      this.db.exec(`CREATE TABLE IF NOT EXISTS kvstore (
+        seq INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT,
+        valueType TEXT NOT NULL,
+        blob BLOB,
+        expiry INTEGER,
+        tags TEXT,
+        owner TEXT,
+        deleted BOOLEAN DEFAULT 0
+      );`);
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_kvstore_key ON kvstore(key);');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_owner ON kvstore(owner);');
+
+      this.db.exec(`PRAGMA user_version = ${KVSTORE_VERSION};`);
+      this.version = KVSTORE_VERSION;
+    } else {
+      this.version = (this._db.prepare('PRAGMA user_version;').get() as { user_version: number }).user_version || 0;
+      if (this.version < KVSTORE_VERSION) {
+        omnilog.info(
+          `KVStorage exists at version ${this.version}, master is ${KVSTORE_VERSION}, checking for migrations...`
+        );
+        try {
+          this.runMigrations();
+          omnilog.info(`KVstorage is now at version ` + this.version);
+        } catch (ex) {
+          omnilog.error(`Failed KVStorage migration`, ex);
+          throw new Error('Failed KVStorage migration, aborting.');
+        }
+      }
+    }
+    // Create views
+    this.views.forEach((sql, name) => {
+      omnilog.info(`KVStorage ${this.parent.id} creating view ${name} with SQL: ${sql}`);
+      this.db.exec('DROP VIEW IF EXISTS ' + name + ';');
+      this.db.exec(sql);
+    });
+
+    this.db.pragma('integrity_check');
+    this.parent.success(`KVStorage ${this.parent.id}, schema v${this.version} loaded`);
+  }
+
+  async initFromBuffer(buff: Buffer) {
+    this._db = new BetterSqlite3(buff);
+    this._init();
+    return true;
   }
 
   async stop(): Promise<void> {
@@ -414,7 +423,7 @@ class KVStorage implements IKVStorage {
       }
 
       if (Buffer.isBuffer(value)) {
-        this._setBlob(key, value, expiry);
+        this._setBlob(key, value, expiry, tags, owner);
         return;
       }
 

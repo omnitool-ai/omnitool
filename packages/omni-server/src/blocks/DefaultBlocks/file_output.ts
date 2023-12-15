@@ -7,7 +7,6 @@
 // Chat Output
 // --------------------------------------------------------------------------
 
-import { util } from '@tensorflow/tfjs-core';
 import { EOmniFileTypes } from 'omni-sdk';
 import { OAIBaseComponent, OmniComponentMacroTypes, type WorkerContext, BlockCategory as Category } from 'omni-sockets';
 
@@ -36,6 +35,7 @@ component
     component
       .createInput('fileName', 'string', 'text')
       .set('title', 'FileName')
+      .setDefault('file')
       .set(
         'description',
         'The filename (without extension) to use when saving. If not provided, a default will be used'
@@ -94,7 +94,7 @@ component
   )
   .addInput(
     component
-      .createInput('object', 'array', 'objectArray', {array: true})
+      .createInput('objects', 'array', 'objectArray', {array: true})
       .set('title', 'JSON')
       .set('description', 'A JSON object')
       .toOmniIO()
@@ -114,7 +114,7 @@ component
   )
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
     
-    const type: string = payload.storageType === 'Permanent' ? 'put' : 'putTemp';
+    const permanence: string = payload.storageType === 'Permanent' ? 'put' : 'putTemp';
     const unique: boolean = payload.unique || false;
 
     const fileName = payload.fileName?.trim?.() || undefined;
@@ -133,7 +133,7 @@ component
         ext = '.json';
       }
 
-      const file = await ctx.app.cdn[type](payload.text, {
+      const file = await ctx.app.cdn[permanence](payload.text, {
         mimeType: payload.textType,
         fileName: fileName + ext,
         fileType: EOmniFileTypes.document,
@@ -141,11 +141,26 @@ component
       });
       files.push(file);
     }
+    
+    if (payload.objects)
+    {
+      let json_string = "";
+      if (payload.objects.length === 1) json_string = JSON.stringify(payload.objects[0]);
+      else json_string = JSON.stringify({ "json": payload.objects });
 
-    if (payload.documents) await uploadAndAddFiles(payload.documents, type, fileName, ctx, files, unique);
-    if (payload.images) await uploadAndAddFiles(payload.images, type, fileName, ctx, files, unique);
-    if (payload.audio) await uploadAndAddFiles(payload.audio, type, fileName, ctx, files, unique);
-    if (payload.videos) await uploadAndAddFiles(payload.videos, type, fileName, ctx, files, unique);
+      const file = await ctx.app.cdn[permanence](json_string, {
+        mimeType: 'application/json',
+        fileName: fileName + ".json",
+        fileType: EOmniFileTypes.document,
+        userId: ctx.userId
+      });
+      files.push(file);
+    } 
+
+    if (payload.documents) await uploadAndAddFiles(payload.documents, permanence, fileName, ctx, files, unique);
+    if (payload.images) await uploadAndAddFiles(payload.images, permanence, fileName, ctx, files, unique);
+    if (payload.audio) await uploadAndAddFiles(payload.audio, permanence, fileName, ctx, files, unique);
+    if (payload.videos) await uploadAndAddFiles(payload.videos, permanence, fileName, ctx, files, unique);
     
     const urls = [];
     if (!files || files.length === 0) return {"ok":false};

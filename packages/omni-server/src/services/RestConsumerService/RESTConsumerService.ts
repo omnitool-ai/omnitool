@@ -532,7 +532,17 @@ class RESTConsumerService extends Service {
               }
             }
           }
-          formData.append(key, data[key]);
+          if (Array.isArray(data[key])) {
+            data[key].forEach((item, index) => {
+              Object.keys(item).forEach(propertyKey => {
+                // Construct the form data name using the array key, index, and property key
+                const name = `${key}[${index}][${propertyKey}]`;
+                formData.append(name, item[propertyKey]);
+              });
+            });
+          } else {
+            formData.append(key, data[key]);
+          }
         }
 
         data = formData;
@@ -679,7 +689,7 @@ class RESTConsumerService extends Service {
     const config = this.config;
 
     // Connect to the AMQP server using the provided endpoint URL
-    this.connection = Amqp.connect(this.endpointURL());
+    this.connection = Amqp.connect(this.endpointURL(), this.app.config);
     this.success('Connection to AMQP Task server established');
 
     // Create a channel for sending and receiving messages

@@ -232,33 +232,7 @@ export default class OmniSDKShared {
     if (files?.length > 0) {
       let result = await Promise.all(
         Array.from(files).map(async (file) => {
-          const form = new FormData();
-          form.append('storageType', storageType);
-          form.append('file', file, file.name || Date.now().toString());
-
-          try {
-            const response = await fetch('/fid', {
-              method: 'POST',
-              body: form
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-
-              if (data.length > 0 && data[0].ticket && data[0].fid) {
-                return data[0];
-              } else {
-                console.warn('Failed to upload file', { data, file });
-                return null;
-              }
-            } else {
-              console.warn('Failed to upload file', { response, file });
-              return null;
-            }
-          } catch (error) {
-            console.error('Failed to upload file', { error, file });
-            return null;
-          }
+          this.uploadSingleFile(file, storageType);
         })
       );
 
@@ -266,6 +240,36 @@ export default class OmniSDKShared {
       return result;
     } else {
       return [];
+    }
+  }
+
+  public async uploadSingleFile(file: File, storageType: 'temporary' | 'permanent' = 'temporary') {
+    const form = new FormData();
+    form.append('storageType', storageType);
+    form.append('file', file, file.name || Date.now().toString());
+
+    try {
+      const response = await fetch('/fid', {
+        method: 'POST',
+        body: form
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.length > 0 && data[0].ticket && data[0].fid) {
+          return data[0];
+        } else {
+          console.warn('Failed to upload file', { data, file });
+          return null;
+        }
+      } else {
+        console.warn('Failed to upload file', { response, file });
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to upload file', { error, file });
+      return null;
     }
   }
 

@@ -23,6 +23,15 @@ server:
       dbPath: './data.local/db'
       dbName: 'settings.db'
 
+    paths:
+      apisLocalPath: './data.local/apis-local'
+      apisTestingPath : './data.local/apis-testing'
+      fileExportPath : './data.local/file-export'
+      fileImportPath : './data.local/file-import'
+      tmpPath : './data.local/tmp'
+      keystorePath : './data.local/keystore'
+      dbQueuePath : './data.local/db/queue.db'
+
   services:
     messaging:
       keepaliveInterval: 60000 # 60*1000  ms between sending keepalive packets to the client to prevent proxies from reaping the SSE connection

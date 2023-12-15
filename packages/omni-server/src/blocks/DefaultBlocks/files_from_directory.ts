@@ -49,7 +49,10 @@ import { type CdnResource,   EOmniFileTypes} from 'integrations/CdnIntegrations/
     .addOutput(component.createOutput('files', 'object', 'file', {array: true}).set('title', 'Files').toOmniIO())
     .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
 
-        const dir = path.join(process.cwd(), 'data.local', 'file-import', ctx.userId)
+        //const dir = path.join(process.cwd(), 'data.local', 'file-import', ctx.userId)
+        const fileImportPath = ctx.app.config.settings.paths?.fileImportPath || 'data.local/file-import';
+        const dir = path.join(process.cwd(),fileImportPath, ctx.userId)
+
         await extra.ensureDir(dir)        
         let files = (await fs.readdir(dir, { recursive: !!payload.recursive,  withFileTypes: true  }))
         files = files.filter(f=>f.isFile())

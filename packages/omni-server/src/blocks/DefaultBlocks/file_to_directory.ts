@@ -7,7 +7,6 @@
 // Get Recipes
 // --------------------------------------------------------------------------
 
-import fs from 'fs/promises'
 import extra from 'fs-extra'
 import path from 'path'
 
@@ -36,13 +35,23 @@ import { type CdnResource,   EOmniFileTypes} from 'integrations/CdnIntegrations/
     .setMethod('X-CUSTOM');    
   
   component
-    .addControl(component.createControl('overwrite', 'boolean').set('title',"Overwrite").toOmniControl())    
-    .addInput(component.createOutput('files', 'object', 'file', {array: true}).set('title', 'Files').toOmniIO())
+    .addControl(component.createControl('overwrite', 'boolean').set('title',"Overwrite").toOmniControl())  
+    .addInput(
+      component
+        .createInput('files', 'object', 'file', { array: true })
+        .set('title', 'Files')
+        .set('description', 'The files to write in the Directory.')
+        .allowMultiple(true)
+        .toOmniIO()
+    )
     .addOutput(component.createOutput('directory', 'string', 'text').set('title', 'Directory').toOmniIO())
     .addOutput(component.createOutput('files', 'string', 'text', {array: true}).set('title', 'Files').toOmniIO())
     .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
 
-        const dir = path.join(process.cwd(), 'data.local', 'file-export', ctx.userId, ctx.jobId)
+        //const dir = path.join(process.cwd(), 'data.local', 'file-export', ctx.userId, ctx.jobId)
+        const fileExportPath = ctx.app.config.settings.paths?.fileExportPath || 'data.local/file-export';
+        const dir = path.join(process.cwd(), fileExportPath, ctx.userId, ctx.jobId)
+
         await extra.ensureDir(dir)        
 
         await Promise.all(payload.files.map(async (f:any)=>{

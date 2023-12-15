@@ -106,7 +106,7 @@ class AmqpService extends Service {
 
   async load(): Promise<boolean> {
     const config = this.config as IAmqpServiceConfig;
-    this.taskQueueConnection = await Amqp.connect(config.endpoint);
+    this.taskQueueConnection = await Amqp.connect(config.endpoint, this.app.config);
 
     this.success('Connection to AMQP Task server established');
 

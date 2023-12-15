@@ -12,7 +12,7 @@ import Table from 'cli-table3';
 import Database from 'better-sqlite3';
 import { EventEmitter } from 'events';
 import path from 'path';
-import { count } from 'console';
+import { count, debug } from 'console';
 
 interface Message {
   content: Buffer
@@ -67,8 +67,12 @@ class SQLite3MessageQueue {
   private readonly emitter: EventEmitter;
   private readonly interval: number;
 
-  constructor (concurrency: number = 1, interval: number = 1000 * 10) {
-    this.db = new Database(path.join(process.cwd(), 'data.local', 'db', 'queue.db'))
+  constructor (concurrency: number = 1, interval: number = 1000 * 10, config:any = {}) {
+
+    //this.db = new Database(path.join(process.cwd(), 'data.local', 'db', 'queue.db'))
+    const dbQueuePath = config.settings.paths?.dbQueuePath ?? 'data.local/db/queue.db';
+    this.db = new Database(path.join(process.cwd(), dbQueuePath));
+
     this.concurrency = concurrency
     this.emitter = new EventEmitter()
     this.interval = interval
@@ -122,9 +126,9 @@ class SQLite3MessageQueue {
     transaction();
   }  
 
-  public static getInstance(): SQLite3MessageQueue {
+  public static getInstance(config:any): SQLite3MessageQueue {
     if (!SQLite3MessageQueue.instance) {
-      SQLite3MessageQueue.instance = new SQLite3MessageQueue();
+      SQLite3MessageQueue.instance = new SQLite3MessageQueue(undefined, undefined, config);
     }
 
     return SQLite3MessageQueue.instance;
@@ -340,6 +344,6 @@ export class Connection extends SQLite3MessageQueue {}
 export class Channel extends SQLite3MessageQueue {}
 
 // todo: use the string to fetch unique instances to allow for multiple queues in app
-const connect = (dummy: string) => Connection.getInstance();
+const connect = (dummy: string, config: any) => Connection.getInstance(config);
 
 export { SQLite3MessageQueue, connect, type ConnectionOptions, type Message };

@@ -36,10 +36,11 @@ const script = {
       return { message: 'Invalid command' }
     }
 
-
     if (command === 'templates') {
       const sourceDir = path.join(process.cwd(), 'extensions', 'omni-core-blocks', 'server', 'templates')
-      const destDir = path.join(process.cwd(), 'data.local', 'apis-local')
+      //const destDir = path.join(process.cwd(), 'data.local', 'apis-local')
+      const apisLocalPath = ctx.integration.app.config.settings.paths?.apisLocalPath || 'data.local/apis-local';
+      const destDir = path.join(process.cwd(), apisLocalPath);
 
       // Read directories from source path
       const templates = await fs.readdir(sourceDir)
@@ -50,8 +51,8 @@ const script = {
         msg.push(`- ${temp} ${installed ? " (installed)" : "(not installed)"}`)
         commands.push( { title: (!installed ? "Install " : "Uninstall ")+ temp, id: 'local', args: [ (!installed ?'add':"del"), temp] })
       }
-      console.log('Known Templates: ' + msg.join('\n'))
-      await ctx.app.sendMessageToSession(sessionId, 'Known Templates:\n ' + msg.join('\n'), 'text/plain',{commands}
+      console.log('Known APIs: ' + msg.join('\n'))
+      await ctx.app.sendMessageToSession(sessionId, 'Known APIs:\n ' + msg.join('\n'), 'text/plain',{commands}
       )
       return true;
     }
@@ -59,19 +60,21 @@ const script = {
 
     if (!template)
     {
-      return { message: 'Template name not specified' }
+      return { message: 'API name not specified' }
     }
 
     // Sanitize template
     template = template.replace(/[^a-zA-Z0-9_-]/g, '')
 
     if (template.length < 2) {
-      throw new Error('Template name too short after sanitization')
+      throw new Error('API name too short after sanitization')
     }
 
 
     const sourceDir = path.join(process.cwd(), 'extensions', 'omni-core-blocks', 'server', 'templates', template)
-    const destDir = path.join(process.cwd(), 'data.local', 'apis-local', template)
+    //const destDir = path.join(process.cwd(), 'data.local', 'apis-local', template)
+    const apisLocalPath = ctx.integration.app.config.settings.paths?.apisLocalPath || path.join('data.local', 'apis-local');
+    const destDir = path.join(process.cwd(), apisLocalPath, template)
 
     if (command === 'add') {
       // Check if the directory exists and destination directory does not exist
@@ -99,15 +102,15 @@ const script = {
           options: { type: 'danger', description: template + ' is already instealled, remove first.'  }
         });
 
-        throw new Error(`Template ${template} already installed, uninstall first.`)
+        throw new Error(`${template} is already installed, uninstall first.`)
       } else {
 
         await ctx.app.sendToastToUser(ctx.userId, {
           message: `Failed to add` + template,
-          options: { type: 'danger', description: `Template with name ${template} does not exist.`  }
+          options: { type: 'danger', description: `API with name ${template} does not exist.`  }
         });
 
-        throw new Error('Template directory does not exist')
+        throw new Error('API directory does not exist')
       }
 
       await ctx.app.blocks.registerFromFolder(destDir, 'local', true)
@@ -120,7 +123,7 @@ const script = {
       } else {
         await ctx.app.sendToastToUser(ctx.userId, {
           message: `Failed to remove ${template}` ,
-          options: { type: 'danger', description: `Template with name ${template} is not installed.`  }
+          options: { type: 'danger', description: `API with name ${template} is not installed.`  }
         });
 
 
@@ -136,7 +139,7 @@ const script = {
 
     await ctx.app.sendToastToUser(ctx.userId, {
       message: `Installed ${template} (${baseUrl})`,
-      options: { type: 'success', description: `${template} has been installed and it's blocks are now available in the block manager.`  }
+      options: { type: 'success', description: `${template} has been installed and its blocks are now available in the block manager.`  }
     });
 
     return { message: 'done' }
