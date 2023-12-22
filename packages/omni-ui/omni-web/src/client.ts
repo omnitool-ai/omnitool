@@ -18,9 +18,7 @@ import {
   Manager,
   type IOmniSSEMessageCustomExtensionEvent,
   type IOmniSSEMessageClientToast,
-  type IOmniSSEMessageShowExtensionEvent,
-  insane
-} from 'omni-shared';
+  type IOmniSSEMessageShowExtensionEvent} from 'omni-shared';
 import CodeRenderer from './renderers/chat/CodeRenderer';
 import MarkdownRenderer from './renderers/chat/MarkdownRenderer';
 import OmniComponentRenderer from './renderers/chat/OmniComponentRenderer';
@@ -36,22 +34,18 @@ import { OAIComponent31, type OAIBaseComponent, type OmniComponentFormat } from 
 //@ts-expect-error
 import WinBox from '@winbox/src/js/winbox.js';
 
-
 import '@winbox/src/css/winbox.css';
 
-WinBox.prototype.setUrl = function(url:string, onload:Function){
-
-
+WinBox.prototype.setUrl = function (url: string, onload: Function) {
   const node = this.body.firstChild;
 
-  if(node && (node.tagName.toLowerCase() === "iframe")){
-
-      node.src = url;
-  }
-  else{
-
-      this.body.innerHTML = `<iframe allowtransparency="${this.allowTransparency?"true": "false"}" style="background:${this.allowTransparency?"transparent": "white"};"  src="${url}"></iframe>`;
-      onload && (this.body.firstChild.onload = onload);
+  if (node && node.tagName.toLowerCase() === 'iframe') {
+    node.src = url;
+  } else {
+    this.body.innerHTML = `<iframe allowtransparency="${this.allowTransparency ? 'true' : 'false'}" style="background:${
+      this.allowTransparency ? 'transparent' : 'white'
+    };"  src="${url}"></iframe>`;
+    onload && (this.body.firstChild.onload = onload);
   }
 
   return this;
@@ -153,7 +147,7 @@ class OmnitoolClient extends Client {
     curvature: number;
     arrow: boolean;
   };
-  SDK: typeof OmniSDKClient = OmniSDKClient
+  SDK: typeof OmniSDKClient = OmniSDKClient;
   windows: Map<string, WinBox>;
   sdkHost: OmniSDKHost<OmnitoolClient>;
   public readonly markdownEngine: MarkdownEngine;
@@ -192,7 +186,7 @@ class OmnitoolClient extends Client {
       minimalChat: window.localStorage.getItem('settings.minimalChat') === 'true',
       chatSide: window.localStorage.getItem('settings.chatSide') ?? 'left',
       tabBarStyle: window.localStorage.getItem('settings.tabBarStyle') ?? 'tabs',
-      chatMinimized: window.localStorage.getItem('settings.chatMinimized') === 'true' ?? false,
+      chatMinimized: window.localStorage.getItem('settings.chatMinimized') ?? false,
       async toggleMinimal() {
         this.minimalChat = !this.minimalChat;
         window.localStorage.setItem('settings.minimalChat', this.minimalChat);
@@ -222,10 +216,10 @@ class OmnitoolClient extends Client {
       html?: string;
     } = { description: '', type: 'default', position: 'top-right', html: '' }
   ) {
-    const description = options.description || '';
-    const type = options.type || 'default';
-    const position = options.position || 'top-right';
-    const html = options.html || '';
+    const description = options.description ?? '';
+    const type = options.type ?? 'default';
+    const position = options.position ?? 'top-right';
+    const html = options.html ?? '';
 
     window.dispatchEvent(new CustomEvent('toast-show', { detail: { type, message, description, position, html } }));
   }
@@ -259,11 +253,10 @@ class OmnitoolClient extends Client {
     //opts.minheight ??= '500px';
     opts.x ??= 'center';
     opts.y ??= 'center';
-    opts.class = "test";
+    opts.class = 'test';
 
-    if (singletonHash)
-    {
-      this.closeWindow(singletonHash)
+    if (singletonHash) {
+      this.closeWindow(singletonHash);
       url += `&omniHash=${singletonHash}`;
     }
 
@@ -280,8 +273,7 @@ class OmnitoolClient extends Client {
             </div>
         </div>
         <div class="wb-body"></div>
-    `
-
+    `;
 
     const w = new WinBox(
       Object.assign(
@@ -289,8 +281,7 @@ class OmnitoolClient extends Client {
         {
           url,
           class: [],
-          autosize: true,
-
+          autosize: true
         },
         opts,
         {
@@ -307,8 +298,6 @@ class OmnitoolClient extends Client {
         }
       )
     );
-
-
 
     if (singletonHash) {
       this.windows.set(singletonHash, w);
@@ -364,7 +353,7 @@ class OmnitoolClient extends Client {
       handler: (message: IOmniSSEMessageShowExtensionEvent): any => {
         this.workbench.showExtension(message.body.extensionId, message.body.args, message.body.page, message.body.opts);
       }
-    })
+    });
     this.io.registerMessageHandler({
       type: OmniSSEMessages.CUSTOM_EXTENSION_EVENT,
       handler: (message: IOmniSSEMessageCustomExtensionEvent) => {

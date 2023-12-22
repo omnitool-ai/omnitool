@@ -39,8 +39,9 @@ import ValidatorComponent from './DefaultBlocks/output_validator.js'
 import WriteFilesToDirectoryComponent from './DefaultBlocks/file_to_directory.js'
 import StaticFileComponent from './DefaultBlocks/static_file.js'
 import GetFilesFromDirectoryComponent from './DefaultBlocks/files_from_directory.js';
+import  RecipeOutputComponent  from './DefaultBlocks/recipe_output.js'
+
 import { LoopRecipeComponent } from './DefaultBlocks/loop_recipe.js'
-import { RecipeOutputComponent } from './DefaultBlocks/recipe_output.js'
 import { StringarrayToJsonComponent } from './DefaultBlocks/stringarray_to_json.js';
 import { ImagesToMarkdownComponent } from './DefaultBlocks/images_to_markdown.js';
 import { RecipePickerComponent } from './DefaultBlocks/recipe_picker.js';

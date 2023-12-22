@@ -9,6 +9,11 @@ const admzip = require('adm-zip');
 const path = require('node:path');
 const { compare } = require('compare-versions');
 
+const NodeProcessEnv = {
+  development: 'development',
+  production: 'production',
+}
+
 async function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
@@ -86,5 +91,6 @@ module.exports = {
   statuslogger,
   checkInternet,
   omniCwd,
-  checkGitForUpdates
+  checkGitForUpdates,
+  NodeProcessEnv
 };

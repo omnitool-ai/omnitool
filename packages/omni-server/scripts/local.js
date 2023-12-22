@@ -99,7 +99,7 @@ const script = {
 
         await ctx.app.sendToastToUser(ctx.userId, {
           message: `Failed to add` + template,
-          options: { type: 'danger', description: template + ' is already instealled, remove first.'  }
+          options: { type: 'danger', description: template + ' is already installed, remove first.'  }
         });
 
         throw new Error(`${template} is already installed, uninstall first.`)
@@ -113,7 +113,21 @@ const script = {
         throw new Error('API directory does not exist')
       }
 
-      await ctx.app.blocks.registerFromFolder(destDir, 'local', true)
+      try {
+        await ctx.app.blocks.registerFromFolder(destDir, 'local', true)
+        await ctx.app.sendToastToUser(ctx.userId, {
+          message: `Installed ${template} (${baseUrl})`,
+          options: { type: 'success', description: `${template} has been installed and its blocks are now available in the block manager.`  }
+        });
+    
+      } catch (error) {
+        await ctx.app.sendToastToUser(ctx.userId, {
+          message: `Failed to add` + template,
+          options: { type: 'danger', description: `${error.message}`  }
+        });
+        
+        throw new Error('Failed to register blocks')
+      }
 
     } else if (command === 'del') {
       // Remove the directory recursively if it exists
@@ -136,12 +150,6 @@ const script = {
       return {ok: true}
 
     }
-
-    await ctx.app.sendToastToUser(ctx.userId, {
-      message: `Installed ${template} (${baseUrl})`,
-      options: { type: 'success', description: `${template} has been installed and its blocks are now available in the block manager.`  }
-    });
-
     return { message: 'done' }
   }
 }

@@ -94,7 +94,7 @@ class WorkflowIntegration extends APIIntegration {
 
     this.handlers.set('getWorkflows', createGetWorkflowsHandler);
     this.handlers.set('deleteWorkflow', createDeleteWorkflowHandler);
-    this.handlers.set('getWorkflowResults', createGetWorkflowResultsHandler);
+    this.handlers.set('results', createGetWorkflowResultsHandler);
     this.handlers.set('exec', execWorkflowHandler);
     this.handlers.set('stop', stopWorkflowHandler);
     this.handlers.set('jobs', createJobsHandler);
@@ -104,7 +104,7 @@ class WorkflowIntegration extends APIIntegration {
     this.clientExports.set('stop', stopWorkflowClientExport);
     this.clientExports.set('getWorkflows', getWorkflowsClientExport);
     this.clientExports.set('deleteWorkflow', deleteWorkflowClientExport);
-    this.clientExports.set('getWorkflowResults', getWorkflowResultsClientHandler);
+    this.clientExports.set('results', getWorkflowResultsClientHandler);
     this.clientExports.set('jobs', jobsClientExport);
 
     return await super.load();

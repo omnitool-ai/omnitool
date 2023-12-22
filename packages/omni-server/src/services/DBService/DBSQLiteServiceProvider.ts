@@ -56,10 +56,13 @@ class DBSQLiteServiceProvider extends DBServiceProvider {
       .join(' OR ')}) `;
 
     // Custom filters using LIKE
-    if (customFilters) {
+    if (customFilters && customFilters.size > 0) {
+      baseQuery += 'AND (';
       customFilters.forEach((value, key) => {
-        baseQuery += `AND json_extract(value, '$.${key}') LIKE '%${value}%' `;
+        baseQuery += `json_extract(value, '$.${key}') LIKE '%${value}%' OR `;
       });
+      baseQuery = baseQuery.slice(0, -3);
+      baseQuery += ') ';
     }
 
     // Query for fetching documents

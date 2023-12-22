@@ -39,13 +39,13 @@ import { KNOWN_EXTENSION_METHODS} from './ServerExtensionsManager.js';
 import { type NodeData } from 'rete/types/core/data.js';
 import { OmniDefaultBlocks } from '../blocks/DefaultBlocks.js';
 import { StorageAdapter } from './StorageAdapter.js';
-
 import { type CredentialService } from 'services/CredentialsService/CredentialService.js';
 
 interface IBlockManagerConfig {
   preload: boolean;
   kvStorage: IKVStorageConfig;
 }
+const PRELOAD_REGISTRY_IN_PARALLEL = false;
 
 type UndefinedPruned<T> = T extends object ? { [P in keyof T]: UndefinedPruned<T[P]> } : T;
 
@@ -287,18 +287,53 @@ class BlockManager extends Manager {
     const registryFiles = await readdir(registryDir);
     this.debug(`Scanning registry folder ${registryDir}, containing ${registryFiles.length} files.`);
 
-    const tasks = registryFiles.map(async (file) => {
-      if (file.startsWith('.')) {
-        return null;
-      }
-      const filePath = path.join(registryDir, file);
-      const s = await stat(filePath);
-      if (s.isDirectory()) {
-        await this.registerFromFolder(filePath, prefix, (this.app as MercsServer).options.refreshBlocks);
-      }
-    });
+    if (PRELOAD_REGISTRY_IN_PARALLEL)
+    {
+        const tasks = registryFiles.map(async (file) => {
+        if (file.startsWith('.')) {
+          return null;
+        }
+        const filePath = path.join(registryDir, file);
+        const s = await stat(filePath);
+        if (s.isDirectory()) {
+          try {
+            await this.registerFromFolder(filePath, prefix, (this.app as MercsServer).options.refreshBlocks);
+          } catch (error) {
+            this.warn(`Failed to register from ${filePath}`, error);
+          }
+        }
+      });
 
-    await Promise.all(tasks);
+      await Promise.all(tasks);
+    }
+    else
+    {
+      if (registryFiles.length <= 0) {
+        return;
+      }
+      omnilog.status_start(`[BlockManager] Loading ${registryFiles.length} registries...`);
+      for (const file of registryFiles) 
+      {
+        if (file.startsWith('.')) 
+        {
+          continue;
+        }
+        const filePath = path.join(registryDir, file);
+        const s = await stat(filePath);
+        if (s.isDirectory()) 
+        {
+          try
+          {
+            await this.registerFromFolder(filePath, prefix, (this.app as MercsServer).options.refreshBlocks);
+          }
+          catch(error)
+          {
+            this.error(`Failed to preloadDir from ${filePath}. Error = ${error}. Skipping...`);
+          }
+        }
+      }
+      omnilog.status_success('[BlockManager] Completed');
+    }
   }
 
   // Preload APIS
@@ -411,9 +446,11 @@ class BlockManager extends Manager {
               await this.processPatches(patches);
             } catch (e) {
               this.error(`Failed to process ${ns} ${url}`, e);
+              throw e;
             }
           } catch (error) {
             this.warn(`Failed to register from ${path.join(dirPath, file)}`, error);
+            throw error;
           }
         }
       })
@@ -428,14 +465,38 @@ class BlockManager extends Manager {
 
     let parsedSchema = null;
 
-    if (api.url != null) {
+    if (api.url != null) 
+    {
       this.info('Loading API from URL', api.url);
+      let response;
       try {
+        // Download the spec using fetch
+        response = await fetch(api.url);
+      }
+      catch (error)
+      {
+        this.error(error);
+        throw new Error(`Failed to fetch spec from ${api.url}`);
+      }
+
+      const spec = await response.text();
+      try 
+      {
+        if (api.url.endsWith('.yaml') || api.url.endsWith('.yml')) {
+          // @ts-ignore
+          parsedSchema = await SwaggerClient.resolve({ spec: yaml.load(spec) });
+        }
+        else
+        {
+          // @ts-ignore
+          parsedSchema = await SwaggerClient.resolve({ spec: JSON.parse(spec) });
+        }
+
         // @ts-ignore
-        parsedSchema = await SwaggerClient.resolve({ url: api.url });
+
       } catch (error) {
         this.error(error);
-        throw new Error(`Failed to load spec from ${api.url}`);
+        throw new Error(`Failed to resolve spec from ${api.url}`);
       }
     } else if (api.json) {
       this.info('Loading API from JSON', api.json);
@@ -497,9 +558,11 @@ class BlockManager extends Manager {
       if (!this.hasBlock(key)) {
         try {
           this.addBlock(c);
+          await this.app.events.emit('block_added', [{block: c}]);
           this.verbose(`Added Block "${key}"`);
         } catch (e) {
           this.error(`Failed to add block "${key}"`, e);
+          await this.app.events.emit('block_added', [{error: e}]);
           return;
         }
       }

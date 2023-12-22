@@ -1,6 +1,6 @@
 {
   "name": "omni-shared",
-  "packageManager": "yarn@3.3.0",
+  "packageManager": "yarn@4.0.2",
   "version": "0.0.1",
   "type": "module",
   "main": "./lib/index.js",
@@ -16,10 +16,10 @@
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "esbuild": "^0.19.9",
-    "eslint": "^8.55.0",
+    "esbuild": "^0.19.10",
+    "eslint": "^8.56.0",
     "eslint-config-standard-with-typescript": "^36.1.1",
-    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
@@ -31,7 +31,7 @@
     "build:prod": "node build.js production && run build:types",
     "build:types": "echo \"Building omni-shared typescript declarations...\" && tsc --build --pretty --emitDeclarationOnly",
     "lint": "eslint ./src --ext .js,.ts, --ignore-path .gitignore",
-    "clean": "tsc --build --clean & rm -rf .eslintcache"
+    "clean": "node build.js clean"
   },
   "dependencies": {
     "@ungap/structured-clone": "^1.2.0",

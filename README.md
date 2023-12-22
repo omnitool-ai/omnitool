@@ -124,11 +124,11 @@ You can then access the Omnitool software from a web browser on your local machi
 
 1. **Prerequisites**
 
-  Ensure you have the latest versions of the following sofware installed:
+  Ensure you have the following sofware installed:
 
- * [Node.js](https://nodejs.org/en)
- * [Yarn](https://yarnpkg.com)
- * [Git](https://en.wikipedia.org/wiki/Git)
+ * [Latest Git](https://en.wikipedia.org/wiki/Git)
+ * [Latest LTS Node.js](https://nodejs.org/en)
+ * [Classic Yarn](https://classic.yarnpkg.com/en/docs/install)
 
 
 2. **Get the Source Code**
@@ -219,6 +219,9 @@ To generate a JWT for executing a recipe with a validity of 30,000 milliseconds 
 /generateJwtToken exec Workflow 30000
 ```
 
+Please see [examples/api.mjs] for an example javascript which runs a recipe.
+
+
 **Output**
 
 The script will output a JWT, which is a token string to be used in the authorization header for your API requests.
@@ -258,6 +261,11 @@ Upon success, the API will initiate the specified recipe. You will receive a JSO
 - Keep your JWT secure to prevent unauthorized access to your recipes.
 - Always use a secure connection to interact with the APIs.
 - Regularly rotate your tokens and use a short expiration time to minimize the impact of potential leaks.
+
+** Getting Results **
+
+Once a job is finished, you can use the /api/v1/workflow/results?jobId=<jobId> to retrieve the results.
+
 
 **Troubleshooting**
 

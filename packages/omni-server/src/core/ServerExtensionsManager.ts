@@ -29,9 +29,9 @@ export enum PERMITTED_EXTENSIONS_EVENTS {
   'component:x-input' = 'component:x-input', // (payload)
   'jobs.job_started' = 'job_started',
   'jobs.job_finished' = 'job_finished',
-  'registry.package_installed' = 'package_installed',
   'jobs.pre_workflow_start' = 'job_pre_start', // (workflow, ctx, actions)
-  'session_created' = 'session_created' // (session_id, user)
+  'session_created' = 'session_created', // (session_id, user)
+  'blocks.block_added' = 'block_added',  // (block / error)
 }
 
 export enum KNOWN_EXTENSION_METHODS {

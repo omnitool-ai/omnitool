@@ -39,7 +39,7 @@ export async function processHuggingface(payload: any, service: RESTConsumerServ
         delete block_payload._huggingface;
         endpoint = rep.endpoint;
     }
-    debugger;
+
     if (payload.integration.key === 'huggingface_hub') 
     {
         // huggingface_hub 

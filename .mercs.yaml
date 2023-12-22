@@ -33,6 +33,11 @@ server:
       dbQueuePath : './data.local/db/queue.db'
 
   services:
+
+    jobs:
+      kvStorage:
+        dbPath: './data.local/db'
+        dbName: 'jobs.db'
     messaging:
       keepaliveInterval: 60000 # 60*1000  ms between sending keepalive packets to the client to prevent proxies from reaping the SSE connection
 
@@ -249,18 +254,23 @@ server:
         'POST /api/v1/workflow/stop': # Stop all running workflows the user has access to
           handler: 'stop'
           clientExport: 'stop'
+          authStrategy: 'jwt'
 
         '/api/v1/workflow/workflows':  # Get a users workflows
           handler: 'getWorkflows'
           clientExport: 'getWorkflows'
+          authStrategy: 'jwt'
 
-        '/api/v1/workflow/workflowResults':  # Get results for a workflow
-          handler: 'getWorkflowResults'
-          clientExport: 'getWorkflowResults'
+        '/api/v1/workflow/results':  # Get results for a workflow
+          handler: 'results'
+          clientExport: 'results'
+          authStrategy: 'jwt'
 
         '/api/v1/workflow/jobs':  # Get a users running workflows (jobs)
           handler: 'jobs'
           clientExport: 'jobs'
+          authStrategy: 'jwt'
+
 
         'PUT /api/v1/workflow':     # Update an existing workflow
           handler: 'update'

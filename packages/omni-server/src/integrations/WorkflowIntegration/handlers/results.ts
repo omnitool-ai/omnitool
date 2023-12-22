@@ -9,49 +9,16 @@
 //  Purpose:  Retrieve current workflow results from the database
 // ---------------------------------------------------------------------------------------------
 
-import { APIIntegration } from '../../APIIntegration';
 import { type FastifyRequest, type FastifyReply } from 'fastify';
-import { EObjectAction, type Workflow, type IWorkflowMeta } from 'omni-shared';
 import { type WorkflowIntegration } from '../WorkflowIntegration';
+import { type JobControllerService } from '../../../services/JobController/JobControllerService';
 
-let lastDeleteTime = 0;
-
-const getWorkflowResults = async function (integration: WorkflowIntegration, workflowId: string): Promise<Workflow[]> {
-  let ret: any = [];
-  const deleteList: any[] = [];
-  if (integration.db != null) {
-    const result = await integration.db.list(`result:${workflowId}:`, undefined, true);
-
-    // @ts-ignore
-
-    // @ts-ignore
-    ret = result.rows.map((r: any) => {
-      return r.doc;
-    });
-
-    ret = ret.filter((r: any) => {
-      if (r.expires > new Date().getTime()) {
-        return true;
-      }
-      deleteList.push(r);
-      return false;
-    });
-  }
-
-  // If it's been 10 seconds since the last bulk delete, delete expired documents
-  if (deleteList.length > 0 && lastDeleteTime + 1000 * 10 < Date.now()) {
-    lastDeleteTime = Date.now();
-    integration.db.deleteMany(deleteList);
-  }
-
-  return ret;
-};
 
 const getWorkflowResultsClientHandler = function () {
   return {
-    description: 'Get a list of workflows',
+    description: 'Return job results',
     params: [
-      { name: 'workflowId', required: true, type: 'string', description: 'The workflow to retrieve results for' }
+      { name: 'jobId', required: true, type: 'string', description: 'The job to retrieve results for' }
     ]
   };
 };
@@ -62,34 +29,32 @@ const createGetWorkflowResultsHandler = function (integration: WorkflowIntegrati
       querystring: {
         type: 'object',
         properties: {
-          workflowId: { type: 'string' }
+          jobId: { type: 'string' }
         },
-        required: ['workflowId']
+        required: ['jobId']
       },
       response: {
         200: {
           type: 'object',
           properties: {
-            success: { type: 'string' },
-            artifacts: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  created: { type: 'string' },
-                  args: { type: 'array' }
-                }
+            text: { type: 'array', items: { type: 'string' } },
+            job: {
+              type: 'object',
+              additionalProperties: true,
+              properties:
+              {
+                
               }
             }
           },
-          required: ['success', 'artifacts']
+          additionalProperties: true,
+          required: ['job']
         }
       }
     },
-    handler: async function (request: FastifyRequest, reply: FastifyReply) {
+    handler: async function (request: FastifyRequest, reply: FastifyReply) : Promise<any> {
       // @ts-ignore
-      const body: { workflowId: string } = request.body || request.query;
+      const body: { jobId: string } = request.body || request.query;
 
       // TODO: Add permission check
       // @ts-ignore
@@ -98,20 +63,32 @@ const createGetWorkflowResultsHandler = function (integration: WorkflowIntegrati
       //   throw new Error("Unauthorized access")
       // }
 
-      const result = await getWorkflowResults(integration, body.workflowId);
+      const jobService = integration.app.services.get('jobs') as JobControllerService;
+      const storage = jobService.kvStorage;
+      try
+      {
+        if (!storage)
+        {
+          throw new Error('No storage available');
+        }
 
-      const ret = {
-        success: 'ok',
-        artifacts: result.map((r: any) => {
-          const run: any = { id: r.id, created: r.created, args: r.args };
-          for (const k in r.artifacts) {
-            run[k] = r.artifacts[k] || [];
-          }
-          return run;
-        })
-      };
-
-      return await reply.status(200).send(ret);
+        const result = storage.get('result.' + body.jobId)
+        if (!result)
+        {
+          return await reply.status(404).send({ error: 'Job not found' });
+        }
+        if (result.job.userId !== request.user.id)
+        {
+          return await reply.status(403).send({ error: 'Unauthorized access' });
+        }
+        return await reply.status(200).send(result);
+      }
+      catch (ex)
+      {
+        return await reply.status(500).send({ error: (ex as any).message });
+      }
+      
+     
     }
   };
 };

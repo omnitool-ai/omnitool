@@ -9,7 +9,7 @@
 import { type IManager, Service, type IServiceConfig, type Workflow } from 'omni-shared';
 import { WorkflowJob, JOBSTATE } from './WorkflowJob.js';
 import { WorkerContext, JobContext, type OAIBaseComponent } from 'omni-sockets';
-
+import { KVStorage, type IKVStorageConfig } from '../../core/KVStorage.js';
 import type Server from '../../core/Server.js';
 import { type WorkerInputs, type WorkerOutputs } from 'rete/types/core/data.js';
 
@@ -60,12 +60,15 @@ function topologicalSort(nodes: any[]) {
   return { searchOrder: stack, computable };
 }
 
-interface IJobControllerServiceConfig extends IServiceConfig {}
+interface IJobControllerServiceConfig extends IServiceConfig {
+
+  kvStorage: IKVStorageConfig;
+}
 type JobId = string; // ...TODO...
 
 class JobControllerService extends Service {
   jobs = new Map<JobId, WorkflowJob>();
-
+  public kvStorage?: KVStorage;
   constructor(id: JobId, manager: IManager, config: IJobControllerServiceConfig) {
     super(id, manager, config || { id });
   }
@@ -74,7 +77,26 @@ class JobControllerService extends Service {
     return this.app as Server;
   }
 
+  async load()
+  {
+    const config = (this.config as IJobControllerServiceConfig).kvStorage as IKVStorageConfig;
+    if (config) {
+      this.kvStorage = new KVStorage(this as Service, config);
+      if (!(await this.kvStorage.init())) {
+        throw new Error('KVStorage failed to start');
+      }
+      await this.kvStorage.vacuum();
+    } else {
+      this.warn('No KVStorage config found, server will run without persistent storage');
+    }
+  }
+
   async start(): Promise<boolean> {
+    return true;
+  }
+
+  async stop(): Promise<boolean> {
+    this.kvStorage?.stop()
     return true;
   }
 
@@ -338,9 +360,10 @@ class JobControllerService extends Service {
     await this.emit('job_finished', [job.context, job]); // job.context is a member of job, do we need to pass both here?
     await this.emit('job_finished_' + job.id, [job]);
 
-    process.nextTick(() => {
+    // in 20 minutes, remove the job
+    setTimeout(() => {
       this.jobs.delete(job.id);
-    });
+    }, 20 * 60 * 1000);
 
     await this.app.emit('sse_message', {
       type: 'job_state',

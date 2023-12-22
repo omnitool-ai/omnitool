@@ -2,86 +2,173 @@
  * Copyright (c) 2023 MERCENARIES.AI PTE. LTD.
  * All rights reserved.
  */
-//@ts-check
 
-import { setComponentInputs, setComponentOutputs, setComponentControls, blockOutput } from '../../../src/utils/omni-utils.js';
-import {
-  OAIBaseComponent,
-  OmniComponentMacroTypes,
-  OmniComponentFlags,
-  type WorkerContext,
-  BlockCategory as Category
-} from 'omni-sockets';
+// --------------------------------------------------------------------------
+// Chat Output
+// --------------------------------------------------------------------------
 
-const group_id = 'omnitool';
-const id = 'recipe_output';
-const title = 'Recipe Output';
-const category = Category.RECIPE_OPERATIONS;
-const description =
-  'Store the output of a recipe in the database, including text, images, audio, documents, videos, files, and objects. These stored outputs can be retrieved later for further use.';
-const summary = description;
+import { OAIBaseComponent, OmniComponentMacroTypes, type WorkerContext, BlockCategory as Category} from 'omni-sockets';
+import { type ICdnResource, EOmniFileTypes, OmniBaseResource } from 'omni-sdk';
 
-const inputs = [
-  { name: 'text', type: 'string', customSocket: 'text' },
-  { name: 'images', type: 'array', customSocket: 'imageArray' },
-  { name: 'audio', type: 'array', customSocket: 'audioArray' },
-  { name: 'documents', type: 'array', customSocket: 'documentArray' },
-  { name: 'videos', type: 'array', customSocket: 'fileArray' },
-  { name: 'files', type: 'array', customSocket: 'fileArray' },
-  { name: 'objects', type: 'array', customSocket: 'objectArray' }
-];
-const outputs = [{ name: 'info', type: 'string', customSocket: 'text' }];
-const controls = null;
+const NS_OMNI = 'omnitool';
 
-let baseComponent = OAIBaseComponent.create(group_id, id)
+const component = OAIBaseComponent.create(NS_OMNI, 'recipe_output')
   .fromScratch()
-  .set('title', title)
-  .set('category', category)
-  .set('description', description)
-  .setMethod('X-CUSTOM')
-  .setMeta({
-    source: {
-      summary
+  .set('title', 'Recipe Output')
+  .set('category', Category.INPUT_OUTPUT)
+  .set(
+    'description',
+    `Sets the API output for this recipe, used with the Run Recipe Block or when invoked via the REST API.  
+    - To retrieve the output of the recipe, use the \`/api/v1/workflow/results?jobId=<jobId>\` endpoint.  
+    - To retrieve file contents, use their file id (fid) with the \`/fid/<fid>\` endpoint on the server endpoint.  
+    `
+
+  )
+  .setMethod('X-CUSTOM');
+
+component
+  .addInput(
+    component
+      .createInput('text', 'string', 'text', { array: true })
+      .set('title', 'Text')
+      .set('description', 'A simple input string')
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+
+
+  .addInput(
+    component
+      .createInput('images', 'array', 'image', { array: true } )
+      .set('title', 'Images')
+
+      .set('description', 'One or more images')
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+
+  .addInput(
+    component
+      .createInput('audio', 'array', 'audio', { array: true })
+      .set('title', 'Audio')
+      .set('description', 'One or more audio files')
+
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+  .addInput(
+    component
+      .createInput('documents', 'array', 'document', { array: true })
+      .set('title', 'Documents')
+      .set('description', 'One or more documents')
+
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+
+  .addInput(
+    component
+      .createInput('videos', 'array', 'video', { array: true })
+      .set('title', 'Videos')
+      .set('description', 'Video Files (.mp4)')
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+  .addInput(
+    component
+      .createInput('files', 'array', 'file', { array: true })
+      .set('title', 'Files')
+      .set('description', 'Any type of file')
+      .allowMultiple(true)
+      .toOmniIO()
+  )
+  .addInput(
+    component
+      .createInput('objects', 'array', 'objectArray')
+      .set('title', 'JSON')
+      .set('description', 'A JSON object')
+      .allowMultiple(true)
+      .setControl({
+        controlType: 'AlpineLabelComponent'
+      })
+      .toOmniIO()
+  )
+    .addInput(
+        component
+          .createInput('persistData', 'string', 'text')
+          .set('title', 'File Storage Mode')
+          .set('description', 'Whether to save the files permanently or make them expire after a certain amount of time')
+          .setChoices(['Permanent', "Expiring"], "Permanent")
+          .toOmniIO()
+  )
+  .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
+
+    const deleteData = (p: any) => {
+      delete p.data;
+      return p;
+    };
+
+    if(payload.persistData !== "Expiring") {
+      if (payload.images && payload.images.length > 0) {
+          await Promise.all(payload.images.map(async (image: any) => {
+          delete image.data;
+          return ctx.app.cdn.setExpiry(image, ctx.userId, null)
+        }))
+      }
+      if (payload.audio && payload.audio.length > 0) {
+        await Promise.all(payload.audio.map(async (audio: any) => {
+          delete audio.data;
+          return ctx.app.cdn.setExpiry(audio, ctx.userId, null)
+        }))
+      }
+      if (payload.documents && payload.documents.length > 0) {
+        await Promise.all(payload.documents.map(async (doc: any) => {
+          delete doc.data;
+          return ctx.app.cdn.setExpiry(doc, ctx.userId, null)
+        }))
+      }
+      if (payload.videos && payload.videos.length > 0) {
+        await Promise.all(payload.videos.map(async (vid: any) => {
+          delete vid.data;
+          return ctx.app.cdn.setExpiry(vid, ctx.userId, null)
+        }))
+      }
     }
+
+    const result = {
+      text: payload.text && !Array.isArray(payload.text) ? [payload.text] : payload.text,
+      objects: payload.objects && !Array.isArray(payload.objects) ? [payload.objects] : payload.objects,
+      artifacts:
+      {
+        audio: payload?.audio?.map(deleteData),
+        documents: payload?.documents?.map(deleteData),
+        files: payload?.files?.map(deleteData),
+        images: payload?.images?.map(deleteData),
+        videos: payload?.videos?.map(deleteData),
+      },
+      job:
+      {
+        userId: ctx.userId,
+        jobId: ctx.jobId,
+        recipeId: ctx.workflowId,
+        errors: ctx.engine.errors && ctx.engine.errors.length > 0 ? ctx.engine.errors : null,
+        success: !ctx.engine.errors || ctx.engine.errors.length === 0,
+      },
+      created: Date.now(),
+    };
+
+    const jobService = ctx.app.services.get('jobs');
+    const storage = jobService.kvStorage;
+    if (storage)
+    {
+      const tags = []
+      tags.push('job.' + ctx.jobId)
+      //TODO: Synchronize expiry
+      storage.set('result.' + ctx.jobId, result, payload.persistData !== "Expiring" ? null: Date.now()+ 1000*60*60*24*30, tags, ctx.userId);
+    }
+    return {}
   });
 
-baseComponent = setComponentInputs(baseComponent, inputs);
-baseComponent = setComponentOutputs(baseComponent, outputs);
-baseComponent.setFlag(OmniComponentFlags.UNIQUE_PER_WORKFLOW, true);
-if (controls) baseComponent = setComponentControls(baseComponent, controls);
-baseComponent.setMacro(OmniComponentMacroTypes.EXEC, parsePayload);
+const RecipeOutputComponent = component.toJSON();
 
-export const RecipeOutputComponent = baseComponent.toJSON();
-
-async function parsePayload(payload: any, ctx: WorkerContext) {
-  const text = payload.text;
-  const images = payload.images;
-  const audio = payload.audio;
-  const documents = payload.documents;
-  const videos = payload.videos;
-  const files = payload.files;
-  const objects = payload.objects;
-  let info = '';
-  // ---------------------
-  const job_id = ctx.jobId;
-  if (!job_id) throw new Error(`No recipe id found in the context`);
-
-  const jobs_controller = ctx.app.jobs;
-  const jobs = jobs_controller.jobs;
-  const workflow_job = jobs.get(job_id);
-
-  const json = { outputs: { text: '', images: [], audio: [], documents: [], videos: [], files: [], objects: [] } };
-  const outputs = json.outputs;
-  if (text) outputs.text = text;
-  if (images) outputs.images = images;
-  if (audio) outputs.audio = audio;
-  if (documents) outputs.documents = documents;
-  if (videos) outputs.videos = videos;
-  if (files) outputs.files = files;
-  if (objects) outputs.objects = objects;
-  info += `job_id: ${job_id}: Saving outputs ${JSON.stringify(outputs)} to the database; | `;
-  workflow_job.artifactsValue = outputs;
-
-  const result = blockOutput({ info });
-  return result;
-}
+export default RecipeOutputComponent;

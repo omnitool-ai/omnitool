@@ -15,3 +15,4 @@ config.local/**/*
 !data.local/README.md
 !config.local/README.md
 !usr/README.md
+!dist/run.js

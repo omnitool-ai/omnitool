@@ -7,8 +7,7 @@ const { fork, spawn, exec, execSync } = require('node:child_process');
 const os = require('node:os');
 const path = require('node:path');
 const { assert } = require('console');
-const { ensure } = require('./pocketdbutils.js');
-const { sleep, checkGitForUpdates, omniCwd } = require('./utils.js');
+const { sleep, checkGitForUpdates, omniCwd, NodeProcessEnv } = require('./utils.js');
 const { ensureDirSync } = require('fs-extra');
 const { update_build } = require('./updater.js');
 const readline = require('node:readline');
@@ -47,8 +46,8 @@ function start_server(implicit_args) {
   // this ensures we can also resolve whether clicking directy on .exe or launching from terminal
   const entrypath = path.join(server_wd, server_entry);
   console.log(`Server entry point resolved to ${entrypath}`);
-
-  server_process = fork(entrypath, implicit_args.concat(args), { cwd: server_wd, execArgv: ['--inspect'] });
+  const execArgv = process.env.NODE_ENV === NodeProcessEnv.development ? ['--inspect'] : [];
+  server_process = fork(entrypath, implicit_args.concat(args), { cwd: server_wd, execArgv });
   pretty_process_pid.push(`|--OMNITOOL - Server PID ${server_process.pid}`);
   child_processes.set(server_process.pid, server_process);
 
@@ -100,13 +99,6 @@ function verifyConfig() {
     return false;
   }
   return true;
-}
-
-function start_pocketbase() {
-  const pocketDBProcess = spawn(path.join(pocketbaseInstallPath, 'pocketbase'), ['serve'], { stdio: 'inherit' });
-  setup_listeners(pocketDBProcess, 'pocketbase');
-  pretty_process_pid.push(`|--OMNITOOL - PocketBaseDB PID ${pocketDBProcess.pid}`);
-  child_processes.set(pocketDBProcess.pid, pocketDBProcess);
 }
 
 async function migrate_pocketbase() {
@@ -175,14 +167,7 @@ async function check_for_updates() {
 }
 
 async function run_development(server_args) {
-  // const pocketready = await ensure(pocketbaseInstallPath);
-  // if (!pocketready) {
-  //   console.error('Fatal error setting up PocketBase DB');
-  //   process.exit(1);
-  // }
   start_vite();
-  //await sleep(1000);
-  //start_pocketbase();
   await migrate_pocketbase();
   await sleep(1000);
   start_server(server_args);
@@ -190,13 +175,6 @@ async function run_development(server_args) {
 }
 
 async function run_production(server_args) {
-  // const pocketready = await ensure(pocketbaseInstallPath);
-  // if (!pocketready) {
-  //   console.error('Fatal error setting up PocketBase DB');
-  //   process.exit(1);
-  // }
-  // start_pocketbase();
-  // await sleep(1000);
   await migrate_pocketbase();
   start_server(server_args);
   log_processes();
@@ -222,7 +200,6 @@ function log_processes() {
 }
 
 async function ensure_wasm() {
-  const { NodeProcessEnv } = await import('omni-shared');
   // --- Copy wasm models
   let wasmDir = null;
   switch (process.env.NODE_ENV) {
@@ -271,7 +248,6 @@ pretty_process_pid.push(`OMNITOOL - Launcher PID ${process.pid}`);
 
 // launched from omnitool executable - always production + updates
 async function run() {
-  const { NodeProcessEnv } = await import('omni-shared');
   const omnitool_exec = 'omnitool';
   if (argv0.includes(omnitool_exec)) {
     console.log('Runtime mode detected..launching');
