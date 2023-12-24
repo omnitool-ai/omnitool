@@ -1,0 +1,44 @@
+# .github/workflows/publish-release.yml
+name: Publish release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  check-permission:
+    name: check permission
+    runs-on: ubuntu-latest
+    outputs:
+      permission: ${{ steps.check.outputs.permission }}
+    steps:
+      - id: check
+        uses: shogo82148/actions-check-permissions@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    needs:
+      - check-permission
+    steps:
+        ##########################
+        # Checkout the code base #
+        ##########################
+      - name: Checkout code
+        uses: actions/checkout@v4
+        ##########################
+        # Release from tags      #
+        ##########################
+      - name: Publish Release
+        id: publish_release
+        uses: ghalactic/github-release-from-tag@v5
+        if: github.ref_type == 'tag'
+        with:
+          prerelease: "false"
+          reactions: rocket
+          token: ${{ secrets.GITHUB_TOKEN }}
