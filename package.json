@@ -1,6 +1,6 @@
 {
   "name": "omnitool",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "packageManager": "yarn@4.0.2",
   "private": true,
   "workspaces": [
@@ -15,8 +15,8 @@
     "pocketbase": "0.16.6"
   },
   "scripts": {
-    "build:prod": "yarn workspaces foreach -W -v run build:prod",
-    "build": "yarn workspaces foreach -W -v run build",
+    "build:prod": "yarn workspace omni-shared build:prod && yarn workspace omni-sdk build:prod && yarn workspace omni-sockets build:prod && yarn workspace omni-client-services build:prod && yarn workspace omni-web build:prod && yarn workspace omni-server build:prod",
+    "build": "yarn workspace omni-shared build && yarn workspace omni-sdk build && yarn workspace omni-sockets build && yarn workspace omni-client-services build && yarn workspace omni-server build",
     "frontend": "yarn workspace omni-web dev",
     "update": "git pull && yarn install && run clean && run build",
     "dev": "cross-env NODE_ENV=development node setup/launcher.js -ll 4 -l 127.0.0.1 --viteProxy http://127.0.0.1:5173",
@@ -62,7 +62,7 @@
   "devDependencies": {
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
     "prettier": "^3.1.1"
   }
 }

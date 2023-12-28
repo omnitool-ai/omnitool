@@ -1078,6 +1078,9 @@ var OAIControl31 = class _OAIControl31 extends Rete.Control {
             return e;
           }).filter((e) => e.value && filterRegex.test(e.title)).sort((a, b) => b.title.localeCompare(a.title));
         }
+        if (this.data.required && this.data.default == null && Array.isArray(this.data.choices) && this.data.choices.length > 0) {
+          this.data.default = this.data.choices[0].value;
+        }
       }
     }
   }
@@ -1524,6 +1527,11 @@ var OAIComponent31 = class _OAIComponent31 extends OAIBaseComponent {
           delete node.data[key];
         } else if (io.type === "number" && typeof node.data[key] === "string") {
           delete node.data[key];
+        }
+      }
+      if (io.choices != null) {
+        if (io.choices.block && io.choices.block.indexOf?.(".") === -1) {
+          io.choices.block = `${this.data.apiNamespace}.${io.choices.block}`;
         }
       }
       const control = await OAIControl_default.fromIO(ctlType, io, this.editor);

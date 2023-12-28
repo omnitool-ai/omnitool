@@ -50,7 +50,7 @@ import { JsonPackerComponent} from './DefaultBlocks/json_packer.js';
 import { JsonUnpackerComponent} from './DefaultBlocks/json_unpacker.js';
 import { RunRecipeComponent } from './DefaultBlocks/run_recipe.js';
 import  PasswordInputComponent from './DefaultBlocks/masked_input.js';
-import { HuggingfaceGetModelsComponent } from './DefaultBlocks/hf_get_models.js';
+import { HuggingfaceListModelsComponent } from './DefaultBlocks/hf_get_models.js';
 import { GetRecipesComponent } from './DefaultBlocks/get_recipes.js';
 
 const blocks = [];
@@ -101,7 +101,7 @@ blocks.push(NumberInputSliderBlock);
 blocks.push(JsonPackerComponent);
 blocks.push(JsonUnpackerComponent);
 blocks.push(RunRecipeComponent);
-blocks.push(HuggingfaceGetModelsComponent);
+blocks.push(HuggingfaceListModelsComponent);
 blocks.push(GetRecipesComponent);
 blocks.push(WriteFilesToDirectoryComponent);
 

@@ -536,8 +536,17 @@ class OAIComponent31 extends OAIBaseComponent {
         }
       }
 
-      const control = await OAIControl31.fromIO(ctlType, io, this.editor);
+      // Fix local API choice blocks.
+      if (io.choices != null) {
+        //@ts-expect-error
+        if(io.choices.block && io.choices.block.indexOf?.(".") === -1) {
+          //@ts-expect-error
+          io.choices.block = `${this.data.apiNamespace}.${io.choices.block}`
+        }
+      }
 
+      const control = await OAIControl31.fromIO(ctlType, io, this.editor);
+      
 
       if (!io.hidden) {
         if (io.readonly) {

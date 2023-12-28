@@ -1,4 +1,13 @@
 # Omnitool.ai - Your Open Source AI Desktop
+![GitHub stars](https://img.shields.io/github/stars/omnitool-ai/omnitool?style=social)
+![GitHub forks](https://img.shields.io/github/forks/omnitool-ai/omnitool?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/omnitool-ai/omnitool?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/omnitool-ai/omnitool)
+![GitHub language count](https://img.shields.io/github/languages/count/omnitool-ai/omnitool)
+![GitHub top language](https://img.shields.io/github/languages/top/omnitool-ai/omnitool)
+![GitHub last commit](https://img.shields.io/github/last-commit/omnitool-ai/omnitool?color=red)
+![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Follama-webui%2Follama-wbui&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
+[![Discord](https://img.shields.io/badge/Discord-Omnitool-blue?logo=discord&logoColor=white)](https://discord.gg/EMYBZnyjAJ)
 
 *Discover, Learn, Evaluate and Build with thousands of Generative AI Models.*
 

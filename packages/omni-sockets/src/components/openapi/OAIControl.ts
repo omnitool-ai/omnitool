@@ -91,6 +91,12 @@ class OAIControl31 extends Rete.Control {
             .filter((e: Choice) => e.value && filterRegex.test(e.title))
             .sort((a: Choice, b: Choice) => b.title.localeCompare(a.title));
         }
+
+        //@ts-ignore
+        if (this.data.required && this.data.default == null && Array.isArray(this.data.choices) && this.data.choices.length > 0) {
+          //@ts-ignore
+          this.data.default = this.data.choices[0].value 
+        }
       }
     }
   }

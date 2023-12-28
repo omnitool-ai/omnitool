@@ -6005,47 +6005,35 @@ var DESCRIPTION = "Get top Huggingface models for a given tag, sorted in a numbe
 var CATEGORY = "hugginface";
 var HUGGINGFACE_BASE_KEY = "RESERVED_huggingface_models";
 var HUGGINGFACE_TAGS = [
-  "text-to-image",
-  "image-to-text",
-  "image_segmentation",
-  "summarization",
-  "image-to-image",
-  "feature-extraction",
-  "text-to-video",
-  "visual-question-answering",
-  "document-question-answering",
-  "graph-machine-learning",
-  "computer-vision",
-  "depth-estimation",
-  "image-classification",
-  "object-detection",
-  "unconditional-image-generation",
-  "video-classification",
-  "zero-shot-image-classification",
-  "natural-language-processing",
-  "text-classification",
-  "token-classification",
-  "table-question-answering",
-  "question-answering",
-  "zero-shot-classification",
-  "translation",
-  "conversational",
-  "text-generation",
-  "text2text-generation",
-  "fill-mask",
-  "sentence-similarity",
-  "audio",
-  "text-to-speech",
-  "text-to-audio",
-  "automatic-speech-recognition",
-  "audio-to-audio",
   "audio-classification",
-  "voice-activity-detection",
-  "tabular",
+  "audio-to-audio",
+  "automatic-speech-recognition",
+  "conversational",
+  "document-question-answering",
+  "feature-extraction",
+  "fill-mask",
+  "image-classification",
+  "image-segmentation",
+  "image-to-image",
+  "image-to-text",
+  "object-detection",
+  "question-answering",
+  "reinforcement-learning",
+  "question-answering",
+  "sentence-similarity",
+  "summarization",
+  "table-question-answering",
   "tabular-classification",
   "tabular-regression",
-  "reinforcement-learning",
-  "robotics"
+  "text-classification",
+  "text-generation",
+  "text-to-image",
+  "text-to-speech",
+  "token-classification",
+  "translation",
+  "visual-question-answering",
+  "zero-shot-classification",
+  "zero-shot-image-classification"
 ];
 var huggingface_sorts = ["trending", "likes", "downloads", "date"];
 var inputs4 = [
@@ -6065,13 +6053,14 @@ baseComponent.addControl(
 );
 baseComponent.setMacro(OmniComponentMacroTypes42.ON_SAVE, onSave5);
 baseComponent.setMacro(OmniComponentMacroTypes42.EXEC, processPayload6);
-var HuggingfaceGetModelsComponent = baseComponent.toJSON();
+var HuggingfaceListModelsComponent = baseComponent.toJSON();
 async function onSave5(node, recipe, ctx) {
   const tag = node.data.tag;
   const criteria = node.data.criteria;
   const max_entries = node.data.max_entries;
   const key = `${HUGGINGFACE_BASE_KEY}_${tag}_${criteria}_${max_entries}`;
   let cached_models = await user_db_get(ctx, key);
+  debugger;
   if (!cached_models) {
     cached_models = await getModels(tag, max_entries, criteria);
     if (cached_models && cached_models.length > 0 && !("error" in cached_models))
@@ -6080,18 +6069,18 @@ async function onSave5(node, recipe, ctx) {
   if (cached_models && cached_models.length > 0) {
     const inputsObject = {};
     const model_socket = {};
-    model_socket.title = `${tag} model`;
+    model_socket.title = `${tag} Models`;
     model_socket.name = "model";
     model_socket.type = "string";
     model_socket.customSocket = "text";
     model_socket.choices = cached_models;
-    model_socket.defaultValue = cached_models[0];
     inputsObject[model_socket.name] = model_socket;
     node.data["x-omni-dynamicInputs"] = inputsObject;
   }
   return true;
 }
 async function processPayload6(payload, ctx) {
+  debugger;
   const model2 = payload.model;
   const tag = payload.tag;
   return { result: { "ok": true }, model: model2, tag };
@@ -6229,7 +6218,7 @@ blocks.push(NumberInputSliderBlock);
 blocks.push(JsonPackerComponent);
 blocks.push(JsonUnpackerComponent);
 blocks.push(RunRecipeComponent);
-blocks.push(HuggingfaceGetModelsComponent);
+blocks.push(HuggingfaceListModelsComponent);
 blocks.push(GetRecipesComponent);
 blocks.push(file_to_directory_default);
 var OmniDefaultBlocks = blocks;
@@ -10796,6 +10785,582 @@ import Replicate from "replicate";
 import { HfInference } from "@huggingface/inference";
 import axios5 from "axios";
 var MAX_ENTRIES = 25;
+async function audioClassification(inference, block_payload, model2, options, job_ctx, service) {
+  const labels = [];
+  const scores = [];
+  const jsons = [];
+  let audio_cdns = block_payload.audio;
+  if (!Array.isArray(audio_cdns))
+    audio_cdns = [audio_cdns];
+  if (!audio_cdns || audio_cdns.length === 0)
+    throw new Error("Missing audio");
+  for (const audio_cdn of audio_cdns) {
+    const raw_audio = await service.app.cdn.get(audio_cdn.ticket);
+    const data = raw_audio.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.audioClassification(args, options);
+    if (!inference_results)
+      throw new Error("Missing classification_output for audio_classification_task");
+    for (const classification_output of inference_results) {
+      const label = classification_output.label;
+      const score = classification_output.score;
+      labels.push(label);
+      scores.push(score);
+      jsons.push({ label, score });
+    }
+  }
+  return { label: labels, score: scores, json: jsons, _omni_status: 200 };
+}
+async function audioToAudio(inference, block_payload, model2, options, job_ctx, service) {
+  const audios = [];
+  const labels = [];
+  let audio_cdns = block_payload.audio;
+  if (!Array.isArray(audio_cdns))
+    audio_cdns = [audio_cdns];
+  if (!audio_cdns || audio_cdns.length === 0)
+    throw new Error("Missing audio");
+  for (const audio_cdn of audio_cdns) {
+    const raw_audio = await service.app.cdn.get(audio_cdn.ticket);
+    const data = raw_audio.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.audioToAudio(args, options);
+    if (!inference_results)
+      throw new Error("Missing result for audio_to_audio_task");
+    for (const result of inference_results) {
+      const blob = result.blob;
+      const label = result.label;
+      const audio_cdn2 = await blobToAudioCdn(blob, job_ctx, service);
+      audios.push(audio_cdn2);
+      labels.push(label);
+    }
+  }
+  return { audios, labels, _omni_status: 200 };
+}
+async function automaticSpeechRecognition(inference, block_payload, model2, options, job_ctx, service) {
+  const texts = [];
+  let audio_cdns = block_payload.audio;
+  if (!Array.isArray(audio_cdns))
+    audio_cdns = [audio_cdns];
+  if (!audio_cdns || audio_cdns.length === 0)
+    throw new Error("Missing audio");
+  for (const audio_cdn of audio_cdns) {
+    const raw_audio = await service.app.cdn.get(audio_cdn.ticket);
+    const data = raw_audio.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.automaticSpeechRecognition(args, options);
+    if (!inference_results)
+      throw new Error("Missing transcription_output for automatic_speech_recognition_task");
+    const text = inference_results.text;
+    texts.push(text);
+  }
+  return { text: texts, _omni_status: 200 };
+}
+async function conversational(inference, block_payload, model2, options, job_ctx, service) {
+  let generated_responses = block_payload.generated_responses || [];
+  if (!Array.isArray(generated_responses))
+    generated_responses = [generated_responses];
+  let past_user_inputs = block_payload.past_user_inputs || [];
+  if (!Array.isArray(past_user_inputs))
+    past_user_inputs = [past_user_inputs];
+  const text = block_payload.text || "";
+  if (!text || text.length === 0)
+    throw new Error("Missing text for conversational_task");
+  const inputs5 = { text, generated_responses, past_user_inputs };
+  const max_length = block_payload.max_length;
+  const max_time = block_payload.max_time;
+  const min_length = block_payload.min_length;
+  const repetition_penalty = block_payload.repetition_penalty;
+  const temperature = block_payload.temperature;
+  const top_k = block_payload.top_k;
+  const top_p = block_payload.top_p;
+  const parameters = { max_length, max_time, min_length, repetition_penalty, temperature, top_k, top_p };
+  const args = { model: model2, inputs: inputs5, parameters };
+  const inference_results = await inference.conversational(args, options);
+  if (!inference_results)
+    throw new Error("Missing conversational_output for conversational_task");
+  const generated_text = inference_results.generated_text;
+  const conversation = inference_results.conversation;
+  past_user_inputs = conversation.past_user_inputs;
+  generated_responses = conversation.generated_responses;
+  const warnings = inference_results.warnings;
+  return { generated_text, past_user_inputs, generated_responses, warnings, _omni_status: 200 };
+}
+async function documentQuestionAnswering(inference, block_payload, model2, options, job_ctx, service) {
+  let image_cdns = block_payload.image;
+  if (!Array.isArray(image_cdns))
+    image_cdns = [image_cdns];
+  if (!image_cdns)
+    throw new Error("Missing images for documentQuestionAnswering");
+  const answers = [];
+  const jsons = [];
+  for (const image_cdn of image_cdns) {
+    const raw_image = await service.app.cdn.get(image_cdn.ticket);
+    const image = raw_image.data;
+    const question = block_payload.question;
+    if (!question)
+      throw new Error("Missing question for documentQuestionAnswering");
+    const inputs5 = { image, question };
+    const args = { model: model2, inputs: inputs5 };
+    const inference_results = await inference.documentQuestionAnswering(args, options);
+    if (!inference_results)
+      throw new Error("Missing output for documentQuestionAnswering");
+    const answer = inference_results.answer;
+    const end = inference_results.end;
+    const score = inference_results.score;
+    const start = inference_results.start;
+    answers.push(answer);
+    jsons.push({ answer, end, score, start });
+  }
+  return { answer: answers, json: jsons, _omni_status: 200 };
+}
+async function featureExtraction(inference, block_payload, model2, options, job_ctx, service) {
+  let inputs5 = block_payload.inputs;
+  if (!Array.isArray(inputs5))
+    inputs5 = [inputs5];
+  if (!inputs5 || inputs5.length === 0)
+    throw new Error("Missing inputs for featureExtraction");
+  const args = { model: model2, inputs: inputs5 };
+  const inference_results = await inference.featureExtraction(args, options);
+  if (!inference_results)
+    throw new Error("Missing output for featureExtraction");
+  return { features: inference_results, json: { features: inference_results }, _omni_status: 200 };
+}
+async function fillMask(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing text for fillMask");
+  const args = { inputs: inputs5 };
+  const inference_results = await inference.fillMask(args, options);
+  if (!inference_results)
+    throw new Error("Missing output for fillMask");
+  const token_strs = [];
+  const jsons = [];
+  for (const inference_result of inference_results) {
+    const sequence = inference_result.sequence;
+    const score = inference_result.score;
+    const token = inference_result.token;
+    const token_str = inference_result.token_str;
+    token_strs.push(token_str);
+    jsons.push({ sequence, score, token, token_str });
+  }
+  return { token_str: token_strs, json: jsons, _omni_status: 200 };
+}
+async function imageClassification(inference, block_payload, model2, options, job_ctx, service) {
+  const labels = [];
+  const jsons = [];
+  let image_cdns = block_payload.image;
+  if (!Array.isArray(image_cdns))
+    image_cdns = [image_cdns];
+  if (!image_cdns || image_cdns.length === 0)
+    throw new Error("Missing image");
+  for (const image_cdn of image_cdns) {
+    const url = image_cdn.url;
+    const raw_image = await service.app.cdn.get(image_cdn.ticket);
+    const data = raw_image.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.imageClassification(args, options);
+    if (!inference_results)
+      throw new Error("Missing classification_output for image_classification_task");
+    for (const classification_output of inference_results) {
+      const label = classification_output.label;
+      const score = classification_output.score;
+      labels.push(label);
+      jsons.push({ url, label, score });
+    }
+  }
+  return { label: labels, json: jsons, _omni_status: 200 };
+}
+async function imageSegmentation(inference, block_payload, model2, options, job_ctx, service) {
+  const mask_cdns = [];
+  const jsons = [];
+  let image_cdns = block_payload.images;
+  if (!Array.isArray(image_cdns))
+    image_cdns = [image_cdns];
+  if (!image_cdns || image_cdns.length === 0)
+    throw new Error("Missing images");
+  for (const image_cdn of image_cdns) {
+    const raw_image = await service.app.cdn.get(image_cdn.ticket);
+    const data = raw_image.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.imageSegmentation(args, options);
+    if (!inference_results)
+      throw new Error("Missing segmentation_output for image_segmentation_task");
+    for (const segmentation_output of inference_results) {
+      const mask_b64 = segmentation_output.mask;
+      const label = segmentation_output.label;
+      const score = segmentation_output.score;
+      const mask_cdn = await blobToImageCdn(mask_b64, job_ctx, service);
+      mask_cdns.push(mask_cdn);
+      jsons.push({ mask: mask_cdn, label, score });
+    }
+  }
+  return { masks: mask_cdns, json: jsons, _omni_status: 200 };
+}
+async function imageToImage(inference, block_payload, model2, options, job_ctx, service) {
+  const output_image_cdns = [];
+  let images = block_payload.images;
+  const prompt = block_payload.prompt;
+  const strength = block_payload.strength;
+  const negative_prompt = block_payload.negative_prompt;
+  const height = block_payload.height;
+  const width = block_payload.width;
+  const num_inference_steps = block_payload.num_inference_steps;
+  const guidance_scale = block_payload.guidance_scale;
+  const guess_mode = block_payload.guess_mode || false;
+  const parameters = { prompt, strength, negative_prompt, height, width, num_inference_steps, guidance_scale, guess_mode };
+  if (!Array.isArray(images))
+    images = [images];
+  if (!images || images.length === 0)
+    throw new Error("Missing images");
+  for (const image of images) {
+    const raw_image = await service.app.cdn.get(image.ticket);
+    const inputs5 = raw_image.data;
+    const args = { model: model2, inputs: inputs5, parameters };
+    const inference_results = await inference.imageToImage(args, options);
+    if (!inference_results)
+      throw new Error("Missing image_to_image_output for image_to_image_task");
+    for (const blob of inference_results) {
+      const image_cdn = await blobToImageCdn(blob, job_ctx, service);
+      output_image_cdns.push(image_cdn);
+    }
+  }
+  return { images: output_image_cdns, _omni_status: 200 };
+}
+async function imageToText(inference, block_payload, model2, options, job_ctx, service) {
+  const texts = [];
+  let image_cdn = block_payload.image;
+  if (!Array.isArray(image_cdn))
+    image_cdn = [image_cdn];
+  if (!image_cdn || image_cdn.length === 0)
+    throw new Error("Missing image");
+  for (const image of image_cdn) {
+    const raw_image = await service.app.cdn.get(image.ticket);
+    const data = raw_image.data;
+    const args = { model: model2, data };
+    const text_output = await inference.imageToText(args, options);
+    if (!text_output)
+      throw new Error("Missing text_output for image_to_text_task");
+    texts.push(text_output);
+  }
+  return { text: texts, _omni_status: 200 };
+}
+async function objectDetection(inference, block_payload, model2, options, job_ctx, service) {
+  const images = block_payload.image;
+  if (!images || images.length === 0)
+    throw new Error("Missing images");
+  if (!model2)
+    throw new Error("Missing model");
+  const labels = [];
+  const jsons = [];
+  for (const image of images) {
+    const raw_image = await service.app.cdn.get(image.ticket);
+    const data = raw_image.data;
+    const args = { model: model2, data };
+    const inference_results = await inference.objectDetection(args, options);
+    if (!inference_results)
+      throw new Error("Missing inference_results for object_detection_task");
+    const box = inference_results.box;
+    const label = inference_results.label;
+    const score = inference_results.score;
+    labels.push(label);
+    jsons.push({ box, label, score });
+  }
+  return { label: labels, json: jsons, _omni_status: 200 };
+}
+async function questionAnswering(inference, block_payload, model2, options, job_ctx, service) {
+  const context = block_payload.context;
+  const question = block_payload.question;
+  if (!context || !question)
+    throw new Error("Missing context or question");
+  const inputs5 = { context, question };
+  const args = { inputs: inputs5 };
+  const result = await inference.questionAnswering(args, options);
+  const answer = result.answer;
+  const end = result.end;
+  const score = result.score;
+  const start = result.start;
+  const json = { answer, end, score, start };
+  return { answer, json, _omni_status: 200 };
+}
+async function sentenceSimilarity(inference, block_payload, model2, options, job_ctx, service) {
+  const text1 = block_payload.sentence1;
+  const text2 = block_payload.sentence2;
+  if (!text1 || !text2)
+    throw new Error("Two sentences were not provided.");
+  const args = { inputs: { text1, text2 } };
+  const results = await inference.sentenceSimilarity(args, options);
+  const similarities = results;
+  return { similarity: similarities, _omni_status: 200 };
+}
+async function summarization(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing input_text for summarization_task");
+  const min_length = block_payload.min_length;
+  const max_length = block_payload.max_length;
+  const top_k = block_payload.top_k;
+  const top_p = block_payload.top_p;
+  const temperature = block_payload.temperature || 1;
+  const repetition_penalty = block_payload.repetition_penalty;
+  const max_time = block_payload.max_time;
+  const args = {
+    model: model2,
+    inputs: inputs5,
+    parameters: { max_length, max_time, min_length, repetition_penalty, temperature, top_k, top_p }
+  };
+  const results = await inference.summarization(args, options);
+  const summary_text = results.summary_text;
+  return { summary_text, _omni_status: 200 };
+}
+async function tableQuestionAnswering(inference, block_payload, model2, options, job_ctx, service) {
+  const query = block_payload.query;
+  if (!query)
+    throw new Error("Missing query for tableQuestionAnswering");
+  if (typeof block_payload.table !== "object") {
+    throw new Error("block_payload.table must be an object");
+  }
+  const table = {};
+  for (const key in block_payload.table) {
+    if (!Array.isArray(block_payload.table[key])) {
+      throw new Error(`block_payload.table.${key} must be an array of strings`);
+    }
+    table[key] = block_payload.table[key];
+  }
+  const inputs5 = { table, query };
+  const args = { model: model2, inputs: inputs5 };
+  if (!table)
+    throw new Error("Missing table for tableQuestionAnswering");
+  const results = await inference.tableQuestionAnswering(args, options);
+  const answer = results.answer;
+  const aggregator = results.aggregator;
+  const cells = results.cells;
+  const coordinates = results.coordinates;
+  const json = { answer, aggregator, cells, coordinates };
+  return { answer, json, _omni_status: 200 };
+}
+async function tabularClassification(inference, block_payload, model2, options, job_ctx, service) {
+  if (typeof block_payload.table !== "object") {
+    throw new Error("block_payload.data must be an object");
+  }
+  const data = {};
+  for (const key in block_payload.table) {
+    if (!Array.isArray(block_payload.table[key])) {
+      throw new Error(`block_payload.table.${key} must be an array of strings`);
+    }
+    data[key] = block_payload.table[key];
+  }
+  if (!data)
+    throw new Error("Missing data for tabularClassification");
+  const inputs5 = { data };
+  const args = { model: model2, inputs: inputs5 };
+  const results = await inference.tabularClassification(args, options);
+  const labels = results;
+  return { label: labels, _omni_status: 200 };
+}
+async function tabularRegression(inference, block_payload, model2, options, job_ctx, service) {
+  if (typeof block_payload.data !== "object") {
+    throw new Error("block_payload.data must be an object");
+  }
+  const data = {};
+  for (const key in block_payload.table) {
+    if (!Array.isArray(block_payload.table[key])) {
+      throw new Error(`block_payload.table.${key} must be an array of strings`);
+    }
+    data[key] = block_payload.table[key];
+  }
+  if (!data)
+    throw new Error("Missing data for tabularRegression");
+  const inputs5 = { data };
+  const args = { model: model2, inputs: inputs5 };
+  const results = await inference.tabularRegression(args, options);
+  const labels = results;
+  return { labels, _omni_status: 200 };
+}
+async function textClassification(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for textClassification");
+  const args = { model: model2, inputs: inputs5 };
+  const results = await inference.textClassification(args, options);
+  const labels = [];
+  const jsons = [];
+  for (const result of results) {
+    const label = result.label;
+    const score = result.score;
+    const json = { label, score };
+    labels.push(label);
+    jsons.push(json);
+  }
+  return { label: labels, json: jsons, _omni_status: 200 };
+}
+async function textGeneration(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for textGeneration");
+  const do_sample = block_payload.do_sample || true;
+  const max_new_tokens = block_payload.max_new_tokens;
+  const max_time = block_payload.max_time;
+  const num_return_sequences = block_payload.num_return_sequences || 1;
+  const repetition_penalty = block_payload.repetition_penalty;
+  const return_full_text = block_payload.return_full_text || true;
+  const temperature = block_payload.temperature || 1;
+  const top_k = block_payload.top_k;
+  const top_p = block_payload.top_p;
+  const truncate = block_payload.truncate;
+  const stop_sequences = block_payload.stop_sequences || [];
+  const parameters = { do_sample, max_new_tokens, max_time, num_return_sequences, repetition_penalty, return_full_text, temperature, top_k, top_p, truncate, stop_sequences };
+  const args = { model: model2, inputs: inputs5, parameters };
+  const results = await inference.textGeneration(args, options);
+  const generated_text = results.generated_text;
+  return { generated_text, _omni_status: 200 };
+}
+async function textToImage(inference, block_payload, model2, options, job_ctx, service) {
+  const prompt = block_payload.prompt;
+  if (!prompt)
+    throw new Error("Missing prompt for textToImage");
+  const negative_prompt = block_payload.negative_prompt;
+  const height = block_payload.height;
+  const width = block_payload.width;
+  const num_inference_steps = block_payload.num_inference_steps;
+  const guidance_scale = block_payload.guidance_scale;
+  const inputs5 = prompt;
+  const parameters = { negative_prompt, height, width, num_inference_steps, guidance_scale };
+  const args = { model: model2, inputs: inputs5, parameters };
+  const results = await inference.textToImage(args, options);
+  const blob = results;
+  const image_cdn = await blobToImageCdn(blob, job_ctx, service);
+  return { image: image_cdn, _omni_status: 200 };
+}
+async function textToSpeech(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for textToSpeech");
+  const args = { model: model2, inputs: inputs5 };
+  const results = await inference.textToSpeech(args, options);
+  const blob = results;
+  const audio_cdn = await blobToAudioCdn(blob, job_ctx, service);
+  return { audio: audio_cdn, _omni_status: 200 };
+}
+async function tokenClassification(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for tokenClassification");
+  const aggregation_strategy = block_payload.aggregation_strategy || "simple";
+  const parameters = { aggregation_strategy };
+  const args = { model: model2, inputs: inputs5, parameters };
+  const results = await inference.tokenClassification(args, options);
+  const entity_groups = [];
+  const jsons = [];
+  for (const result of results) {
+    const entity_group = result.entity_group;
+    const score = result.score;
+    const start = result.start;
+    const end = result.end;
+    const word = result.word;
+    const json = { entity_group, score, start, end, word };
+    entity_groups.push(entity_group);
+    jsons.push(json);
+  }
+  return { entity_group: entity_groups, json: jsons, _omni_status: 200 };
+}
+async function translation(inference, block_payload, model2, options, job_ctx, service) {
+  const inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for translation");
+  const args = { model: model2, inputs: inputs5 };
+  const results = await inference.translation(args, options);
+  const translation2 = results.translation_text;
+  return { translation: translation2, _omni_status: 200 };
+}
+async function visualQuestionAnswering(inference, block_payload, model2, options, job_ctx, service) {
+  const question = block_payload.question;
+  if (!question)
+    throw new Error("Missing question for visualQuestionAnswering");
+  let image_cdns = block_payload.images;
+  if (!Array.isArray(image_cdns))
+    image_cdns = [image_cdns];
+  if (!image_cdns)
+    throw new Error("Missing image for visualQuestionAnswering");
+  const answers = [];
+  const jsons = [];
+  for (const image_cdn of image_cdns) {
+    const raw_image = await service.app.cdn.get(image_cdn.ticket);
+    const image = raw_image.data;
+    const args = { model: model2, inputs: { image, question } };
+    const results = await inference.visualQuestionAnswering(args, options);
+    const answer = results.answer;
+    const score = results.score;
+    const json = { answer, score };
+    answers.push(answer);
+    jsons.push(json);
+  }
+  return { answer: answers, json: jsons, _omni_status: 200 };
+}
+async function zeroShotClassification(inference, block_payload, model2, options, job_ctx, service) {
+  let inputs5 = block_payload.inputs;
+  if (!inputs5)
+    throw new Error("Missing inputs for zeroShotClassification");
+  if (!Array.isArray(inputs5))
+    inputs5 = [inputs5];
+  const candidate_labels = block_payload.candidate_labels;
+  if (!candidate_labels)
+    throw new Error("Missing candidate_labels for zeroShotClassification");
+  if (!Array.isArray(candidate_labels))
+    throw new Error("You need at least two candidate_labels for zeroShotClassification");
+  if (candidate_labels.length < 2)
+    throw new Error("You need at least two candidate_labels for zeroShotClassification");
+  if (candidate_labels.length > 10)
+    throw new Error("You can use at most 10 candidate_labels for zeroShotClassification");
+  const multi_label = block_payload.multi_label || false;
+  const parameters = { candidate_labels, multi_label };
+  const args = { model: model2, inputs: inputs5, parameters };
+  const results = await inference.zeroShotClassification(args, options);
+  const all_labels = [];
+  const jsons = [];
+  for (const result of results) {
+    const labels = result.labels;
+    const scores = result.scores;
+    const sequence = result.sequence;
+    const json = { labels, scores, sequence };
+    all_labels.push(labels);
+    jsons.push(json);
+  }
+  return { labels: all_labels, json: jsons, _omni_status: 200 };
+}
+async function zeroShotImageClassification(inference, block_payload, model2, options, job_ctx, service) {
+  let image_cdns = block_payload.image;
+  if (!Array.isArray(image_cdns))
+    image_cdns = [image_cdns];
+  if (!image_cdns || image_cdns.length === 0)
+    throw new Error("Missing images for zeroShotImageClassification");
+  const candidate_labels = block_payload.candidate_labels;
+  if (!candidate_labels)
+    throw new Error("Missing candidate_labels for zeroShotImageClassification");
+  if (!Array.isArray(candidate_labels))
+    throw new Error("You need at least two candidate_labels for zeroShotImageClassification");
+  if (candidate_labels.length < 2)
+    throw new Error("You need at least two candidate_labels for zeroShotImageClassification");
+  if (candidate_labels.length > 10)
+    throw new Error("You can use at most 10 candidate_labels for zeroShotImageClassification");
+  const parameters = { candidate_labels };
+  const labels = [];
+  const jsons = [];
+  for (const image_cdn of image_cdns) {
+    const raw_image = await service.app.cdn.get(image_cdn.ticket);
+    const image = raw_image.data;
+    const args = { model: model2, inputs: image, parameters };
+    const results = await inference.zeroShotImageClassification(args, options);
+    const url = image_cdn.url;
+    for (const result of results) {
+      const label = result.label;
+      const score = result.score;
+      const json = { label, score, url };
+      labels.push(label);
+      jsons.push(json);
+    }
+  }
+  return { labels, json: jsons, _omni_status: 200 };
+}
 async function processHuggingface(payload, service) {
   const block_payload = payload.body;
   if (!block_payload)
@@ -10834,6 +11399,9 @@ async function processHuggingface(payload, service) {
     }
   } else if (payload.integration.key === "huggingface") {
     const model2 = block_payload.model;
+    const use_cache = block_payload.use_cache || true;
+    const wait_for_model = block_payload.wait_for_model || false;
+    const options = { use_cache, wait_for_model };
     const job_ctx = payload.job_ctx;
     let inference = null;
     if (!hf_token)
@@ -10841,125 +11409,117 @@ async function processHuggingface(payload, service) {
     else
       inference = new HfInference(hf_token);
     switch (endpoint) {
-      case "text_to_image": {
-        const prompt = block_payload.prompt || "award winning high resolution photo of a white tiger";
-        const negative_prompt = block_payload.negative_prompt || "blurry";
-        const blob = await inference.textToImage({
-          model: model2,
-          inputs: prompt,
-          parameters: {
-            negative_prompt
-          }
-        });
-        const image_cdn = blobToImageCdn(blob, job_ctx, service);
-        return { image: image_cdn, _omni_status: 200 };
+      case "audio-classification": {
+        const results = await audioClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
       }
-      case "image_to_text": {
-        let image_cdns = block_payload.image;
-        if (!Array.isArray(image_cdns))
-          image_cdns = [image_cdns];
-        if (!image_cdns)
-          throw new Error("Missing images for image_to_text_task");
-        let text_output = "";
-        for (const image_cdn of image_cdns) {
-          const raw_image = await service.app.cdn.get(image_cdn.ticket);
-          const data = raw_image.data;
-          const output = await inference.imageToText({ data, model: model2 });
-          const generated_text = output?.generated_text;
-          text_output = `${text_output}${generated_text}
-`;
-        }
-        return { text_output, _omni_status: 200 };
+      case "audio-to-audio": {
+        const results = await audioToAudio(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "automatic-speech-recognition": {
+        const results = await automaticSpeechRecognition(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "conversational": {
+        const results = await conversational(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "document-question-answering": {
+        const results = await documentQuestionAnswering(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "feature-extraction": {
+        const results = await featureExtraction(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "fill-mask": {
+        const results = await fillMask(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "image-classification": {
+        const results = await imageClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "image-segmentation": {
+        const results = await imageSegmentation(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "image-to-image": {
+        const results = await imageToImage(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "image-to-text": {
+        const results = await imageToText(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "object-detection": {
+        const results = await objectDetection(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "question-answering": {
+        const results = await questionAnswering(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "sentence-similarity": {
+        const results = await sentenceSimilarity(inference, block_payload, model2, options, job_ctx, service);
+        return results;
       }
       case "summarization": {
-        const input_text = block_payload.input_text;
-        if (!input_text)
-          throw new Error("Missing input_text for summarization_task");
-        const min_length = block_payload.min_length;
-        const max_length = block_payload.max_length;
-        const top_k = block_payload.top_k;
-        const top_p = block_payload.top_p;
-        const temperature = block_payload.temperature || 1;
-        const repetition_penalty = block_payload.repetition_penalty;
-        const max_time = block_payload.max_time;
-        const args = {
-          model: model2,
-          inputs: input_text,
-          parameters: { max_length, max_time, min_length, repetition_penalty, temperature, top_k, top_p }
-        };
-        const use_cache = block_payload.use_cache || true;
-        const wait_for_model = block_payload.wait_for_model || false;
-        const options = { use_cache, wait_for_model };
-        const summary_output = await inference.summarization(args, options);
-        const summary_text = summary_output.summary_text;
-        return { summary_text, _omni_status: 200 };
+        const results = await summarization(inference, block_payload, model2, options, job_ctx, service);
+        return results;
       }
-      case "image_to_image": {
-        let image_cdns = block_payload.inputs;
-        if (!Array.isArray(image_cdns))
-          image_cdns = [image_cdns];
-        if (!image_cdns)
-          throw new Error("Missing images for image_to_image");
-        const images = [];
-        for (const image_cdn of image_cdns) {
-          const raw_image = await service.app.cdn.get(image_cdn.ticket);
-          const inputs5 = raw_image.data.buffer;
-          const prompt = block_payload.prompt;
-          const strength = block_payload.strength;
-          const negative_prompt = block_payload.negative_prompt;
-          const height = block_payload.height;
-          const width = block_payload.width;
-          const num_inference_steps = block_payload.num_inference_steps;
-          const guidance_scale = block_payload.guidance_scale;
-          const guess_mode = block_payload.guess_mode || false;
-          const args = {
-            model: model2,
-            inputs: inputs5,
-            parameters: {
-              prompt,
-              strength,
-              negative_prompt,
-              height,
-              width,
-              num_inference_steps,
-              guidance_scale,
-              guess_mode
-            }
-          };
-          const options = {};
-          const blob = await inference.imageToImage(args, options);
-          const result_cdn = blobToImageCdn(blob, job_ctx, service);
-          images.push(result_cdn);
-        }
-        return { images, _omni_status: 200 };
+      case "table-question-answering": {
+        const results = await tableQuestionAnswering(inference, block_payload, model2, options, job_ctx, service);
+        return results;
       }
-      case "image_segmentation": {
-        let image_cdn = block_payload.data;
-        if (Array.isArray(image_cdn) && image_cdn.length > 0)
-          image_cdn = image_cdn[0];
-        if (!image_cdn)
-          throw new Error("Missing images for image_to_image");
-        const raw_image = await service.app.cdn.get(image_cdn.ticket);
-        const data = raw_image.data;
-        if (!data)
-          throw new Error("Missing data for image_to_image_task");
-        const args = { model: model2, data };
-        const options = {};
-        const segmentation_outputs = await inference.imageSegmentation(args, options);
-        if (!segmentation_outputs)
-          throw new Error("Missing segmentation_output for image_segmentation_task");
-        const labels = [];
-        const masks = [];
-        const scores = [];
-        for (const segmentation_output of segmentation_outputs) {
-          const label = segmentation_output.label;
-          const mask_b64 = segmentation_output.mask;
-          const score = segmentation_output.score;
-          labels.push(label);
-          masks.push(mask_b64);
-          scores.push(score);
-        }
-        return { labels, masks, scores, _omni_status: 200 };
+      case "tabular-classification": {
+        const results = await tabularClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "tabular-regression": {
+        const results = await tabularRegression(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "text-classification": {
+        const results = await textClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "text-generation": {
+        const results = await textGeneration(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "text-to-image": {
+        const results = await textToImage(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "text-to-speech": {
+        const results = await textToSpeech(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "token-classification": {
+        const results = await tokenClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "translation": {
+        const results = await translation(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "visual-question-answering": {
+        const results = await visualQuestionAnswering(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "zero-shot-classification": {
+        const results = await zeroShotClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      case "zero-shot-image-classification": {
+        const results = await zeroShotImageClassification(inference, block_payload, model2, options, job_ctx, service);
+        return results;
+      }
+      default: {
+        console.warn(`Unknown Huggingface endpoint ${endpoint}`);
+        return null;
       }
     }
   }
@@ -11000,11 +11560,26 @@ async function getModels2(tag, max_entries = 20) {
     console.error("Error processing data:", err.message);
   }
 }
+async function blobToAudioCdn(blob, job_ctx, service) {
+  return await blobToCdn(blob, job_ctx, service, "audio/mpeg");
+}
 async function blobToImageCdn(blob, job_ctx, service) {
-  const array_image = await blob.arrayBuffer();
-  const type2 = blob.type;
-  const buffer = Buffer.from(array_image);
-  const image_cdn = await service.app.cdn.putTemp(
+  return await blobToCdn(blob, job_ctx, service, "image/png");
+}
+async function blobToCdn(blob, job_ctx, service, type2) {
+  let array_data;
+  if (typeof blob === "string") {
+    array_data = Buffer.from(blob, "base64");
+  } else if (blob instanceof Blob) {
+    array_data = await blob.arrayBuffer();
+    type2 = blob.type;
+  } else if (blob instanceof ArrayBuffer) {
+    array_data = blob;
+  } else {
+    throw new Error("Unsupported blob type");
+  }
+  const buffer = Buffer.from(array_data);
+  const cdn = await service.app.cdn.putTemp(
     buffer,
     {
       mimeType: type2,
@@ -11012,7 +11587,7 @@ async function blobToImageCdn(blob, job_ctx, service) {
       jobId: job_ctx?.jobId
     }
   );
-  return image_cdn;
+  return cdn;
 }
 
 // src/services/RestConsumerService/RESTConsumerService.ts

@@ -12,53 +12,44 @@ const NAMESPACE = 'huggingface_utils';
 const OPERATION_ID = "getModels";
 const TITLE = 'Get Huggingface Models';
 const DESCRIPTION = 'Get top Huggingface models for a given tag, sorted in a number of ways.';
-//const SUMMARY = 'Get top Huggingface models for a given tag, sorted in a number of ways.';
 const CATEGORY = 'hugginface';
 
 const HUGGINGFACE_BASE_KEY = "RESERVED_huggingface_models";
 const HUGGINGFACE_TAGS = [
-    'text-to-image',
-    'image-to-text',
-    'image_segmentation',
-    'summarization',
-    'image-to-image',
-    'feature-extraction',
-    'text-to-video',
-    'visual-question-answering',
-    'document-question-answering',
-    'graph-machine-learning',
-    'computer-vision',
-    'depth-estimation',
-    'image-classification',
-    'object-detection',
-    'unconditional-image-generation',
-    'video-classification',
-    'zero-shot-image-classification',
-    'natural-language-processing',
-    'text-classification',
-    'token-classification',
-    'table-question-answering',
-    'question-answering',
-    'zero-shot-classification',
-    'translation',
-    'conversational',
-    'text-generation',
-    'text2text-generation',
-    'fill-mask',
-    'sentence-similarity',
-    'audio',
-    'text-to-speech',
-    'text-to-audio',
-    'automatic-speech-recognition',
-    'audio-to-audio',
-    'audio-classification',
-    'voice-activity-detection',
-    'tabular',
-    'tabular-classification',
-    'tabular-regression',
-    'reinforcement-learning',
-    'robotics'
-];
+    "audio-classification"
+    , "audio-to-audio"
+    , "automatic-speech-recognition"
+    , "conversational"
+    //, "depth-estimation" // <------------------ not implemented
+    , "document-question-answering"
+    , "feature-extraction"
+    , "fill-mask"
+    , "image-classification"
+    , "image-segmentation"
+    , "image-to-image"
+    , "image-to-text"
+    , "object-detection"
+    //, "video-classification" // <------------------ not implemented
+    , "question-answering"
+    , "reinforcement-learning"// <------------------ not implemented
+    , "question-answering"
+    , "sentence-similarity"
+    , "summarization"
+    , "table-question-answering"
+    , "tabular-classification"
+    , "tabular-regression"
+    , "text-classification"
+    , "text-generation"
+    , "text-to-image"
+    , "text-to-speech"
+    //, "text-to-video" // <------------------ not implemented
+    , "token-classification"
+    , "translation"
+    //, "unconditional-image-generation" // <------------------ not implemented
+    , "visual-question-answering"
+    , "zero-shot-classification"
+    , "zero-shot-image-classification"];
+
 
 const huggingface_sorts = ["trending", "likes", "downloads", "date"];
 const inputs = [
@@ -93,7 +84,7 @@ baseComponent.addControl(
 );
 baseComponent.setMacro(OmniComponentMacroTypes.ON_SAVE, onSave);
 baseComponent.setMacro(OmniComponentMacroTypes.EXEC, processPayload);
-export const HuggingfaceGetModelsComponent = baseComponent.toJSON();
+export const HuggingfaceListModelsComponent = baseComponent.toJSON();
 
 async function onSave(node: any, recipe: Workflow, ctx: { app: any, userId: string, inputs: any })
 {
@@ -106,6 +97,7 @@ async function onSave(node: any, recipe: Workflow, ctx: { app: any, userId: stri
     const key = `${HUGGINGFACE_BASE_KEY}_${tag}_${criteria}_${max_entries}`;
     let cached_models = await user_db_get(ctx, key);
 
+    debugger;
     if (!cached_models)
     {
         cached_models = await getModels(tag, max_entries, criteria);
@@ -117,12 +109,12 @@ async function onSave(node: any, recipe: Workflow, ctx: { app: any, userId: stri
     {
         const inputsObject:any = {};
         const model_socket:any = {};
-        model_socket.title = `${tag} model`;
+        model_socket.title = `${tag} Models`;
         model_socket.name = 'model';
         model_socket.type = 'string';
         model_socket.customSocket = 'text';
         model_socket.choices = cached_models;
-        model_socket.defaultValue = cached_models[0];
+        //model_socket.defaultValue = cached_models[0];
 
         inputsObject[model_socket.name] = model_socket;
         node.data['x-omni-dynamicInputs'] = inputsObject;
@@ -132,6 +124,9 @@ async function onSave(node: any, recipe: Workflow, ctx: { app: any, userId: stri
 
 async function processPayload(payload: any, ctx: WorkerContext)
 {
+    debugger;
+    //const dynamic_inputs = ctx.node.data['x-omni-dynamicInputs'];
+    //const models = ctx.node.data['x-omni-dynamicInputs'].model;
     const model = payload.model;
     const tag = payload.tag;
     return { result: { "ok": true }, model, tag };
