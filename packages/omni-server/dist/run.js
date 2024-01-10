@@ -7582,6 +7582,7 @@ var loadServerConfig = (defaultFile) => {
 import { exec } from "child_process";
 import os3 from "os";
 import fs8 from "node:fs";
+import assert3 from "node:assert";
 
 // src/services/APIService.ts
 import { APIService } from "omni-shared";
@@ -15199,7 +15200,7 @@ var WorkflowIntegration = class extends APIIntegration {
     }
     const exportFile = new KVStorage(this, {
       // @ts-ignore
-      dbPath: this.config.tempExportDir ?? this.config.settings.paths?.tmpPath ?? "./data.local/tmp",
+      dbPath: this.config.tempExportDir ?? this.config.settings?.paths?.tmpPath ?? "./data.local/tmp",
       dbName: fileName
     });
     await exportFile.init();
@@ -15293,7 +15294,7 @@ var bootstrap = async () => {
     "--fastifyopt <fastifyopt>",
     "Advanced Fastify options - JSON Object",
     JSON.stringify({ bodyLimit: 32 * 1024 * 1024 })
-  ).option("-p, --port <port>", "Overwrite the listening port", "1688").option("--openBrowser").option("-nx, --noExtensions", "Disable all (non core) extensions").option("-s, --secure <secure>", "Enforce secure connection", false).option("--dburl <url>", "Connection URL to the DB").option("--dbuser <user>", "DB admin user", "admin@local.host").option("--viteProxy <url>", "Specify vite debugger URL").option("--autologin", "Autologin user").option("--uncensored", "Disable NSFW protections").option("--flushLogs", "Flush logs to DB").requiredOption("-l, --listen <addr>", "Sets the interface the host listens on");
+  ).option("-p, --port <port>", "Overwrite the listening port", "1688").option("--openBrowser").option("-nx, --noExtensions", "Disable all (non core) extensions").option("-s, --secure <secure>", "Enforce secure connection", false).option("--dburl <url>", "Connection URL to the DB").option("--dbuser <user>", "DB admin user", "admin@local.host").option("--viteProxy <url>", "Specify vite debugger URL").option("--autologin", "Autologin user").option("--uncensored", "Disable NSFW protections").option("--flushLogs", "Flush logs to DB").option("--noupdate", "Disable update checks").option("--createUser <userpass>", "Create a user with the given username and password in the format username:password").requiredOption("-l, --listen <addr>", "Sets the interface the host listens on");
   program.action((options) => {
     omnilog.setCustomLevel("emittery", options.emittery ? OmniLogLevels.verbose : OmniLogLevels.silent);
     omnilog.level = options.verbose ? OmniLogLevels.verbose : Number.parseInt(options.loglevel);
@@ -15453,6 +15454,9 @@ var boot = async (options) => {
   await server.start();
   omnilog.status_success(`Server has started and is ready to accept connections on ${listenOn.origin}`);
   omnilog.status_success("Ctrl-C to quit.");
+  if (await headlesscommands(server, options)) {
+    process.exit(0);
+  }
   if (options.openBrowser) {
     switch (os3.platform()) {
       case "win32":
@@ -15463,6 +15467,24 @@ var boot = async (options) => {
         break;
     }
   }
+};
+var headlesscommands = async (server, options) => {
+  if (options.createUser) {
+    omnilog.status_start("--- Running Command - CreateUser -----");
+    const authService = server.integrations.get("auth");
+    const tokens = options.createUser.split(":");
+    assert3(tokens.length === 2, "Invalid username:password format. Expecting format <username:password>");
+    omnilog.status_start(`Creating ${tokens[0]}`);
+    const existUser = await authService.getUserByUsername(tokens[0]);
+    if (existUser !== null) {
+      omnilog.status_success(`User ${tokens[0]} already exists`);
+      return true;
+    }
+    const user = await authService.handleRegister(tokens[0], tokens[1]);
+    omnilog.status_success(`Created ${user.username} with ID ${user.id}`);
+    return true;
+  }
+  return false;
 };
 bootstrap().catch((err) => {
   omnilog.trace();

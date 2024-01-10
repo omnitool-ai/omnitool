@@ -15,6 +15,7 @@ import { loadServerConfig, type IServerConfig } from './loadConfig.js';
 import { exec } from 'child_process';
 import os from 'os';
 import fs from 'node:fs';
+import assert from 'node:assert';
 
 // Services
 import { APIServerService, type IAPIServerServiceConfig } from './services/APIService.js';
@@ -108,6 +109,8 @@ const bootstrap = async (): Promise<void> => {
     .option('--autologin', 'Autologin user')
     .option('--uncensored', 'Disable NSFW protections')
     .option('--flushLogs', 'Flush logs to DB')
+    .option('--noupdate', 'Disable update checks')
+    .option('--createUser <userpass>', 'Create a user with the given username and password in the format username:password')
     .requiredOption('-l, --listen <addr>', 'Sets the interface the host listens on');
 
   program.action((options) => {
@@ -321,6 +324,11 @@ const boot = async (options: OptionValues) => {
   omnilog.status_success(`Server has started and is ready to accept connections on ${listenOn.origin}`);
   omnilog.status_success('Ctrl-C to quit.');
 
+  // headless commands mode
+  if (await headlesscommands(server, options)) {
+    process.exit(0);    
+  }
+
   // open default browser
   if (options.openBrowser) {
     switch (os.platform()) {
@@ -333,6 +341,25 @@ const boot = async (options: OptionValues) => {
     }
   }
 };
+
+const headlesscommands = async (server:Server, options: OptionValues) => {
+  if (options.createUser) {
+    omnilog.status_start('--- Running Command - CreateUser -----');
+    const authService = server.integrations.get('auth') as AuthIntegration;
+    const tokens = options.createUser.split(':');
+    assert(tokens.length === 2, 'Invalid username:password format. Expecting format <username:password>');
+    omnilog.status_start(`Creating ${tokens[0]}`);
+    const existUser = await authService.getUserByUsername(tokens[0]);
+    if (existUser !== null) {
+      omnilog.status_success(`User ${tokens[0]} already exists`);
+      return true;
+    }
+    const user = await authService.handleRegister(tokens[0], tokens[1]);
+    omnilog.status_success(`Created ${user.username} with ID ${user.id}`);
+    return true;
+  }
+  return false;
+}
 
 bootstrap().catch((err) => {
   omnilog.trace();

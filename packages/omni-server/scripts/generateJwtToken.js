@@ -25,14 +25,26 @@ const script = {
         //     throw new Error('Action not permitted')
         //   }
         // }
-      const [action, subject, /*workflowId*/, expiresIn] = payload
+      const [action, subject, expiresIn, ...id] = payload
+      let conditions
+      if (id) {
+        if (Array.isArray(id)) {
+          conditions = {
+            id: {
+              $in: id
+            }
+          }
+        } else {
+          conditions = {
+            id
+          }
+        }
+      }
       const scopes = [
         {
             action,
             subject,
-            //conditions: {
-            //  id: workflowId
-            //}
+            conditions
         }
       ]
 

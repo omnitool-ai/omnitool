@@ -1,7 +1,7 @@
 {
   "name": "omni-sockets",
   "packageManager": "yarn@4.0.2",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "./lib/index.js",

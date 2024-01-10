@@ -94,6 +94,7 @@ Currently supported (v. 0.6.0) :
 
 Currently supported Local APIs:
   * LM-studio
+  * Ollama
   * Oobabooga Text Generation UI
   * Automatic1111/SD-Next
   * Paperless-ng

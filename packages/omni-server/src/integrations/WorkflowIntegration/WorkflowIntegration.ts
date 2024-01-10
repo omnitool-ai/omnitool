@@ -18,7 +18,6 @@ import {
   type IntegrationsManager,
   type User
 } from 'omni-shared';
-import * as Rete from 'rete';
 import { v4 as uuidv4 } from 'uuid';
 import { OMNITOOL_DOCUMENT_TYPES, type DBService, type QueryResult } from '../../services/DBService.js';
 import { APIIntegration, type IAPIIntegrationConfig } from '../APIIntegration.js';
@@ -402,7 +401,7 @@ class WorkflowIntegration extends APIIntegration {
     const exportFile = new KVStorage(this, {
 
       // @ts-ignore
-      dbPath: this.config.tempExportDir ?? this.config.settings.paths?.tmpPath ?? './data.local/tmp',
+      dbPath: this.config.tempExportDir ?? this.config.settings?.paths?.tmpPath ?? './data.local/tmp',
       dbName: fileName
     });
     await exportFile.init();

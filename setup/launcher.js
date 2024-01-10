@@ -270,7 +270,15 @@ async function run() {
         break;
       case NodeProcessEnv.production:
         server_entry = 'dist/run.js';
-        await check_for_updates();
+        // Only check for updates if --noupdate is not present in args
+        if (!args.includes('--noupdate')) 
+        {
+          await check_for_updates();
+        }
+        else
+        {
+          console.log('Skipping update check...');
+        }
         ensure_wasm();
         run_production([]);
         break;

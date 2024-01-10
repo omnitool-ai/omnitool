@@ -1,6 +1,6 @@
 {
   "name": "omnitool",
-  "version": "0.6.3",
+  "version": "1.0.0",
   "packageManager": "yarn@4.0.2",
   "private": true,
   "workspaces": [
