@@ -69,7 +69,7 @@ Omnitool is **highly extensible and interoperable**. Most OpenAPI3 based service
 ### Comprehensive AI Provider Support
 * Seamlessly provides access to 1000s of AI model and utility APIs from an rapidly growing list leading AI providers and aggregators, exposing them all via interoperable blocks.
   
-Currently supported (v. 0.6.0) :
+Currently supported:
    * [Civitai.com](https://civitai.com) (Model metadata access)
    * [Deepl.com](https://deepl.com) (Document translation)
    * [ElevenLabs.io](https://elevenlabs.io) (Multilingual voice generation)

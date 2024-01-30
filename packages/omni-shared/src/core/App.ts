@@ -220,7 +220,7 @@ abstract class App implements IApp {
   }
 
   stringify(obj: any) {
-    return stringify(obj, null, 2);
+    return stringify(obj);
   }
 
   parse(str: string) {

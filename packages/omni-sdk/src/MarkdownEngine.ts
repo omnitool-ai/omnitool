@@ -99,7 +99,7 @@ class MarkdownEngine {
 
     const md = marked.parse(modifiedContent, { renderer: mdRenderer });
 
-    let { content, data } = await this.preprocessData(md, tokens);
+    let { content, data } = await this.preprocessData(<string>md, tokens);
     content = this.injectTokens(content, tokens);
 
     const replacedContent = this.handlebars.compile(content)(Object.assign({}, data, context));

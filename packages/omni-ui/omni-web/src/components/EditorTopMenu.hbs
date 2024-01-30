@@ -53,6 +53,29 @@
                 </svg>
             </button>
 
+            <!-- Save Recipe Button -->
+            <button x-tooltip="Save Recipe" :disabled="!workbench.canSave"
+                x-show="workbench.canSave"
+                @click="navigationMenuClose(); workbench.forceSave()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 16 16" fill="none"
+                            :class="workbench.canSave ? '' : 'unavailable'">
+                            <path
+                                d="M10.7599 15.36V10.76H5.23989V15.36M13.5199 15.36H2.47989C1.46369 15.36 0.639893 14.5362 0.639893 13.52V2.48001C0.639893 1.46381 1.46369 0.640015 2.47989 0.640015H9.99776C10.4857 0.640015 10.9537 0.833868 11.2988 1.17894L14.821 4.70109C15.166 5.04616 15.3599 5.51417 15.3599 6.00217V13.52C15.3599 14.5362 14.5361 15.36 13.5199 15.36Z"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+            </button>
+            
+            <!-- Add Block Button -->
+            <button x-tooltip="Add Block" :disabled="!workbench.canExecute"
+                x-show="workbench.canExecute"
+                @click="workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Block'}}) : null">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 17 16" fill="none">
+                    <path
+                        d="M13.5683 7.55356L13.5683 3.52977C13.5683 2.13263 12.4429 1.00002 11.0547 1.00001L3.51373 1C2.12547 0.999997 1.00006 2.13261 1.00006 3.52975L1 10.9107C0.999997 12.3078 2.1254 13.4405 3.51366 13.4405H7.71039M10.8033 13.4405H13.5683M13.5683 13.4405H16.3333M13.5683 13.4405V10.6577M13.5683 13.4405V16.7291"
+                        stroke="white" stroke-width="1.28" stroke-linecap="round" />
+                </svg>
+            </button>
+
             <div class="editorTopMenuItem">
                 <button @mouseover="navigationMenuOpen=true; navigationMenuReposition($el); navigationMenu='assets'"
                     @mouseleave="navigationMenuLeave()" class="transition-colors group">
@@ -60,7 +83,7 @@
                         <path d="M8.32739 3V13M3.32739 8H13.3274" stroke="white" stroke-width="1.6"
                             stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                    <span>Assets</span>
+                    <span>New</span>
                     <svg :class="{ '-rotate-180' : navigationMenuOpen==true && navigationMenu == 'assets' }"
                         class="relative top-[1px] ml-1 h-3 w-3 ease-out duration-300" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -72,12 +95,11 @@
             <div class="editorTopMenuItem">
                 <button @mouseover="navigationMenuOpen=true; navigationMenuReposition($el); navigationMenu='save'"
                     @mouseleave="navigationMenuLeave()" class="transition-colors group">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
-                        <path
-                            d="M11.3373 15.36V10.76H5.81728V15.36M14.0973 15.36H3.05729C2.04108 15.36 1.21729 14.5362 1.21729 13.52V2.48001C1.21729 1.46381 2.04108 0.640015 3.05729 0.640015H10.5752C11.0631 0.640015 11.5311 0.833868 11.8762 1.17894L15.3983 4.70109C15.7434 5.04616 15.9373 5.51417 15.9373 6.00217V13.52C15.9373 14.5362 15.1135 15.36 14.0973 15.36Z"
-                            stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <span>Save</span>
+                    <svg class="w-5 h-4" viewBox="0 0 24 24" fill="none" stroke="#F5F5F5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                    <span>Modify</span>
                     <svg :class="{ '-rotate-180' : navigationMenuOpen==true && navigationMenu == 'save' }"
                         class="relative top-[1px] ml-1 h-3 w-3 ease-out duration-300" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -123,38 +145,17 @@
             @mouseover="navigationMenuClearCloseTimeout()" @mouseleave="navigationMenuLeave()"
             class="absolute top-0 duration-200 ease-out -translate-x-1/2 translate-y-11" x-cloak>
             <div class="editorTopMenuDropdown" x-show="navigationMenu == 'assets'">
-                <div class="editorTopMenuDropdownItem"
-                    @click="navigationMenuClose(); workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Blocks'}}) : null">
-                    <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="18" viewBox="0 0 17 18" fill="none">
-                            <path
-                                d="M13.5683 7.55356L13.5683 3.52977C13.5683 2.13263 12.4429 1.00002 11.0547 1.00001L3.51373 1C2.12547 0.999997 1.00006 2.13261 1.00006 3.52975L1 10.9107C0.999997 12.3078 2.1254 13.4405 3.51366 13.4405H7.71039M10.8033 13.4405H13.5683M13.5683 13.4405H16.3333M13.5683 13.4405V10.6577M13.5683 13.4405V16.7291"
-                                stroke="white" stroke-width="1.28" stroke-linecap="round" />
-                        </svg>
-                        <span :class="workbench.canEdit ? '' : 'unavailable text-left'">Add Blocks</span>
-                    </div>
-                    <span class="shortcut text-right">Ctrl+B</span>
-                </div>
                 <div class="editorTopMenuDropdownItem" @click="navigationMenuClose();workbench.newRecipe()">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 14 17" fill="none">
-                            <path
-                                d="M7.52368 0.666626H0.666504V16H12.6666V5.77776M7.52368 0.666626H8.38082L12.6666 4.9259V5.77776M7.52368 0.666626V4.07405C7.52368 4.9259 8.38082 5.77776 9.23797 5.77776H12.6666"
-                                stroke="white" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <span class="text-left">New Recipe</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-40-64a8,8,0,0,1-8,8H136v16a8,8,0,0,1-16,0V160H104a8,8,0,0,1,0-16h16V128a8,8,0,0,1,16,0v16h16A8,8,0,0,1,160,152Z"></path></svg>
+                        <span class="text-left">Create Recipe</span>
                     </div>
                     <span class="shortcut text-right">Ctrl+K</span>
                 </div>
                 <div class="editorTopMenuDropdownItem"
-                    @click="navigationMenuClose(); workbench.showExtension('omni-core-collectionmanager', {type:'recipe'},undefined, {winbox: {modal: true, title: 'Load Recipe'}})">
+                    @click="navigationMenuClose(); workbench.showExtension('omni-core-collectionmanager', {type:'recipe', recipeOwner:'user'},undefined, {winbox: {modal: true, title: 'Load Recipe'}})">
                     <div class="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
-                            <path
-                                d="M6.14545 5.61956V9.86502C6.14811 10.0538 6.25713 10.2372 6.42465 10.3236C6.58951 10.4099 6.80223 10.3964 6.95645 10.2885L8.37635 9.27702L9.79626 10.2885C9.94782 10.3964 10.1605 10.4099 10.3281 10.3236C10.4929 10.2372 10.6046 10.0538 10.6072 9.86502V5.61956M12.3728 1.07739H3.05806C1.93863 1.07739 1 2.02952 1 3.16506V14.9866C1 15.9415 1.77377 16.7264 2.71505 16.7264H12.3728C12.6414 16.7264 12.886 16.4782 12.886 16.2058V5.61956H2.9065C2.9065 5.61956 0.936184 5.37141 1.05584 3.11921C1.15688 1.22574 3.05806 1.08009 3.05806 1.08009M11.8251 1.07739C11.8251 1.07739 10.7296 1.99985 10.7296 3.21092C10.7296 4.42198 11.8251 5.34444 11.8251 5.34444"
-                                stroke="white" stroke-width="1.28" stroke-miterlimit="133.333" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M224,48H160a40,40,0,0,0-32,16A40,40,0,0,0,96,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H96a24,24,0,0,1,24,24,8,8,0,0,0,16,0,24,24,0,0,1,24-24h64a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48ZM96,192H32V64H96a24,24,0,0,1,24,24V200A39.81,39.81,0,0,0,96,192Zm128,0H160a39.81,39.81,0,0,0-24,8V88a24,24,0,0,1,24-24h64ZM160,88h40a8,8,0,0,1,0,16H160a8,8,0,0,1,0-16Zm48,40a8,8,0,0,1-8,8H160a8,8,0,0,1,0-16h40A8,8,0,0,1,208,128Zm0,32a8,8,0,0,1-8,8H160a8,8,0,0,1,0-16h40A8,8,0,0,1,208,160Z"></path></svg>
                         <span class="text-left">Load Recipe</span>
                     </div>
                     <span class="shortcut text-right">Ctrl+R</span>
@@ -167,18 +168,32 @@
                     @change="navigationMenuClose(); workbench.onLoadRecipeFromFileChange($event)"
                     >
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
-                                <path
-                                    d="M6.14545 5.61956V9.86502C6.14811 10.0538 6.25713 10.2372 6.42465 10.3236C6.58951 10.4099 6.80223 10.3964 6.95645 10.2885L8.37635 9.27702L9.79626 10.2885C9.94782 10.3964 10.1605 10.4099 10.3281 10.3236C10.4929 10.2372 10.6046 10.0538 10.6072 9.86502V5.61956M12.3728 1.07739H3.05806C1.93863 1.07739 1 2.02952 1 3.16506V14.9866C1 15.9415 1.77377 16.7264 2.71505 16.7264H12.3728C12.6414 16.7264 12.886 16.4782 12.886 16.2058V5.61956H2.9065C2.9065 5.61956 0.936184 5.37141 1.05584 3.11921C1.15688 1.22574 3.05806 1.08009 3.05806 1.08009M11.8251 1.07739C11.8251 1.07739 10.7296 1.99985 10.7296 3.21092C10.7296 4.42198 11.8251 5.34444 11.8251 5.34444"
-                                    stroke="white" stroke-width="1.28" stroke-miterlimit="133.333" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M208,24H72A32,32,0,0,0,40,56V224a8,8,0,0,0,8,8H192a8,8,0,0,0,0-16H56a16,16,0,0,1,16-16H208a8,8,0,0,0,8-8V32A8,8,0,0,0,208,24ZM120,40h48v72L148.79,97.6a8,8,0,0,0-9.6,0L120,112Zm80,144H72a31.82,31.82,0,0,0-16,4.29V56A16,16,0,0,1,72,40h32v88a8,8,0,0,0,12.8,6.4L144,114l27.21,20.4A8,8,0,0,0,176,136a8,8,0,0,0,8-8V40h16Z"></path></svg>
                             <span class="text-left">Load Recipe From File</span>
                         </div>
                     </input>
                 </label>
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.showExtension('omni-core-collectionmanager', {type:'recipe', recipeOwner:'public'},undefined, {winbox: {modal: true, title: 'Discover Recipes'}})">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm6.62,31.47,46.82-10.05,3.34,15.9L146,97.53Zm6.64,31.57,46.82-10.06,13.3,63.24-46.82,10.06ZM216,197.94l-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm0,32h48v96H56Zm48,128H56V192h48v16Z"></path></svg>
+                        <span class="text-left">Discover Recipes</span>
+                    </div>
+                </div>
             </div>
             <div class="editorTopMenuDropdown" x-show="navigationMenu == 'save'">
+                <div class="editorTopMenuDropdownItem"
+                    @click="navigationMenuClose(); workbench.canEdit ? workbench.showExtension('omni-core-collectionmanager', {type:'block'}, undefined, {winbox: {title: 'Add Block'}}) : null">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 17 18" fill="none">
+                            <path
+                                d="M13.5683 7.55356L13.5683 3.52977C13.5683 2.13263 12.4429 1.00002 11.0547 1.00001L3.51373 1C2.12547 0.999997 1.00006 2.13261 1.00006 3.52975L1 10.9107C0.999997 12.3078 2.1254 13.4405 3.51366 13.4405H7.71039M10.8033 13.4405H13.5683M13.5683 13.4405H16.3333M13.5683 13.4405V10.6577M13.5683 13.4405V16.7291"
+                                stroke="white" stroke-width="1.28" stroke-linecap="round" />
+                        </svg>
+                        <span :class="workbench.canEdit ? '' : 'unavailable text-left'">Add&nbsp;Block</span>
+                    </div>
+                    <span class="shortcut text-right">Ctrl+B</span>
+                </div>
                 <div class="editorTopMenuDropdownItem"
                     @click="navigationMenuClose(); workbench.forceSave()">
                     <div class="flex items-center">

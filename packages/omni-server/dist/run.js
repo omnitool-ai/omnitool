@@ -15145,7 +15145,12 @@ var WorkflowIntegration = class extends APIIntegration {
     return collection;
   }
   async getWorkflowsForSessionUser(ctx, docsPerPage, page, filter = "") {
-    const userIds = [ctx.user.id, "-----public-----"];
+    const recipeOwner = ctx.user.recipeOwner;
+    const userIds = [];
+    if (recipeOwner == void 0 || recipeOwner == "user")
+      userIds.push(ctx.user.id);
+    if (recipeOwner == void 0 || recipeOwner == "public")
+      userIds.push("-----public-----");
     const queryFilter = /* @__PURE__ */ new Map();
     if (filter !== "") {
       queryFilter.set("id", filter);

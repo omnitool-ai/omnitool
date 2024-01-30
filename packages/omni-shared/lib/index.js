@@ -477,7 +477,7 @@ var App = class {
     this.events.on(`${id}.${event}`, handler);
   }
   stringify(obj) {
-    return stringify(obj, null, 2);
+    return stringify(obj);
   }
   parse(str) {
     return parse(str);

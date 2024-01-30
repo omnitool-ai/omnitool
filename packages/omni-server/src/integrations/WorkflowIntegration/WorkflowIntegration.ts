@@ -330,7 +330,10 @@ class WorkflowIntegration extends APIIntegration {
     filter: string = ''
   ): Promise<IPaginatedObject> {
     // Build list of owner IDs to search for.
-    const userIds: string[] = [ctx.user.id, '-----public-----'];
+    const recipeOwner = ctx.user.recipeOwner;
+    const userIds: string[] = [];
+    if (recipeOwner == undefined || recipeOwner == "user") userIds.push(ctx.user.id);
+    if (recipeOwner == undefined || recipeOwner == "public") userIds.push('-----public-----');
 
     // Create filters
     const queryFilter = new Map<string, string>();
