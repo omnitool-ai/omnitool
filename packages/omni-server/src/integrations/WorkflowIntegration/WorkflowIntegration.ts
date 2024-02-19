@@ -191,6 +191,34 @@ class WorkflowIntegration extends APIIntegration {
     }
   }
 
+  // Saves a workflow if it does not exist
+  async saveWorkflowIfNotExists(workflow: Workflow, user: User | string): Promise<Workflow> {
+    const userId: string = typeof user === 'object' ? user.id : user;
+    const realUser = typeof user === 'object' ? user : (await this.app.services.get('db').get(`user:${userId}`)) as User;
+    if (realUser)
+    {
+      const existingWorkflow = await this.getRecipe(workflow.id, userId, true);
+      if (existingWorkflow != null) {
+        return existingWorkflow;
+      }
+      else
+      {
+        return await this.createWorkflow(
+          {
+            meta: workflow.meta,
+            rete: workflow.rete
+          },
+          realUser
+        );
+      }
+    }
+    else
+    {
+      throw new Error(`User ${userId} not found`)
+    }
+  }
+
+
   // Updates an existing workflow (but does not change the owner!)
   async updateWorkflow(
     workflowId: string,
@@ -428,6 +456,10 @@ class WorkflowIntegration extends APIIntegration {
             if (resource) {
               exportFile.set(n.data[inputKey], resource.data);
             }
+            else
+            {
+              console.error(`Resource ${n.data[inputKey]} not found`)
+            }
           }
         }
       }
@@ -435,7 +467,7 @@ class WorkflowIntegration extends APIIntegration {
 
     exportFile.set(`wf:${workflow.id}`, workflow);
     await exportFile.stop();
-
+    
     const exportFilePath = path.join(exportFile.config.dbPath, fileName);
     const fileBuff = readFileSync(exportFilePath);
     // Delete the temporary file
@@ -456,21 +488,25 @@ class WorkflowIntegration extends APIIntegration {
     });
 
     await kv.initFromBuffer(resource.data);
-
+    
     // Get the packaged CDN files from KV storage
-    // const newFidMap = new Map<string, string>();
-    // const cdnEntries = kv.getAny('fid://');
-    // for (const kvPair of cdnEntries) {
-    //   // Save all the files in the CDN storage
-    //   //@ts-ignore
-    //   const cdnResource = await this.app.cdn.put(kvPair.value, {userId})
-    //   newFidMap.set(kvPair.key.replace('fid://',''), cdnResource.fid);      
-    // }
+    const newFidMap = new Map<string, any>();
+    const cdnEntries = kv.getAny('fid://');
+    for (const kvPair of cdnEntries) {
+       // Save all the files in the CDN storage
+       //@ts-ignore
+       const cdnResource = await this.app.cdn.put(kvPair.value, {userId})
+       const key = kvPair.key.replace('fid://','');
+       newFidMap.set(key, cdnResource);     
+       console.log(`found in kv storate: key = ${key} and stored its cdnResource: ${JSON.stringify(cdnResource)}` );
+    }
 
     // Get the workflow from the KV storage
     const kvEntries = kv.getAny('wf:');
     if (!kvEntries || kvEntries.length === 0) {
-      throw new Error('No workflows to be imported')
+      const error_message = 'No workflows to be imported'
+      console.error(error_message);
+      throw new Error(error_message)
     }
 
     // Iterate over all workflows
@@ -480,35 +516,57 @@ class WorkflowIntegration extends APIIntegration {
 
       const blockNames = Array.from(new Set(Object.values(workflow.rete.nodes).map((n: any) => n.name)));
       //@ts-ignore
-      const blocks = (await this.app.blocks.getInstances(blockNames, userId, undefined))?.blocks;
+      const blocks = (await this.app.blocks.getInstances(blockNames, userId, 'missing_block'))?.blocks;
 
+      let error_list = "";
       // For all the nodes in the workflow, check if there are any CDN sockets
       for (const node of Object.values(workflow.rete.nodes)) {
         // @ts-ignore
         const block = blocks.find((b:any) => b.name === node.name);
         if (!block) {
-          throw new Error(`Block ${node.name} not found`)
+          const error_message = `Block ${node.name} not found`
+          console.error(error_message);
+          error_list += error_message + "\n"
+          //throw new Error(`Block ${node.name} not found`)
         }
+        else {
+          // Iterate over all the inputs of the block
+          for (const inputKey of Object.keys(block.inputs)) {
+            // Check if the input is a CDN socket
+            if (['image', 'file', 'audio', 'video', 'document'].includes(block.inputs[inputKey].customSocket)) {
+              // Check if the node data is an fid
+              if (node.data[inputKey] && typeof node.data[inputKey] === 'string' && (node.data[inputKey] as string).startsWith('fid:')) {
 
-        // Iterate over all the inputs of the block
-        for (const inputKey of Object.keys(block.inputs)) {
-          // Check if the input is a CDN socket
-          if (['image', 'file', 'audio', 'video', 'document'].includes(block.inputs[inputKey].customSocket)) {
-            // Check if the node data is an fid
-            if (node.data[inputKey] && typeof node.data[inputKey] === 'string' && (node.data[inputKey] as string).startsWith('fid:')) {
-              // Check if the fid exists in the KV storage
-              const keyValue = kv.get(node.data[inputKey] as string);
-              if (keyValue !== undefined) {
-                // @ts-ignore
-                const resource = await this.app.cdn.put(node.data[inputKey].replace('fid://', ''), { userId });
-                node.data[inputKey] = `fid://${resource.fid}`;
+                // Check if the fid exists in the KV storage
+                const key = node.data[inputKey].replace('fid://', '') as string;
+                const cdnResource = newFidMap.get(key);
+                const newFid = cdnResource.fid;
+                if (newFid) 
+                {
+                  // @ts-ignore
+                  node.data[inputKey] = `fid://${newFid}`;
+                  if (node.data.preview) 
+                  {
+                    node.data.preview = [cdnResource];
+                  }
+                }
+                else
+                { 
+                  const error  = `Resource key ${key} not found in kv ${JSON.stringify(newFidMap)}\n`;
+                  error_list += error
+                  console.error(error);
+                }
               }
             }
           }
         }
       }
-
-      result.push(workflow);
+      if (error_list !== "") {
+        console.error(error_list);
+      }
+      
+      const saved_workflow = await this.saveWorkflowIfNotExists(workflow, userId);
+      result.push(saved_workflow);
     }
 
     return result

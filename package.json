@@ -1,7 +1,7 @@
 {
   "name": "omnitool",
-  "version": "1.0.1",
-  "packageManager": "yarn@4.0.2",
+  "version": "1.0.2",
+  "packageManager": "yarn@4.1.0",
   "private": true,
   "workspaces": [
     "packages/omni-sdk",
@@ -11,8 +11,7 @@
     "packages/omni-server"
   ],
   "engines": {
-    "node": ">=18.18.0",
-    "pocketbase": "0.16.6"
+    "node": ">=18.18.0"
   },
   "scripts": {
     "build:prod": "yarn workspace omni-shared build:prod && yarn workspace omni-sdk build:prod && yarn workspace omni-sockets build:prod && yarn workspace omni-client-services build:prod && yarn workspace omni-web build:prod && yarn workspace omni-server build:prod",
@@ -30,25 +29,7 @@
   },
   "dependenciesBin": {
     "updates_base_url": "https://github.com/omnitool-ai/omnitool/releases/download/latest",
-    "root_dir": ".local.bin",
-    "pocketbase": {
-      "admin": "admin@local.host",
-      "base_url": "https://github.com/pocketbase/pocketbase/releases/download/v##version##",
-      "zipfile": {
-        "win32": {
-          "x64": "pocketbase_##version##_windows_amd64.zip",
-          "arm64": "pocketbase_##version##_windows_arm64.zip"
-        },
-        "darwin": {
-          "x64": "pocketbase_##version##_darwin_amd64.zip",
-          "arm64": "pocketbase_##version##_darwin_arm64.zip"
-        },
-        "linux": {
-          "x64": "pocketbase_##version##_linux_amd64.zip",
-          "arm64": "pocketbase_##version##_linux_arm64.zip"
-        }
-      }
-    }
+    "root_dir": ".local.bin"
   },
   "dependencies": {
     "@ungap/structured-clone": "^1.2.0",

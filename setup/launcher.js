@@ -76,31 +76,6 @@ function start_server(implicit_args) {
   });
 }
 
-function verifyConfig() {
-  // check if dep version is defined
-  if (packagejson.engines['pocketbase'] === undefined) {
-    console.error(`Missing version definition for pocketbase DB in package.json engines`);
-    return false;
-  }
-  // check if dep is defined
-  if (depjson['pocketbase'] === undefined) {
-    console.error(`Unable to find installer definition for pocketbase DB`);
-    return false;
-  }
-  // check if there's an installer for the platform
-  try {
-    let zippath = depjson['pocketbase'].zipfile[platform][arch];
-    if (zippath === undefined) {
-      console.error(`Unable to find installer download URL for pocketbase DB`);
-      return false;
-    }
-  } catch (e) {
-    console.error(`Unable to find pocketbase installer definition for [${platform}][${arch}]`);
-    return false;
-  }
-  return true;
-}
-
 async function migrate_pocketbase() {
   await migrate_from_pocket(pocketbaseInstallPath);
 }
@@ -226,10 +201,6 @@ async function ensure_wasm() {
       path.join(wasmDir, 'tfjs-backend-wasm-simd.wasm')
     );
   }
-}
-
-if (!verifyConfig()) {
-  process.exit(1);
 }
 
 process.on('exit', (code) => {

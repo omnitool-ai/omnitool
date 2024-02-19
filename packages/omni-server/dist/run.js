@@ -181,7 +181,7 @@ var KVStorage = class {
       if (opts.view) {
         source = opts.view;
       }
-      let sql = "SELECT key, value, valueType, expiry, seq, tags FROM " + source + " WHERE key LIKE ? AND deleted = 0";
+      let sql = "SELECT key, value, valueType, blob, expiry, seq, tags FROM " + source + " WHERE key LIKE ? AND deleted = 0";
       const args = [partialKeyMatchPattern];
       if (opts.expiryType && ["permanent", "temporary"].includes(opts.expiryType)) {
         if (opts.expiryType === "permanent") {
@@ -247,7 +247,8 @@ var KVStorage = class {
         seq: row.seq,
         expiry: row.expiry && row.expiry < 9007199254740991 ? row.expiry : void 0,
         valueType: row.valueType,
-        tags: row.tags?.split(",").filter((tag) => tag.trim()) ?? []
+        tags: row.tags?.split(",").filter((tag) => tag.trim()) ?? [],
+        blob: row.blob
       }));
     } catch (error) {
       this.parent?.error("Error occurred while getting values:", error);
@@ -2885,17 +2886,21 @@ block3.addOutput(block3.createOutput("Red", "number").toOmniIO());
 block3.addOutput(block3.createOutput("Green", "number").toOmniIO());
 block3.addOutput(block3.createOutput("Blue", "number").toOmniIO());
 block3.setMacro(OmniComponentMacroTypes16.EXEC, async (payload, ctx) => {
-  const colorName = payload["Color Name"];
-  const [red, green, blue] = convert.keyword.rgb(colorName);
-  const hexString = convert.rgb.hex(red, green, blue);
-  const rgbString = `rgb(${red},${green},${blue})`;
-  return {
-    "Hex String": `#${hexString}`,
-    "RGB String": rgbString,
-    Red: red,
-    Green: green,
-    Blue: blue
-  };
+  try {
+    const colorName = payload["Color Name"];
+    const [red, green, blue] = convert.keyword.rgb(colorName);
+    const hexString = convert.rgb.hex(red, green, blue);
+    const rgbString = `rgb(${red},${green},${blue})`;
+    return {
+      "Hex String": `#${hexString}`,
+      "RGB String": rgbString,
+      Red: red,
+      Green: green,
+      Blue: blue
+    };
+  } catch (e) {
+    return {};
+  }
 });
 var NameToRgbBlock = block3.toJSON();
 var name_to_rgb_default = NameToRgbBlock;
@@ -15055,6 +15060,27 @@ var WorkflowIntegration = class extends APIIntegration {
       return clonedWorkflow;
     }
   }
+  // Saves a workflow if it does not exist
+  async saveWorkflowIfNotExists(workflow, user) {
+    const userId = typeof user === "object" ? user.id : user;
+    const realUser = typeof user === "object" ? user : await this.app.services.get("db").get(`user:${userId}`);
+    if (realUser) {
+      const existingWorkflow = await this.getRecipe(workflow.id, userId, true);
+      if (existingWorkflow != null) {
+        return existingWorkflow;
+      } else {
+        return await this.createWorkflow(
+          {
+            meta: workflow.meta,
+            rete: workflow.rete
+          },
+          realUser
+        );
+      }
+    } else {
+      throw new Error(`User ${userId} not found`);
+    }
+  }
   // Updates an existing workflow (but does not change the owner!)
   async updateWorkflow(workflowId, update, user, opts) {
     const userId = typeof user === "object" ? user.id : user;
@@ -15221,6 +15247,8 @@ var WorkflowIntegration = class extends APIIntegration {
             omnilog10.debug("Resource", resource.data ? resource.data.length : "null");
             if (resource) {
               exportFile.set(n.data[inputKey], resource.data);
+            } else {
+              console.error(`Resource ${n.data[inputKey]} not found`);
             }
           }
         }
@@ -15240,33 +15268,60 @@ var WorkflowIntegration = class extends APIIntegration {
       dbPath: this.config.tempExportDir ?? "./data.local/tmp"
     });
     await kv.initFromBuffer(resource.data);
+    const newFidMap = /* @__PURE__ */ new Map();
+    const cdnEntries = kv.getAny("fid://");
+    for (const kvPair of cdnEntries) {
+      const cdnResource = await this.app.cdn.put(kvPair.value, { userId });
+      const key = kvPair.key.replace("fid://", "");
+      newFidMap.set(key, cdnResource);
+      console.log(`found in kv storate: key = ${key} and stored its cdnResource: ${JSON.stringify(cdnResource)}`);
+    }
     const kvEntries = kv.getAny("wf:");
     if (!kvEntries || kvEntries.length === 0) {
-      throw new Error("No workflows to be imported");
+      const error_message = "No workflows to be imported";
+      console.error(error_message);
+      throw new Error(error_message);
     }
     const result = [];
     for (const kvPair of kvEntries) {
       const workflow = kvPair.value;
       const blockNames = Array.from(new Set(Object.values(workflow.rete.nodes).map((n) => n.name)));
-      const blocks2 = (await this.app.blocks.getInstances(blockNames, userId, void 0))?.blocks;
+      const blocks2 = (await this.app.blocks.getInstances(blockNames, userId, "missing_block"))?.blocks;
+      let error_list = "";
       for (const node of Object.values(workflow.rete.nodes)) {
         const block7 = blocks2.find((b) => b.name === node.name);
         if (!block7) {
-          throw new Error(`Block ${node.name} not found`);
-        }
-        for (const inputKey of Object.keys(block7.inputs)) {
-          if (["image", "file", "audio", "video", "document"].includes(block7.inputs[inputKey].customSocket)) {
-            if (node.data[inputKey] && typeof node.data[inputKey] === "string" && node.data[inputKey].startsWith("fid:")) {
-              const keyValue = kv.get(node.data[inputKey]);
-              if (keyValue !== void 0) {
-                const resource2 = await this.app.cdn.put(node.data[inputKey].replace("fid://", ""), { userId });
-                node.data[inputKey] = `fid://${resource2.fid}`;
+          const error_message = `Block ${node.name} not found`;
+          console.error(error_message);
+          error_list += error_message + "\n";
+        } else {
+          for (const inputKey of Object.keys(block7.inputs)) {
+            if (["image", "file", "audio", "video", "document"].includes(block7.inputs[inputKey].customSocket)) {
+              if (node.data[inputKey] && typeof node.data[inputKey] === "string" && node.data[inputKey].startsWith("fid:")) {
+                const key = node.data[inputKey].replace("fid://", "");
+                const cdnResource = newFidMap.get(key);
+                const newFid = cdnResource.fid;
+                if (newFid) {
+                  node.data[inputKey] = `fid://${newFid}`;
+                  if (node.data.preview) {
+                    node.data.preview = [cdnResource];
+                  }
+                } else {
+                  const error = `Resource key ${key} not found in kv ${JSON.stringify(newFidMap)}
+`;
+                  error_list += error;
+                  console.error(error);
+                }
               }
             }
           }
         }
       }
-      result.push(workflow);
+      if (error_list !== "") {
+        console.error(error_list);
+      }
+      const saved_workflow = await this.saveWorkflowIfNotExists(workflow, userId);
+      result.push(saved_workflow);
     }
     return result;
   }

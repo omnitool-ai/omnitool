@@ -8,6 +8,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/omnitool-ai/omnitool?color=red)
 ![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Follama-webui%2Follama-wbui&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
 [![Discord](https://img.shields.io/badge/Discord-Omnitool-blue?logo=discord&logoColor=white)](https://discord.gg/EMYBZnyjAJ)
+[![Publish release](https://github.com/omnitool-ai/omnitool/actions/workflows/publish-release.yml/badge.svg?branch=main)](https://github.com/omnitool-ai/omnitool/actions/workflows/publish-release.yml)
 
 *Discover, Learn, Evaluate and Build with thousands of Generative AI Models.*
 

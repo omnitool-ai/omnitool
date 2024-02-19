@@ -819,7 +819,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
 
   async onLoadRecipeFromFileChange(event: any) {
     const files = event?.dataTransfer?.files || event?.target?.files;
-
+    
     let recipe: any;
     if (files.length > 0) {
       const wfDef = files[0];
@@ -831,6 +831,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
             resolve(JSON.parse(event?.target?.result ?? '{}'));
           };
           fileReader.onerror = (error) => {
+            console.error("Error reading file: ", error);
             reject(error);
           };
           fileReader.readAsText(wfDef);
@@ -844,6 +845,13 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
           if (workflows && workflows.length > 0) {
             recipe = workflows[0]
           }
+          else
+          {
+            console.error("Error uploading file. No workflow:", result);
+          }
+        }else
+        {
+          console.error("Error uploading file: ", result);
         }
       }
     }
@@ -852,6 +860,10 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
       recipe.id = ''; // Imported recipes are assigned a new id.
       await this.loadFromJSON(recipe);
       this.activeWorkflow?.setDirty();
+    }
+    else
+    {
+      console.error("Invalid recipe from file: ", recipe);
     }
   }
 

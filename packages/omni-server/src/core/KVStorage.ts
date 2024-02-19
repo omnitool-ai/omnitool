@@ -246,7 +246,7 @@ class KVStorage implements IKVStorage {
       if (opts.view) {
         source = opts.view;
       }
-      let sql = 'SELECT key, value, valueType, expiry, seq, tags FROM ' + source + ' WHERE key LIKE ? AND deleted = 0';
+      let sql = 'SELECT key, value, valueType, blob, expiry, seq, tags FROM ' + source + ' WHERE key LIKE ? AND deleted = 0';
       const args: any[] = [partialKeyMatchPattern];
 
       // --- Expiry handling ---
@@ -324,6 +324,7 @@ class KVStorage implements IKVStorage {
         seq: number;
         expiry?: number;
         valueType: string;
+        blob: Buffer;
       }>;
 
       count = result.length;
@@ -338,7 +339,9 @@ class KVStorage implements IKVStorage {
         seq: row.seq as number,
         expiry: row.expiry && row.expiry < 9007199254740991 ? (row.expiry as number) : undefined,
         valueType: row.valueType,
-        tags:  row.tags?.split(',').filter((tag: string) => tag.trim()) ?? []
+        tags:  row.tags?.split(',').filter((tag: string) => tag.trim()) ?? [],
+        blob: row.blob
+
       }));
     } catch (error) {
       this.parent?.error('Error occurred while getting values:', error);

@@ -34,20 +34,24 @@ block.addOutput(block.createOutput('Green', 'number').toOmniIO());
 block.addOutput(block.createOutput('Blue', 'number').toOmniIO());
 
 block.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
-  const colorName = payload['Color Name'];
+  try {
+    const colorName = payload['Color Name'];
 
-  // Convert color name to RGB using color-convert
-  const [red, green, blue] = convert.keyword.rgb(colorName);
-  const hexString = convert.rgb.hex(red, green, blue);
-  const rgbString = `rgb(${red},${green},${blue})`;
-
-  return {
-    'Hex String': `#${hexString}`,
-    'RGB String': rgbString,
-    Red: red,
-    Green: green,
-    Blue: blue
-  };
+    // Convert color name to RGB using color-convert
+    const [red, green, blue] = convert.keyword.rgb(colorName);
+    const hexString = convert.rgb.hex(red, green, blue);
+    const rgbString = `rgb(${red},${green},${blue})`;
+    return {
+      'Hex String': `#${hexString}`,
+      'RGB String': rgbString,
+      Red: red,
+      Green: green,
+      Blue: blue
+    };    
+  }
+  catch(e) {
+    return {}
+  }
 });
 
 const NameToRgbBlock = block.toJSON();
