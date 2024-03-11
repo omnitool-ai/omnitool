@@ -434,6 +434,7 @@ class OpenAPIReteAdapter {
       title: this.getOmniValue(operation, 'title', this.mangleTitle(operation.operationId) ?? 'Unnamed Component'),
       category: this.namespace,
       xOmniEnabled: true,
+      showSimplifiedIO: false,
       //ersion: '1.0.0',
       errors: [],
       flags: 0,

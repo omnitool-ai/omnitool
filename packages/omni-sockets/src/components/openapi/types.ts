@@ -175,6 +175,7 @@ interface OmniComponentFormat {
   displayNamespace: string;
   displayOperationId: string;
   xOmniEnabled?: boolean;
+  showSimplifiedIO?: boolean;
   errors: string[];
   title: string;
   method: string;

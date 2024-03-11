@@ -16,59 +16,59 @@ interface HTTPClientErrorCode {
 
 const HTTP_CODES: Record<number, HTTPClientErrorCode> = {
   400: {
-    message: 'The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
+    message: '[400] The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
     retryable: false
   },
   401: {
-    message: 'Authentication failed. Please check your credentials.',
+    message: '[401] Authentication failed. Please check your credentials.',
     retryable: false
   },
   403: {
-    message: 'You are not authorized to perform this action.',
+    message: '[403] You are not authorized to perform this action.',
     retryable: false
   },
   404: {
-    message: 'The requested resource was not found.',
+    message: '[404] The requested resource was not found.',
     retryable: false
   },
   408: {
-    message: 'The server timed out waiting for the request.',
+    message: '[408] The server timed out waiting for the request.',
     retryable: true
   },
   409: {
-    message: 'The server is having trouble processing your request due to a conflict. Please review your information and submit it again.',
+    message: '[409] The server is having trouble processing your request due to a conflict. Please review your information and submit it again.',
     retryable: false
   },
   410: {
-    message: 'The requested resource is no longer available.',
+    message: '[410] The requested resource is no longer available.',
     retryable: false
   },
   422: {
-    message: 'The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
+    message: '[422] The server is having trouble processing your request due to invalid input. Please review your information and submit it again.',
     retryable: false
   },
   429: {
-    message: 'The server is having trouble processing your request due to too many requests. Please try again later.',
+    message: '[429] The server is having trouble processing your request due to too many requests. Please try again later.',
     retryable: true
   },
   500: {
-    message: 'The server encountered an internal error. Please try again later.',
+    message: '[500] The server encountered an internal error. Please try again later.',
     retryable: true
   },
   501: {
-    message: 'The server does not support the requested feature.',
+    message: '[501] The server does not support the requested feature.',
     retryable: false
   },
   502: {
-    message: 'The server encountered an internal error. Please try again later.',
+    message: '[502] The server encountered an internal error. Please try again later.',
     retryable: true
   },
   503: {
-    message: 'The server is currently unavailable. Please try again later.',
+    message: '[503] The server is currently unavailable. Please try again later.',
     retryable: true
   },
   504: {
-    message: 'The server timed out waiting for the request.',
+    message: '[504] The server timed out waiting for the request.',
     retryable: true
   }
 }

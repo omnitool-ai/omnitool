@@ -680,7 +680,7 @@ async function visualQuestionAnswering(inference:any, block_payload: any, model:
     const question = block_payload.question;
     if (!question) throw new Error('Missing question for visualQuestionAnswering');
 
-    let image_cdns = block_payload.images;
+    let image_cdns = block_payload.image;
     if (!Array.isArray(image_cdns)) image_cdns = [image_cdns];
     if (!image_cdns) throw new Error('Missing image for visualQuestionAnswering');
 
@@ -692,7 +692,8 @@ async function visualQuestionAnswering(inference:any, block_payload: any, model:
         //@ts-ignore
         const raw_image = await service.app.cdn.get(image_cdn.ticket);
         const image = raw_image.data;
-        const args: VisualQuestionAnsweringArgs = { model, inputs: { image, question } };
+        const blob = new Blob([image.buffer], { type: 'application/octet-stream' });
+        const args: VisualQuestionAnsweringArgs = { model, inputs: { image: blob, question } };
         const results: VisualQuestionAnsweringOutput = await inference.visualQuestionAnswering(args, options);
         const answer:string = results.answer;
         const score:number = results.score;

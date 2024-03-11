@@ -1,8 +1,8 @@
 core_extensions:
-  - title: Assistant
-    id: omni-core-assistant
-    #url: https://raw.githubusercontent.com/omnitool-ai/omni-core-blocks/main/extension.yaml
-
+  #- title: Assistant
+  #  id: omni-core-assistant
+  #  #url: https://raw.githubusercontent.com/omnitool-ai/omni-core-blocks/main/extension.yaml
+  #
   - title: Blocks Registry
     id: omni-core-blocks
     url: https://raw.githubusercontent.com/omnitool-ai/omni-core-blocks/main/extension.yaml

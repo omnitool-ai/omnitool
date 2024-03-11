@@ -106,6 +106,37 @@ export class AlpineRenderPlugin {
         if (!node || !node.inputs) {
           return [];
         }
+
+        if (node?.data?.showSimplifiedIO)
+        { 
+          const connected_inputs = [];          
+          node.inputs.forEach((input) => 
+          {
+            let is_connected = false;            
+            if (input.key && node.data[input.key] && node.data[input.key] !== input?.control?.data?.default)
+            {
+              is_connected = true;
+            }
+            else
+            {
+              if (input.connections && input.connections.length > 0)
+              input.connections.forEach((connection) => 
+              {
+                if (connection != null) 
+                {
+                  is_connected = true;
+                }
+              });
+            }
+            if (is_connected) 
+            {
+              connected_inputs.push(input);
+            }
+          });
+
+          return connected_inputs;
+        }
+
         return Array.from(node?.inputs?.values?.() || []).filter((x) => x != null);
       },
       controls(node) {

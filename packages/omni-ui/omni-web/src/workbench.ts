@@ -9,7 +9,7 @@ import { type ClientExtension } from 'omni-client-services';
 import { JOBSTATE, omnilog, type Job, Utils } from 'omni-shared';
 import ClientWorkflow from './classes/ClientWorkflow';
 import { type OmnitoolClient } from './client';
-import sanitize from 'sanitize-filename';
+import smalltalk from 'smalltalk';
 
 class Workbench {
   _activeRecipe: ClientWorkflow | null = null;
@@ -587,7 +587,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
     }
     const recipe = this.activeWorkflow;
 
-    let name = prompt('Recipe name:', recipe.meta.name || 'My Recipe');
+    let name = await smalltalk.prompt('Recipe name:', recipe.meta.name || 'My Recipe');
     name = name ? name.trim() : null;
     if (!name) {
       return;
@@ -715,7 +715,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
       throw new Error('Cannot remix unsaved recipe');
     }
 
-    let newName = prompt('Recipe name:', `My ${recipe.meta.name}`);
+    let newName = await smalltalk.prompt('Recipe name:', `My ${recipe.meta.name}`);
     newName = newName ? newName.trim() : null;
 
     if (!newName) {
@@ -744,7 +744,7 @@ Close with a "Further Exploration" section that contains 1-2 bullet points with 
 
   async newRecipe(name: string | null = '') {
     if (!name) {
-      name = prompt('Name for new recipe:', 'My Recipe');
+      name = await smalltalk.prompt('Name for new recipe:', 'My Recipe');
       name = name ? name.trim() : null;
     }
 

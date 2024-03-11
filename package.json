@@ -1,6 +1,6 @@
 {
   "name": "omnitool",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "packageManager": "yarn@4.1.0",
   "private": true,
   "workspaces": [
@@ -38,7 +38,8 @@
     "compare-versions": "^6.1.0",
     "cross-env": "^7.0.3",
     "fs-extra": "^11.2.0",
-    "pocketbase": "^0.20.1"
+    "pocketbase": "^0.20.1",
+    "smalltalk": "^4.1.2"
   },
   "devDependencies": {
     "eslint": "^8.56.0",

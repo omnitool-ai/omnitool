@@ -1540,6 +1540,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cloudcmd/create-element@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "@cloudcmd/create-element@npm:2.0.2"
+  dependencies:
+    currify: "npm:^4.0.0"
+    fullstore: "npm:^3.0.0"
+  checksum: 10/cb1ee97980266326289df56f6d2639eaf9ca5180ef4d2d3cf9f0efbb196b66da31d3aca4bbe500f90cf17d8a4a4411b4468950d774dd50401619c6dc83cf2b51
+  languageName: node
+  linkType: hard
+
 "@colors/colors@npm:1.5.0":
   version: 1.5.0
   resolution: "@colors/colors@npm:1.5.0"
@@ -5506,6 +5516,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"currify@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "currify@npm:4.0.0"
+  checksum: 10/a0b1ded58985cd5f9ec08b8ca2b9307c7c379504ff8edfe68be69e368108c14384d63a28ae3ac3591e05287ae06261243ea812e137ed91b165bcbc7f725b9cac
+  languageName: node
+  linkType: hard
+
 "cwise-compiler@npm:^1.0.0, cwise-compiler@npm:^1.1.2":
   version: 1.1.3
   resolution: "cwise-compiler@npm:1.1.3"
@@ -7899,6 +7916,13 @@ __metadata:
   dependencies:
     node-gyp: "npm:latest"
   conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+"fullstore@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "fullstore@npm:3.0.0"
+  checksum: 10/3a84de9d9133eaa0b19a0ab8062d602bae565be0fde404911c5a77306cff368549a19e27abd39aac119526dde30dcef74e575d8ac878b579ee539bc2bf32163a
   languageName: node
   linkType: hard
 
@@ -10656,6 +10680,7 @@ __metadata:
     fs-extra: "npm:^11.2.0"
     pocketbase: "npm:^0.20.1"
     prettier: "npm:^3.2.4"
+    smalltalk: "npm:^4.1.2"
   dependenciesMeta:
     ts-node@10.9.1:
       unplugged: true
@@ -12434,6 +12459,17 @@ __metadata:
   dependencies:
     is-fullwidth-code-point: "npm:^2.0.0"
   checksum: 10/b4239e885803d9e35c6a3a17bb530f1d76349753abaf88594ab57dfd666afe8e927efff152d5e010b51d134dd47b6118bb9c47d24c99ed75841c29beae82d9b9
+  languageName: node
+  linkType: hard
+
+"smalltalk@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "smalltalk@npm:4.1.2"
+  dependencies:
+    "@cloudcmd/create-element": "npm:^2.0.0"
+    currify: "npm:^4.0.0"
+    fullstore: "npm:^3.0.0"
+  checksum: 10/067a8938136bb8d5030b0a6b3f26c8497c6f23028c52e4dac93736dbba95e688b7976f1aff3d15a57e26dca2b89aafdc6c9543467734a1707c112e57a8aab4e8
   languageName: node
   linkType: hard
 
