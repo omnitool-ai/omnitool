@@ -28,7 +28,7 @@
     "omni-shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.11.7",
+    "@types/node": "^20.11.30",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "esbuild": "^0.19.12",
@@ -38,8 +38,8 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
-    "prettier": "^3.2.4",
+    "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

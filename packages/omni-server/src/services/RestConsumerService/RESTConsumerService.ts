@@ -426,7 +426,29 @@ class RESTConsumerService extends Service {
     if (payload.integration.key.startsWith('omni-core-replicate:')) {
       const credentialService = this.app.services.get('credentials') as CredentialService;
       const blockManager = this.server.blocks;
-      const baseUrl = blockManager.getNamespace('replicate')?.api?.basePath ?? '';
+      let baseUrl = blockManager.getNamespace('replicate')?.api?.basePath ?? '';
+
+      // ----------------------------
+      // Somewhat hacky way to ensure Replicate URL is correct.
+      // We will eventually remove this in a few months
+      // ---------------------------- HACK START
+      // Ensure the URL does not end with a '/'
+      if (baseUrl.endsWith('/')) 
+      {
+        baseUrl = baseUrl.slice(0, -1);
+      }
+      // If there's an extra '/v1/v1', correct to a single '/v1'
+      if (baseUrl.endsWith('/v1/v1')) 
+      {
+        // remove the last 3 characters
+        baseUrl = baseUrl.slice(0, -3);
+      } 
+      else if (!baseUrl.endsWith('/v1')) 
+      {
+        baseUrl += '/v1';
+      }
+      // ---------------------------- HACK END
+
       const { owner, model, version } = payload.body._replicate;
       delete payload.body._replicate;
       const replicate = new Replicate({
@@ -434,8 +456,6 @@ class RESTConsumerService extends Service {
       });
 
       const input = payload.body;
-
-
       const output = await replicate.run(`${owner}/${model}:${version}`, { input });
       return { output, _omni_status: 200 };
     }

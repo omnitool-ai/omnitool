@@ -11878,7 +11878,15 @@ var RESTConsumerService = class extends Service8 {
     if (payload.integration.key.startsWith("omni-core-replicate:")) {
       const credentialService = this.app.services.get("credentials");
       const blockManager = this.server.blocks;
-      const baseUrl = blockManager.getNamespace("replicate")?.api?.basePath ?? "";
+      let baseUrl = blockManager.getNamespace("replicate")?.api?.basePath ?? "";
+      if (baseUrl.endsWith("/")) {
+        baseUrl = baseUrl.slice(0, -1);
+      }
+      if (baseUrl.endsWith("/v1/v1")) {
+        baseUrl = baseUrl.slice(0, -3);
+      } else if (!baseUrl.endsWith("/v1")) {
+        baseUrl += "/v1";
+      }
       const { owner, model: model2, version } = payload.body._replicate;
       delete payload.body._replicate;
       const replicate = new Replicate({
