@@ -122,6 +122,8 @@ Omnitool is able to generate blocks from any openapi.json definitions via URL or
     
 * Visit the Extension tab in app or see our [Omnitool Community Github](https://github.com/orgs/omnitool-community/repositories) for a list of currently available extensions
 
+## 📖 Documentation
+[Omnitool Docs](https://omnitool-ai.gitbook.io/omnitool)
   
 ## Quickstart Guide
 
