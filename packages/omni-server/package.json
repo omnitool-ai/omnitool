@@ -26,7 +26,7 @@
     "@types/node": "^20.11.30",
     "@types/serialize-javascript": "^5.0.4",
     "app-store-scraper": "^0.18.0",
-    "better-sqlite3": "^9.4.3",
+    "better-sqlite3": "^12.6.2",
     "chokidar": "^3.6.0",
     "cli-table3": "^0.6.3",
     "color-namer": "^1.4.0",
@@ -87,7 +87,7 @@
     "clean": "node build.js clean"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.9",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/color-convert": "^2.0.3",
     "@types/fs-extra": "^11.0.4",
     "@types/imurmurhash": "^0.1.4",
