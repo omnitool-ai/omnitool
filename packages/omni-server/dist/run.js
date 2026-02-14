@@ -1825,7 +1825,7 @@ var OpenAPIReteAdapter = class {
     for (const pathItemKey in this.openApiDocument.paths) {
       const pathItem = this.openApiDocument.paths[pathItemKey];
       const methods = Object.entries(pathItem).filter(
-        ([method, _]) => ["get", "put", "post", "delete", "options", "head", "patch", "trace"].includes(method)
+        ([method, _]) => ["get", "put", "post", "delete", "options", "head", "patch", "trace", "query"].includes(method)
       );
       for (const [method, op] of methods) {
         if (op) {
