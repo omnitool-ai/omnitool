@@ -9853,10 +9853,14 @@ var FastifyServerService = class extends Service5 {
   }
   resolveOmniWebPath() {
     const maybeWebExtensionPath = path13.join(process.cwd(), "extensions", "omni-core-web", "public");
-    if (fs6.existsSync(maybeWebExtensionPath)) {
+    if (fs6.existsSync(path13.join(maybeWebExtensionPath, "index.html"))) {
       return maybeWebExtensionPath;
     }
-    return path13.join(process.cwd(), "public/");
+    const fallbackPath = path13.join(process.cwd(), "public");
+    if (fs6.existsSync(path13.join(fallbackPath, "index.html"))) {
+      return fallbackPath;
+    }
+    return null;
   }
   registerStaticHandler() {
     const config2 = this.config;
@@ -9881,12 +9885,22 @@ var FastifyServerService = class extends Service5 {
       });
     } else {
       const omniWebPath = this.resolveOmniWebPath();
-      this.info(`${this.id} static path ${omniWebPath}`);
-      this.fastifyInstance.register(fastifyStatic, {
-        root: omniWebPath,
-        prefix: "/"
-        // optional: default '/'
-      });
+      if (omniWebPath !== null) {
+        this.info(`${this.id} static path ${omniWebPath}`);
+        this.fastifyInstance.register(fastifyStatic, {
+          root: omniWebPath,
+          prefix: "/"
+          // optional: default '/'
+        });
+      } else {
+        this.error("Web interface not found. Looked in extensions/omni-core-web/public and public/ but neither contained index.html.");
+        this.error('Please run "yarn build:prod" or ensure the omni-core-web extension is installed.');
+        this.fastifyInstance.get("/", async (_request, reply) => {
+          reply.type("text/html").code(503).send(
+            '<!DOCTYPE html><html><head><title>Omnitool - Setup Required</title></head><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:0 20px"><h1>Omnitool Web Interface Not Found</h1><p>The web interface files could not be located. This usually means:</p><ul><li>The frontend has not been built. Run <code>yarn build:prod</code> from the project root.</li><li>The omni-core-web extension failed to install. Check your internet connection and restart the server.</li></ul><p>After resolving the issue, restart the server.</p></body></html>'
+          );
+        });
+      }
     }
     this.fastifyInstance.get("/version", async (request, reply) => {
       reply.send(this.app.version);
